@@ -9,13 +9,16 @@ const StorePage = {
 
   // Checkout state
   checkoutItem: null,
-  checkoutStep: 0,     // 0=listing, 1=detail, 2=pembayaran, 3=konfirmasi
+  checkoutStep: 0,     // 0=listing, 1=detail, 2=pembayaran, 3=upload bukti, 4=sukses
   selectedPayment: 'qris',
   buyerName: '',
   buyerEmail: '',
   buyerRoblox: '',
   countdownTimer: null,
   countdownSeconds: 15 * 60,
+  proofFile: null,
+  isSubmitting: false,
+  generatedOrderId: '',
 
   // Payment methods
   paymentMethods: [
@@ -518,7 +521,7 @@ const StorePage = {
               <span class="checkout-step-num">2</span> PEMBAYARAN
             </div>
             <div class="checkout-step-line"></div>
-            <div class="checkout-step-item ${this.checkoutStep === 3 ? 'active' : ''}">
+            <div class="checkout-step-item ${this.checkoutStep === 3 ? 'active' : (this.checkoutStep > 3 ? 'done' : '')}">
               <span class="checkout-step-num">3</span> KONFIRMASI
             </div>
           </div>
@@ -548,6 +551,7 @@ const StorePage = {
               ${this.checkoutStep === 1 ? this.renderStep1() : ''}
               ${this.checkoutStep === 2 ? this.renderStep2() : ''}
               ${this.checkoutStep === 3 ? this.renderStep3() : ''}
+              ${this.checkoutStep === 4 ? this.renderStep4() : ''}
             </div>
           </div>
         </div>
@@ -643,17 +647,54 @@ const StorePage = {
     return '';
   },
 
-  // ── Step 3: Konfirmasi ──
+  // ── Step 3: Kirim Bukti Pembayaran ──
   renderStep3() {
-    const orderId = 'AR-' + Date.now().toString(36).toUpperCase();
+    return `
+      <div class="checkout-panel-title">Upload Bukti Pembayaran</div>
+      <p style="font-size:0.68rem; color:var(--color-text-secondary); line-height:1.5; margin-bottom:16px;">
+        Silakan unggah tangkapan layar atau foto bukti transfer pembayaran yang sah untuk memproses pesanan kamu.
+      </p>
+
+      <div style="border:2px dashed var(--color-border); border-radius:10px; padding:28px 16px; text-align:center; background:rgba(255,255,255,0.01); cursor:pointer; transition:all 0.2s;" 
+        ondragover="event.preventDefault()" 
+        ondrop="StorePage.handleProofDrop(event)" 
+        onclick="document.getElementById('proof-file-input').click()">
+        <div style="font-size:2rem; margin-bottom:8px;">📸</div>
+        <div style="font-size:0.75rem; font-weight:bold; color:white;" id="proof-upload-text">
+          ${this.proofFile ? `📄 ${this.proofFile.name}` : 'Upload Bukti Pembayaran'}
+        </div>
+        <div style="font-size:0.6rem; color:var(--color-text-muted); margin-top:4px;">
+          ${this.proofFile ? 'Klik untuk mengganti berkas' : 'Klik atau seret gambar ke sini (PNG, JPG, JPEG)'}
+        </div>
+        <input type="file" id="proof-file-input" style="display:none;" accept="image/png, image/jpeg, image/jpg" onchange="StorePage.handleProofFile(this.files)">
+      </div>
+
+      <div style="margin-top:20px; font-size:0.7rem; color:var(--color-text-secondary); background:rgba(255,255,255,0.02); border:1px solid var(--color-border); border-radius:8px; padding:12px;">
+        <div style="font-weight:bold; margin-bottom:6px; color:white;">Ringkasan Pesanan:</div>
+        <div>Produk: <strong>${this.checkoutItem.name}</strong></div>
+        <div>Total: <strong>${Components.formatPrice(this.checkoutItem.price)}</strong></div>
+        <div>Metode: <strong style="text-transform:uppercase;">${this.selectedPayment}</strong></div>
+      </div>
+
+      <button class="checkout-submit" style="margin-top:20px; display:flex; align-items:center; justify-content:center; gap:8px;" 
+        id="btn-submit-proof" 
+        onclick="StorePage.submitProof()"
+        ${this.isSubmitting ? 'disabled' : ''}>
+        ${this.isSubmitting ? '<div style="width:14px; height:14px; border:2px solid rgba(255,255,255,0.2); border-top-color:white; border-radius:50%; animation:rotate 1s linear infinite;"></div> Mengirim...' : 'KIRIM BUKTI PEMBAYARAN →'}
+      </button>
+    `;
+  },
+
+  // ── Step 4: Sukses ──
+  renderStep4() {
     return `
       <div class="confirm-box">
         <div class="confirm-icon">✅</div>
         <div class="confirm-title">PESANAN DIKIRIM</div>
         <div class="confirm-desc">
-          Terima kasih, <strong>${this.buyerName}</strong>! Pesanan kamu untuk <strong>${this.checkoutItem.name}</strong> sedang diproses. Admin akan mengirim item ke akun Roblox <strong>${this.buyerRoblox}</strong> setelah pembayaran terkonfirmasi.
+          Terima kasih, <strong>${this.buyerName}</strong>! Pesanan kamu untuk <strong>${this.checkoutItem.name}</strong> sedang diproses. Admin akan memverifikasi bukti pembayaran yang kamu kirim dan mengirim item ke akun Roblox <strong>${this.buyerRoblox}</strong> secepatnya.
         </div>
-        <div class="confirm-order-id">Order ID: ${orderId}</div>
+        <div class="confirm-order-id">Order ID: ${this.generatedOrderId}</div>
         <br>
         <button class="checkout-submit" style="max-width:300px; margin:0 auto;" onclick="StorePage.backToStore()">
           KEMBALI KE STORE
@@ -692,6 +733,84 @@ const StorePage = {
     this.render();
   },
 
+  handleProofFile(files) {
+    if (files.length > 0) {
+      const file = files[0];
+      if (!file.type.startsWith('image/')) {
+        alert('Format file tidak didukung. Harap pilih gambar (PNG, JPG, JPEG).');
+        return;
+      }
+      this.proofFile = file;
+      const textEl = document.getElementById('proof-upload-text');
+      if (textEl) textEl.textContent = `📄 ${file.name}`;
+      this.render();
+    }
+  },
+
+  handleProofDrop(e) {
+    e.preventDefault();
+    if (e.dataTransfer.files.length > 0) {
+      this.handleProofFile(e.dataTransfer.files);
+    }
+  },
+
+  async submitProof() {
+    if (!this.proofFile) {
+      alert('Harap unggah bukti pembayaran terlebih dahulu.');
+      return;
+    }
+
+    this.isSubmitting = true;
+    this.render();
+
+    const orderId = 'AR-' + Date.now().toString(36).toUpperCase();
+    this.generatedOrderId = orderId;
+
+    try {
+      const webhookUrl = 'https://discord.com/api/webhooks/1528233174830678227/YwRIe7qBK3apgc2NJ39qCx0PcKVCyXbBunLqJpBkWexOqaw_e9m2bdEyVPwxI0CUYHBY';
+
+      const payload = {
+        embeds: [
+          {
+            title: "🛒 PESANAN BARU — STORE",
+            color: 16711680, // Red color
+            fields: [
+              { name: "Order ID", value: orderId, inline: true },
+              { name: "Produk", value: this.checkoutItem.name, inline: true },
+              { name: "Harga", value: Components.formatPrice(this.checkoutItem.price), inline: true },
+              { name: "Nama Pembeli", value: this.buyerName, inline: true },
+              { name: "Email", value: this.buyerEmail, inline: true },
+              { name: "Username Roblox", value: this.buyerRoblox, inline: true },
+              { name: "Metode Pembayaran", value: this.selectedPayment.toUpperCase(), inline: true }
+            ],
+            timestamp: new Date().toISOString()
+          }
+        ]
+      };
+
+      const formData = new FormData();
+      formData.append('file1', this.proofFile, this.proofFile.name);
+      formData.append('payload_json', JSON.stringify(payload));
+
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Gagal mengirim ke Discord Webhook');
+      }
+
+      this.checkoutStep = 4;
+    } catch (error) {
+      console.error(error);
+      alert('Gagal mengirim bukti pembayaran. Hubungi admin lewat Discord jika kendala berlanjut.');
+    } finally {
+      this.isSubmitting = false;
+      this.render();
+    }
+  },
+
   selectPayment(id) {
     this.selectedPayment = id;
     const box = document.getElementById('pay-detail-box');
@@ -713,6 +832,9 @@ const StorePage = {
     }
     this.checkoutItem = null;
     this.checkoutStep = 0;
+    this.proofFile = null;
+    this.isSubmitting = false;
+    this.generatedOrderId = '';
     window.location.hash = '#/store';
     this.render();
   },
