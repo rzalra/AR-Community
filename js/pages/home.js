@@ -94,7 +94,7 @@ const HomePage = {
         <div class="container">
           <div class="catalog-header">
             <div>
-              <h2>Katalog TC</h2>
+              <h2>Katalog AR</h2>
               <p style="color:var(--color-text-muted); margin-top: 4px">Produk & alat terpopuler dari komunitas</p>
             </div>
             <a href="#/store" class="btn btn-ghost">VIEW ALL →</a>
