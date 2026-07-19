@@ -321,6 +321,17 @@ const BypassMusicPage = {
           </div>
         </div>
       `;
+    } else if (this.robloxUploadStatus) {
+      statusMarkup = `
+        <div style="margin-top: 12px; padding: 10px; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: var(--radius-md); font-family: monospace; font-size: 0.65rem; color: var(--color-accent-red);">
+          <div style="display:flex; align-items:center; gap: 8px; margin-bottom: 6px; font-weight: bold;">
+            <span>❌ Status Upload:</span>
+          </div>
+          <div style="line-height: 1.4; color: var(--color-text-secondary); max-height: 120px; overflow-y: auto; white-space: pre-wrap;">
+            ${this.robloxUploadStatus.split('\n').map(line => `&gt; ${line}`).join('<br>')}
+          </div>
+        </div>
+      `;
     }
 
     return `
@@ -695,6 +706,9 @@ const BypassMusicPage = {
         try {
           const errJson = JSON.parse(errorText);
           errorMsg = errJson.message || (errJson.errors && errJson.errors[0]?.message) || errorText;
+          if (errJson.error) {
+            errorMsg += ` (${errJson.error})`;
+          }
         } catch (e) {}
 
         this.robloxUploadStatus += `\n\n❌ ERROR API (${response.status}): ${errorMsg}`;
