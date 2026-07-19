@@ -28,7 +28,8 @@ const App = {
     '#/tools/ai-image-gen': { page: 'AiImageGenPage', title: 'AI Image Generator' },
     '#/store': { page: 'StorePage', title: 'Store' },
     '#/maps': { page: 'MapsPage', title: 'Maps' },
-    '#/more': { page: 'MorePage', title: 'More' }
+    '#/more': { page: 'MorePage', title: 'More' },
+    '#/profile': { page: 'ProfilePage', title: 'Profil' }
   },
 
   // Initialize app
@@ -53,7 +54,8 @@ const App = {
       'AiImageGenPage': AiImageGenPage,
       'StorePage': StorePage,
       'MapsPage': MapsPage,
-      'MorePage': MorePage
+      'MorePage': MorePage,
+      'ProfilePage': ProfilePage
     };
     this.renderLayout();
     this.handleRoute();
@@ -120,6 +122,9 @@ const App = {
               <div class="user-avatar" id="header-user-avatar">U</div>
               <span class="user-name" id="header-user-name">User</span>
               <div class="user-dropdown" id="user-dropdown-menu" style="display: none; position: absolute; top: calc(100% + 8px); right: 0; background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 8px; width: 140px; box-shadow: var(--shadow-md); z-index: var(--z-dropdown);">
+                <a href="#/profile" style="width: 100%; text-align: left; padding: 6px 12px; font-size: var(--text-xs); color: var(--color-text-primary); font-family: var(--font-body); display: flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer;">
+                  👤 Profil
+                </a>
                 <button onclick="App.handleLogout()" style="width: 100%; text-align: left; padding: 6px 12px; font-size: var(--text-xs); color: var(--color-accent-red); font-family: var(--font-body); display: flex; align-items: center; gap: 8px; background: none; border: none; cursor: pointer;">
                   🚪 Logout
                 </button>
