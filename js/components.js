@@ -80,7 +80,7 @@ const Components = {
               <span class="card-price">${Components.formatPrice(item.price)}</span>
               ${item.originalPrice ? `<span style="font-size:0.75rem; color:var(--color-text-muted); text-decoration:line-through; margin-left:8px">${Components.formatPrice(item.originalPrice)}</span>` : ''}
             </div>
-            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation()">🛒 BUY NOW</button>
+            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); StorePage.openCheckout(${item.id})">🛒 BUY NOW</button>
           </div>
         </div>
       </div>
@@ -203,11 +203,9 @@ const Components = {
   // ── Category Name ──
   categoryName(catId) {
     const cats = {
-      '3d': 'Aset 3D',
-      'script': 'Skrip Lua',
-      'design': 'Layanan Desain',
-      'template': 'Template',
-      'audio': 'Audio Pack'
+      'kit': 'Kit & System',
+      'animation': 'Animasi',
+      'system': 'Sistem'
     };
     return cats[catId] || catId;
   },
