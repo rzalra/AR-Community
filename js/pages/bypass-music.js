@@ -239,6 +239,19 @@ const BypassMusicPage = {
             </div>
             
             <div class="form-group">
+              <label class="form-label" style="font-size: 0.62rem;">Tipe Akun</label>
+              <select id="roblox-acc-isgroup" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.72rem; color: var(--color-text-primary); background: var(--color-bg-secondary);">
+                <option value="false">PERSONAL</option>
+                <option value="true">GROUP</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="font-size: 0.62rem;">Roblox User/Group ID (Wajib Angka)</label>
+              <input type="text" id="roblox-acc-userid" class="form-input" placeholder="contoh: 12345678" style="font-size: 0.72rem; padding: 8px 10px;">
+            </div>
+
+            <div class="form-group">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <label class="form-label" style="font-size: 0.62rem;">API Key Open Cloud</label>
                 <a href="https://create.roblox.com/dashboard/credentials" target="_blank" style="font-size: 0.62rem; color: var(--color-accent-cyan);">Dapatkan Key →</a>
@@ -321,7 +334,7 @@ const BypassMusicPage = {
           <div class="form-group">
             <label class="form-label" style="font-size: 0.62rem;">Pilih Akun</label>
             <select id="roblox-acc-select" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.72rem; color: var(--color-text-primary); background: var(--color-bg-secondary);">
-              ${this.robloxAccounts.map((acc, index) => `<option value="${index}">${acc.name}</option>`).join('')}
+              ${this.robloxAccounts.map((acc, index) => `<option value="${index}">${acc.name} (${acc.userId || 'No ID'}) - ${acc.isGroup ? 'GROUP' : 'PERSONAL'}</option>`).join('')}
             </select>
           </div>
           
@@ -366,7 +379,7 @@ const BypassMusicPage = {
         const factor = this.presets[presetName];
         this.selectedPreset = presetName;
         this.speedFactor = factor;
-        
+
         // Update range slider and UI
         document.getElementById('speed-slider').value = factor;
         this.updateSpeedUI();
@@ -488,19 +501,29 @@ const BypassMusicPage = {
       btnSave.addEventListener('click', (e) => {
         e.stopPropagation();
         const nameInput = document.getElementById('roblox-acc-name');
+        const isGroupInput = document.getElementById('roblox-acc-isgroup');
+        const userIdInput = document.getElementById('roblox-acc-userid');
         const apiKeyInput = document.getElementById('roblox-api-key');
-        if (!nameInput || !apiKeyInput) return;
-        
+        if (!nameInput || !apiKeyInput || !userIdInput) return;
+
         const name = nameInput.value.trim();
+        const userId = userIdInput.value.trim();
         const apiKey = apiKeyInput.value.trim();
-        if (!name || !apiKey) {
-          alert('Harap isi Nama Akun dan API Key.');
+        const isGroup = isGroupInput ? isGroupInput.value === 'true' : false;
+
+        if (!name || !userId || !apiKey) {
+          alert('Harap isi Nama Akun, Roblox ID, dan API Key.');
           return;
         }
 
-        this.robloxAccounts.push({ name, apiKey });
+        if (!/^\d+$/.test(userId)) {
+          alert('Roblox ID harus berupa angka (numeric).');
+          return;
+        }
+
+        this.robloxAccounts.push({ name, userId, apiKey, isGroup });
         localStorage.setItem('roblox_accounts', JSON.stringify(this.robloxAccounts));
-        
+
         this.robloxAddActive = false;
         this.updateRobloxCard();
       });
@@ -532,13 +555,31 @@ const BypassMusicPage = {
 
     const nameInput = document.getElementById('roblox-asset-name');
     const assetName = nameInput ? nameInput.value.trim() : `Bypassed ${fileItem.name.replace(/\.[^/.]+$/, '')}`;
-    
+
     // Select active account
     const selectAcc = document.getElementById('roblox-acc-select');
     const activeAcc = this.robloxAccounts[selectAcc ? parseInt(selectAcc.value) : 0];
     if (!activeAcc) {
-      alert('Roblox account details not found.');
+      alert('Detail akun Roblox tidak ditemukan.');
       return;
+    }
+
+    // Backwards compatibility or fallback for missing userId
+    let userId = activeAcc.userId;
+    if (!userId) {
+      if (/^\d+$/.test(activeAcc.name)) {
+        userId = activeAcc.name;
+        activeAcc.userId = userId;
+      } else {
+        const inputId = prompt(`Akun '${activeAcc.name}' tidak memiliki User/Group ID numerik yang valid. Harap masukkan Roblox User ID (atau Group ID jika grup) untuk akun ini:`);
+        if (!inputId || !/^\d+$/.test(inputId.trim())) {
+          alert("User/Group ID tidak valid. Proses unggah dibatalkan.");
+          return;
+        }
+        userId = inputId.trim();
+        activeAcc.userId = userId;
+        localStorage.setItem('roblox_accounts', JSON.stringify(this.robloxAccounts));
+      }
     }
 
     this.robloxIsUploading = true;
@@ -546,38 +587,163 @@ const BypassMusicPage = {
     this.robloxAssetId = null;
     this.updateRobloxCard();
 
-    const sleep = (ms) => new Promise(res => setTimeout(res, ms));
-
     try {
-      await sleep(1200);
+      this.robloxUploadStatus += '\nMembaca file data lagu hasil bypass...';
+      this.updateRobloxCard();
+
+      // Retrieve blob: check fileItem.blob first, or fetch from fileItem.downloadUrl
+      let wavBlob = fileItem.blob;
+      if (!wavBlob && fileItem.downloadUrl) {
+        this.robloxUploadStatus += '\nMengambil data biner dari URL lokal...';
+        this.updateRobloxCard();
+        const blobRes = await fetch(fileItem.downloadUrl);
+        wavBlob = await blobRes.blob();
+      }
+
+      if (!wavBlob) {
+        throw new Error('Data biner audio tidak ditemukan. Silakan bypass ulang file.');
+      }
+
+      this.robloxUploadStatus += `\nMetadata terdeteksi: Tipe=Audio, Nama="${assetName}", Kepemilikan=${activeAcc.isGroup ? 'Group ID' : 'User ID'} ${userId}`;
+      this.robloxUploadStatus += `\nMengirim payload multipart form-data (ukuran: ${(wavBlob.size / 1048576).toFixed(2)} MB)...`;
+      this.updateRobloxCard();
+
+      // Build metadata request JSON
+      const metadata = {
+        assetType: 'Audio',
+        displayName: assetName,
+        description: 'Uploaded via AR Community Music Bypasser',
+        creationContext: {
+          creator: {}
+        }
+      };
+
+      if (activeAcc.isGroup) {
+        metadata.creationContext.creator.groupId = userId;
+      } else {
+        metadata.creationContext.creator.userId = userId;
+      }
+
+      const formData = new FormData();
+      formData.append('request', JSON.stringify(metadata));
+      formData.append('fileContent', wavBlob, `${assetName}.wav`);
+
       this.robloxUploadStatus += '\nMenghubungkan ke https://apis.roblox.com/assets/v1/assets...';
-      this.robloxUploadStatus += `\nMengotentikasi menggunakan API Key '${activeAcc.name}'...`;
       this.updateRobloxCard();
 
-      await sleep(1500);
-      this.robloxUploadStatus += `\nMembaca file data 'bypassed_${fileItem.name.replace(/\.[^/.]+$/, '')}.wav'...`;
-      this.robloxUploadStatus += `\nMetadata asset terdeteksi: Tipe=Audio, Nama="${assetName}", Saluran=${this.channelMode.toUpperCase()}`;
-      this.robloxUploadStatus += `\nMengirim payload multipart form-data (ukuran: ${(fileItem.size / 1048576).toFixed(2)} MB)...`;
+      let response;
+      try {
+        response = await fetch('https://apis.roblox.com/assets/v1/assets', {
+          method: 'POST',
+          headers: {
+            'x-api-key': activeAcc.apiKey
+          },
+          body: formData
+        });
+      } catch (fetchErr) {
+        console.error('Fetch error:', fetchErr);
+        this.robloxUploadStatus += '\n\n⚠️ KONEKSI GAGAL ATAU DI-BLOCK CORS!';
+        this.robloxUploadStatus += '\nUntuk mengunggah file langsung ke Roblox dari browser, Anda harus memasang ekstensi CORS di browser Anda.';
+        this.robloxUploadStatus += '\n\n👉 Silakan pasang ekstensi Chrome/Edge seperti "Allow CORS: Access-Control-Allow-Origin", aktifkan ekstensi tersebut, lalu ulangi proses unggah.';
+        this.robloxIsUploading = false;
+        this.updateRobloxCard();
+        return;
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMsg = errorText;
+        try {
+          const errJson = JSON.parse(errorText);
+          errorMsg = errJson.message || (errJson.errors && errJson.errors[0]?.message) || errorText;
+        } catch (e) { }
+
+        this.robloxUploadStatus += `\n\n❌ ERROR API (${response.status}): ${errorMsg}`;
+        if (response.status === 403) {
+          this.robloxUploadStatus += '\n\n💡 Tips: Pastikan API Key Anda memiliki izin scope "assets" (asset:write) dan setelan IP Address diijinkan untuk IP publik Anda (atau diisi 0.0.0.0/0).';
+        }
+        this.robloxIsUploading = false;
+        this.updateRobloxCard();
+        return;
+      }
+
+      const data = await response.json();
+      const operationPath = data.path;
+      if (!operationPath) {
+        throw new Error('API tidak mengembalikan jalur operasi (operation path) yang valid.');
+      }
+
+      this.robloxUploadStatus += `\nUnggahan terkirim! (Operasi: ${operationPath})`;
+      this.robloxUploadStatus += '\nMenunggu proses pemrosesan & moderasi dari pihak Roblox...';
       this.updateRobloxCard();
 
-      await sleep(1800);
-      this.robloxUploadStatus += '\nAPI Response: HTTP/1.1 201 Created';
-      this.robloxUploadStatus += '\nMemvalidasi Asset ID dan status moderasi Roblox...';
-      this.updateRobloxCard();
+      // Poll operation status
+      const pollUrl = `https://apis.roblox.com/assets/v1/${operationPath}`;
+      let done = false;
+      let attempts = 0;
+      const maxAttempts = 30; // 60 seconds max
 
-      await sleep(1200);
-      // Generate standard roblox sound id (10 digits)
-      const generatedId = Math.floor(1800000000 + Math.random() * 800000000);
-      
-      this.robloxAssetId = generatedId;
-      fileItem.robloxAssetId = generatedId;
-      this.robloxIsUploading = false;
-      this.updateRobloxCard();
-      this.updateQueueUI(); // refresh queue layout to show new Sound ID
-    } catch(err) {
+      while (!done && attempts < maxAttempts) {
+        await new Promise(res => setTimeout(res, 2000));
+        attempts++;
+        this.robloxUploadStatus += `\nMemeriksa status pemrosesan (Percobaan #${attempts})...`;
+        this.updateRobloxCard();
+
+        try {
+          const pollRes = await fetch(pollUrl, {
+            headers: { 'x-api-key': activeAcc.apiKey }
+          });
+
+          if (!pollRes.ok) {
+            this.robloxUploadStatus += `\nGagal memeriksa status (HTTP ${pollRes.status})`;
+            this.updateRobloxCard();
+            continue;
+          }
+
+          const pollData = await pollRes.json();
+          if (pollData.done) {
+            done = true;
+            if (pollData.error) {
+              this.robloxUploadStatus += `\n\n❌ PEMROSESAN GAGAL: ${pollData.error.message}`;
+              this.robloxIsUploading = false;
+              this.updateRobloxCard();
+              return;
+            }
+
+            const assetObj = pollData.response;
+            const assetId = assetObj.assetId || (assetObj.path && assetObj.path.split('/')[1]);
+            if (assetId) {
+              this.robloxAssetId = assetId;
+              fileItem.robloxAssetId = assetId;
+              this.robloxIsUploading = false;
+              this.robloxUploadStatus += `\n\n🎉 SUKSES BESAR! Sound ID: ${assetId}`;
+              this.updateRobloxCard();
+              this.updateQueueUI(); // refresh queue
+              return;
+            } else {
+              this.robloxUploadStatus += '\nSelesai, namun Sound ID tidak tertera di dalam response.';
+              this.robloxIsUploading = false;
+              this.updateRobloxCard();
+              return;
+            }
+          }
+        } catch (pollErr) {
+          console.error('Polling error:', pollErr);
+          this.robloxUploadStatus += `\nKoneksi terganggu saat polling: ${pollErr.message}`;
+          this.updateRobloxCard();
+        }
+      }
+
+      if (!done) {
+        this.robloxUploadStatus += '\n\n⌛ Waktu tunggu habis. File sedang diproses di latar belakang oleh Roblox. Silakan cek berkala Roblox Creator Dashboard Anda.';
+        this.robloxIsUploading = false;
+        this.updateRobloxCard();
+      }
+
+    } catch (err) {
       console.error(err);
       this.robloxIsUploading = false;
-      this.robloxUploadStatus += '\nError: Gagal mengunggah file. Silakan periksa koneksi internet & API Key Anda.';
+      this.robloxUploadStatus += `\nError: ${err.message}`;
       this.updateRobloxCard();
     }
   },
@@ -598,7 +764,7 @@ const BypassMusicPage = {
     document.getElementById('custom-speed-val').innerText = `x${this.speedFactor.toFixed(2)}`;
     const playbackSpeedValue = (1 / this.speedFactor).toFixed(4);
     document.getElementById('game-playback-speed').innerText = playbackSpeedValue;
-    
+
     // Update active asset name in Roblox Upload Form if list changes
     const selectAcc = document.getElementById('roblox-acc-select');
     if (selectAcc) {
@@ -613,7 +779,7 @@ const BypassMusicPage = {
       if (this.files.some(f => f.name === file.name && f.size === file.size)) {
         continue;
       }
-      
+
       const fileId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
       this.files.push({
         id: fileId,
@@ -665,7 +831,7 @@ const BypassMusicPage = {
     const fileListHtml = this.files.map(fileItem => {
       let statusMarkup = '';
       let playDownloadMarkup = '';
-      
+
       if (fileItem.status === 'loaded') {
         statusMarkup = `<span style="font-size: 0.72rem; color: var(--color-text-muted);">Siap diproses</span>`;
       } else if (fileItem.status === 'processing') {
@@ -677,10 +843,10 @@ const BypassMusicPage = {
         `;
       } else if (fileItem.status === 'done') {
         statusMarkup = `<span style="font-size: 0.72rem; color: var(--color-accent-green);">Bypass Selesai</span>`;
-        
+
         const assetIdStr = fileItem.robloxAssetId ? fileItem.robloxAssetId.toString() : '[MASUKKAN_ID]';
         const copyScriptFn = `BypassMusicPage.copyRobloxScript('${(1 / fileItem.playbackSpeed).toFixed(4)}', '${fileItem.name}', '${assetIdStr}')`;
-        
+
         playDownloadMarkup = `
           <div class="processed-file-controls" style="margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.01); border: 1px solid var(--color-border); border-radius: var(--radius-md);">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
@@ -811,7 +977,7 @@ const BypassMusicPage = {
 
     const numChannels = this.channelMode === 'mono' ? 1 : decodedBuffer.numberOfChannels;
     const sampleRate = decodedBuffer.sampleRate;
-    
+
     // Calculate new length based on speed factor
     const newLength = Math.floor(decodedBuffer.length / speed);
 
@@ -847,6 +1013,7 @@ const BypassMusicPage = {
     }
 
     fileItem.downloadUrl = URL.createObjectURL(wavBlob);
+    fileItem.blob = wavBlob;
     fileItem.duration = renderedBuffer.duration;
   },
 
@@ -855,19 +1022,19 @@ const BypassMusicPage = {
     const sampleRate = buffer.sampleRate;
     const format = 1; // 1 = raw 16-bit signed PCM
     const bitDepth = 16;
-    
+
     let result;
     if (numOfChan === 2) {
       result = this.interleave(buffer.getChannelData(0), buffer.getChannelData(1));
     } else {
       result = buffer.getChannelData(0);
     }
-    
+
     const bufferLength = result.length * 2; // 2 bytes per sample (16-bit)
     const fileLength = bufferLength + 44;
     const arrayBuffer = new ArrayBuffer(fileLength);
     const view = new DataView(arrayBuffer);
-    
+
     /* RIFF identifier */
     this.writeString(view, 0, 'RIFF');
     /* file length */
@@ -894,10 +1061,10 @@ const BypassMusicPage = {
     this.writeString(view, 36, 'data');
     /* data chunk length */
     view.setUint32(40, bufferLength, true);
-    
+
     // Write audio samples PCM 16-bit
     this.floatTo16BitPCM(view, 44, result);
-    
+
     return new Blob([view], { type: 'audio/wav' });
   },
 
@@ -906,7 +1073,7 @@ const BypassMusicPage = {
     const result = new Float32Array(length);
     let index = 0;
     let inputIndex = 0;
-    
+
     while (index < length) {
       result[index++] = inputL[inputIndex];
       result[index++] = inputR[inputIndex];

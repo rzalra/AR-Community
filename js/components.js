@@ -104,21 +104,18 @@ const Components = {
       'linear-gradient(135deg, #0a1628, #1a0a2e, #2e0a1a)',
       'linear-gradient(135deg, #0a2a0a, #1a3a1a, #0a2a2a)',
       'linear-gradient(135deg, #1a1a2e, #2e1a3e, #1a2a3e)',
-      'linear-gradient(135deg, #2a1a0a, #3a2a1a, #2a2a1a)',
-      'linear-gradient(135deg, #0a1a2e, #1a2a3e, #0a2a2a)',
-      'linear-gradient(135deg, #1a0a1a, #2e0a2e, #1a1a2e)',
     ];
     const grad = mapGradients[map.id % mapGradients.length];
 
-    const mapIcons = {
-      1: '🌃', 2: '🌳', 3: '🚀', 4: '🏜️', 5: '🌊', 6: '🏘️'
-    };
+    const imageHtml = map.image
+      ? `<img src="${map.image}" alt="${map.name}" style="width:100%; height:100%; object-fit:cover; display:block; border-radius: inherit;">`
+      : `<div style="width:100%; height:100%; background:${grad}; display:flex; align-items:center; justify-content:center;"><span style="font-size: 4rem; opacity: 0.5">🗺️</span></div>`;
 
     return `
       <div class="card map-card" data-map-id="${map.id}" onclick="MapsPage.showDetail(${map.id})">
-        <div class="card-image" style="background: ${grad}; display:flex; align-items:center; justify-content:center;">
-          <span style="font-size: 4rem; opacity: 0.5">${mapIcons[map.id] || '🗺️'}</span>
-          <div class="map-card-status">
+        <div class="card-image" style="position:relative; overflow:hidden;">
+          ${imageHtml}
+          <div class="map-card-status" style="position:absolute; top:10px; left:10px; z-index:2;">
             <span class="badge ${statusColors[map.status]}">${statusLabels[map.status]}</span>
           </div>
           <div class="card-image-overlay"></div>

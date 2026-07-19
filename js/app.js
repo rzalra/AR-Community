@@ -177,10 +177,15 @@ const App = {
               </div>
               <p>Platform kolaborasi untuk pengembangan proyek game & digital. Bergabunglah dengan komunitas kami dan mulai membangun proyek impian Anda.</p>
               <div class="footer-social">
-                <a href="#" class="footer-social-link" title="Discord">🎮</a>
-                <a href="#" class="footer-social-link" title="YouTube">📺</a>
-                <a href="#" class="footer-social-link" title="Instagram">📸</a>
-                <a href="#" class="footer-social-link" title="Biolink">🔗</a>
+                <a href="https://discord.gg/BJJjeM4mFy" target="_blank" class="footer-social-link" title="Discord" style="overflow: hidden; padding: 0;">
+                  <img src="assets/discord.png" alt="Discord" style="width: 100%; height: 100%; object-fit: cover;">
+                </a>
+                <a href="https://www.tiktok.com/@arcommunity_?_r=1&_t=ZS-97LSFuBBfM2" target="_blank" class="footer-social-link" title="Tiktok" style="overflow: hidden; padding: 0;">
+                  <img src="assets/tiktok.png" alt="Tiktok" style="width: 100%; height: 100%; object-fit: cover;">
+                </a>
+                <a href="https://bio.link/arcommunity" target="_blank" class="footer-social-link" title="Biolink" style="overflow: hidden; padding: 0;">
+                  <img src="assets/biolink.png" alt="Biolink" style="width: 100%; height: 100%; object-fit: cover;">
+                </a>
               </div>
             </div>
 

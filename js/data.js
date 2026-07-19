@@ -280,108 +280,60 @@ const APP_DATA = {
   maps: [
     {
       id: 1,
-      name: 'Neon City Arena',
-      description: 'Arena PvP berlatar kota neon cyberpunk. Fitur: multi-level combat zones, destructible environment, dan dynamic lighting system.',
+      name: 'District 404',
+      description: 'Underground cyberpunk club tersembunyi di bawah kota. No Signal. No Rules. Only Us. Bunker Access Level-4 — tempat berkumpulnya warga kota yang tak ingin dilupakan.',
       status: 'public',
-      visits: 15420,
-      rating: 4.8,
-      version: '2.3.1',
-      image: null,
+      visits: 28400,
+      rating: 4.9,
+      version: '2.1.0',
+      image: 'assets/map_district404.png',
+      robloxLink: '#',
       builders: [
-        { name: 'NexGen', role: 'Builder' },
-        { name: 'ScriptMaster', role: 'Scripter' },
-        { name: 'LightFX', role: 'Lighting' }
+        { name: 'YuuVanMeljr', role: 'Builder & Owner' },
+        { name: 'NeonCraft', role: 'Scripter' },
+        { name: 'PinkLight', role: 'Lighting & VFX' }
       ],
-      assets: ['Neon Pack v3', 'Urban Kit', 'Particle FX'],
-      lastUpdate: '2026-07-08',
+      assets: ['Neon Sign Pack', 'Cyberpunk Decor Kit', 'Underground Tunnel', 'Rain FX'],
+      lastUpdate: '2026-07-15',
       editorLink: '#'
     },
     {
       id: 2,
-      name: 'Fantasy Forest',
-      description: 'Hutan fantasi magical dengan pohon raksasa, kristal bercahaya, sungai mengalir, dan creature AI. Perfect untuk RPG adventure.',
+      name: "D'Konser",
+      description: "Satu Konser, Satu Semangat! Stadion konser spektakuler dengan tribun penonton, panggung megah, dan sistem kembang api real-time. Nilai-nilai: Solidaritas, Kebersamaan, Semangat, Respect.",
       status: 'public',
-      visits: 23150,
-      rating: 4.9,
-      version: '3.1.0',
-      image: null,
+      visits: 41200,
+      rating: 4.8,
+      version: '3.0.0',
+      image: 'assets/map_dkonser.png',
+      robloxLink: '#',
       builders: [
-        { name: 'TreeArts', role: 'Builder' },
-        { name: 'NatureFX', role: 'VFX' },
-        { name: 'CodeWiz', role: 'Scripter' }
+        { name: 'YuuVanMeljr', role: 'Builder & Owner' },
+        { name: 'StadiumPro', role: 'Builder' },
+        { name: 'CrowdScript', role: 'Scripter' },
+        { name: 'FlareFX', role: 'VFX Artist' }
       ],
-      assets: ['Nature Pack Pro', 'Crystal Set', 'Water System'],
-      lastUpdate: '2026-07-05',
+      assets: ['Stadium Mega Pack', 'Crowd System', 'Fireworks FX', 'Lighting Rig'],
+      lastUpdate: '2026-07-18',
       editorLink: '#'
     },
     {
       id: 3,
-      name: 'Space Station Alpha',
-      description: 'Stasiun luar angkasa modular dengan area: command center, lab riset, hangar, dan airlock. Gravity system included.',
+      name: 'Mount Chillyard',
+      description: 'Petualangan pendakian gunung fantasi. Checkpoint 20 menanti di puncak. Lanskap oriental yang memukau dengan kuil-kuil kuno, lentera bercahaya, dan pemandangan matahari terbenam yang epik.',
       status: 'development',
-      visits: 8930,
-      rating: 4.5,
-      version: '1.7.0-beta',
-      image: null,
-      builders: [
-        { name: 'SpaceBuilder', role: 'Builder' },
-        { name: 'AstroScript', role: 'Scripter' }
-      ],
-      assets: ['Sci-Fi Kit', 'Metal Textures', 'Hologram FX'],
-      lastUpdate: '2026-07-10',
-      editorLink: '#'
-    },
-    {
-      id: 4,
-      name: 'Desert Oasis Race Track',
-      description: 'Sirkuit balap di padang gurun dengan oasis, piramida, dan terowongan bawah tanah. Time trial mode included.',
-      status: 'public',
-      visits: 19800,
+      visits: 12600,
       rating: 4.7,
-      version: '2.0.0',
-      image: null,
+      version: '1.5.0-beta',
+      image: 'assets/map_chillyard.png',
+      robloxLink: '#',
       builders: [
-        { name: 'TrackMaker', role: 'Builder' },
-        { name: 'VRoom', role: 'Vehicle Scripter' },
-        { name: 'SandFX', role: 'Terrain' }
+        { name: 'YuuVanMeljr', role: 'Builder & Owner' },
+        { name: 'MountainArt', role: 'Builder' },
+        { name: 'LanternFX', role: 'Lighting' }
       ],
-      assets: ['Desert Pack', 'Vehicle System', 'Sand Particles'],
-      lastUpdate: '2026-07-01',
-      editorLink: '#'
-    },
-    {
-      id: 5,
-      name: 'Underwater Temple',
-      description: 'Kuil bawah laut kuno dengan puzzle, traps, dan boss room. Underwater movement & oxygen system.',
-      status: 'development',
-      visits: 5670,
-      rating: 4.3,
-      version: '0.9.5-alpha',
-      image: null,
-      builders: [
-        { name: 'DeepSea', role: 'Builder' },
-        { name: 'PuzzleMind', role: 'Scripter' }
-      ],
-      assets: ['Ocean Kit', 'Ancient Textures', 'Caustics FX'],
-      lastUpdate: '2026-07-09',
-      editorLink: '#'
-    },
-    {
-      id: 6,
-      name: 'Old Town Village',
-      description: 'Desa klasik Eropa dengan pasar, gereja, perumahan, dan ladang. NPC system dengan daily routine.',
-      status: 'archived',
-      visits: 34200,
-      rating: 4.6,
-      version: '4.0.0',
-      image: null,
-      builders: [
-        { name: 'VillageCraft', role: 'Builder' },
-        { name: 'NPC-Pro', role: 'Scripter' },
-        { name: 'RetroArt', role: 'Artist' }
-      ],
-      assets: ['Medieval Village Pack', 'NPC System v2', 'Weather FX'],
-      lastUpdate: '2026-03-15',
+      assets: ['Oriental Architecture Pack', 'Lantern Set', 'Mountain Terrain', 'Sunset FX'],
+      lastUpdate: '2026-07-19',
       editorLink: '#'
     }
   ],

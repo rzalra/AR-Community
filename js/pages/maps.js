@@ -112,9 +112,14 @@ const MapsPage = {
       'linear-gradient(135deg, #1a0a1a, #2e0a2e, #1a1a2e)',
     ];
 
+    const heroHtml = map.image
+      ? `<img src="${map.image}" alt="${map.name}" style="width:100%; height:100%; object-fit:cover; object-position:center;">`
+      : `<span style="font-size:5rem; opacity:0.4">${map.name.charAt(0)}</span>`;
+
     body.innerHTML = `
-      <div class="map-detail-hero" style="background:${mapGradients[map.id % mapGradients.length]}; display:flex; align-items:center; justify-content:center;">
-        <span style="font-size:5rem; opacity:0.4">${mapIcons[map.id] || '🗺️'}</span>
+      <div class="map-detail-hero" style="${map.image ? '' : 'background: linear-gradient(135deg, #0a1628, #1a0a2e);'} display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;">
+        ${heroHtml}
+        <div style="position:absolute; inset:0; background:linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.7) 100%);"></div>
       </div>
 
       <div style="display:flex; align-items:center; gap:12px; margin-bottom: 16px;">
@@ -145,7 +150,7 @@ const MapsPage = {
       </div>
 
       <div class="map-detail-builders">
-        <h4 style="font-family:var(--font-heading); font-size:var(--text-xs); letter-spacing:0.1em; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px">BUILDERS & TEAM</h4>
+        <h4 style="font-family:var(--font-heading); font-size:var(--text-xs); letter-spacing:0.1em; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px">BUILDERS &amp; TEAM</h4>
         <div class="builder-list">
           ${map.builders.map(b => `
             <div class="builder-chip">
@@ -166,7 +171,7 @@ const MapsPage = {
 
       <div style="display:flex; gap:12px">
         <a href="${map.editorLink}" class="btn btn-primary btn-lg" style="flex:1">
-          🎮 OPEN IN EDITOR
+          🎮 OPEN IN ROBLOX
         </a>
         <button class="btn btn-ghost btn-lg" onclick="MapsPage.closeDetail()">
           CLOSE

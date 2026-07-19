@@ -9,14 +9,14 @@ const ProfilePage = {
   init() {
     try {
       this.robloxAccounts = JSON.parse(localStorage.getItem('roblox_accounts')) || [];
-    } catch(e) {
+    } catch (e) {
       this.robloxAccounts = [];
     }
   },
 
   render() {
     this.init();
-    
+
     // User info from login / localstorage
     const email = localStorage.getItem('userEmail') || 'guest@arcommunity.com';
     let name = localStorage.getItem('userName') || 'User';
@@ -382,7 +382,7 @@ const ProfilePage = {
                 ${this.robloxAccounts.map((acc, index) => `
                   <div class="roblox-account-item">
                     <div class="roblox-account-item-name">
-                      👤 ${acc.name}
+                      👤 ${acc.name} (${acc.userId || 'No ID'})
                       <span class="roblox-account-item-type">${acc.isGroup ? 'GROUP' : 'PERSONAL'}</span>
                     </div>
                     <button class="roblox-account-item-delete" onclick="ProfilePage.deleteAccount(${index})">✕</button>
@@ -398,9 +398,11 @@ const ProfilePage = {
             </div>
 
             <div class="roblox-inputs-row">
-              <input type="text" id="roblox-username-input" class="form-input" placeholder="Username, link profil, atau ID" style="margin:0;">
+              <input type="text" id="roblox-username-input" class="form-input" placeholder="Nama Akun / Username" style="margin:0;">
               <button class="roblox-input-btn" onclick="ProfilePage.checkRobloxAccount()">Cek</button>
             </div>
+
+            <input type="text" id="roblox-id-input" class="form-input" placeholder="${this.isGroup ? 'Roblox Group ID (Wajib berupa angka)' : 'Roblox User ID (Wajib berupa angka)'}" style="margin-bottom: 12px;">
 
             <input type="password" id="roblox-apikey-input" class="form-input" placeholder="API Key akun ini" style="margin-bottom: 12px;">
 
@@ -453,7 +455,7 @@ const ProfilePage = {
       alert('Masukkan username, link profil, atau ID terlebih dahulu.');
       return;
     }
-    
+
     // Simulate a successful check
     const val = input.value.trim();
     alert(`✓ Akun "${val}" berhasil terverifikasi.`);
@@ -461,16 +463,23 @@ const ProfilePage = {
 
   saveRobloxAccount() {
     const userVal = document.getElementById('roblox-username-input')?.value.trim();
+    const idVal = document.getElementById('roblox-id-input')?.value.trim();
     const apiVal = document.getElementById('roblox-apikey-input')?.value.trim();
 
-    if (!userVal || !apiVal) {
-      alert('Harap isi field username/ID dan API Key.');
+    if (!userVal || !idVal || !apiVal) {
+      alert('Harap isi Nama Akun/Username, Roblox ID, dan API Key.');
+      return;
+    }
+
+    if (!/^\d+$/.test(idVal)) {
+      alert('Roblox ID harus berupa angka (numeric).');
       return;
     }
 
     // Add to list
     this.robloxAccounts.push({
       name: userVal,
+      userId: idVal,
       apiKey: apiVal,
       isGroup: this.isGroup
     });
@@ -490,8 +499,10 @@ const ProfilePage = {
 
   resetForm() {
     const uInput = document.getElementById('roblox-username-input');
+    const idInput = document.getElementById('roblox-id-input');
     const aInput = document.getElementById('roblox-apikey-input');
     if (uInput) uInput.value = '';
+    if (idInput) idInput.value = '';
     if (aInput) aInput.value = '';
     this.isGroup = false;
     this.render();
