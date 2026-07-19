@@ -555,7 +555,7 @@ const BypassMusicPage = {
 
     const nameInput = document.getElementById('roblox-asset-name');
     const assetName = nameInput ? nameInput.value.trim() : `Bypassed ${fileItem.name.replace(/\.[^/.]+$/, '')}`;
-
+    
     // Select active account
     const selectAcc = document.getElementById('roblox-acc-select');
     const activeAcc = this.robloxAccounts[selectAcc ? parseInt(selectAcc.value) : 0];
@@ -604,8 +604,13 @@ const BypassMusicPage = {
         throw new Error('Data biner audio tidak ditemukan. Silakan bypass ulang file.');
       }
 
+      const fileSizeMB = wavBlob.size / 1048576;
+      // Vercel Hobby serverless request payload limit is 4.5MB. Keep a safety margin at 4.2MB.
+      const useBackend = fileSizeMB < 4.2;
+
       this.robloxUploadStatus += `\nMetadata terdeteksi: Tipe=Audio, Nama="${assetName}", Kepemilikan=${activeAcc.isGroup ? 'Group ID' : 'User ID'} ${userId}`;
-      this.robloxUploadStatus += `\nMengirim payload multipart form-data (ukuran: ${(wavBlob.size / 1048576).toFixed(2)} MB)...`;
+      this.robloxUploadStatus += `\nUkuran berkas: ${fileSizeMB.toFixed(2)} MB (${useBackend ? 'Unggah via Backend Proxy Vercel' : 'Unggah langsung via Browser - Butuh Ekstensi CORS'})`;
+      this.robloxUploadStatus += `\nMengirim payload multipart form-data...`;
       this.updateRobloxCard();
 
       // Build metadata request JSON
@@ -628,26 +633,60 @@ const BypassMusicPage = {
       formData.append('request', JSON.stringify(metadata));
       formData.append('fileContent', wavBlob, `${assetName}.wav`);
 
-      this.robloxUploadStatus += '\nMenghubungkan ke https://apis.roblox.com/assets/v1/assets...';
+      let response;
+      let targetUrl;
+      let headers = {};
+
+      if (useBackend) {
+        targetUrl = '/api/upload-asset';
+        headers['x-api-key'] = activeAcc.apiKey;
+      } else {
+        targetUrl = 'https://apis.roblox.com/assets/v1/assets';
+        headers['x-api-key'] = activeAcc.apiKey;
+      }
+
+      this.robloxUploadStatus += `\nMenghubungkan ke ${targetUrl}...`;
       this.updateRobloxCard();
 
-      let response;
       try {
-        response = await fetch('https://apis.roblox.com/assets/v1/assets', {
+        response = await fetch(targetUrl, {
           method: 'POST',
-          headers: {
-            'x-api-key': activeAcc.apiKey
-          },
+          headers: headers,
           body: formData
         });
       } catch (fetchErr) {
         console.error('Fetch error:', fetchErr);
-        this.robloxUploadStatus += '\n\n⚠️ KONEKSI GAGAL ATAU DI-BLOCK CORS!';
-        this.robloxUploadStatus += '\nUntuk mengunggah file langsung ke Roblox dari browser, Anda harus memasang ekstensi CORS di browser Anda.';
-        this.robloxUploadStatus += '\n\n👉 Silakan pasang ekstensi Chrome/Edge seperti "Allow CORS: Access-Control-Allow-Origin", aktifkan ekstensi tersebut, lalu ulangi proses unggah.';
-        this.robloxIsUploading = false;
-        this.updateRobloxCard();
-        return;
+        if (useBackend) {
+          this.robloxUploadStatus += `\n\n⚠️ KONEKSI BACKEND PROXY GAGAL: ${fetchErr.message}`;
+          this.robloxUploadStatus += '\nMencoba beralih ke Unggah langsung via Browser...';
+          this.updateRobloxCard();
+          // Fallback to direct upload
+          targetUrl = 'https://apis.roblox.com/assets/v1/assets';
+          this.robloxUploadStatus += `\nMenghubungkan ke ${targetUrl}...`;
+          this.updateRobloxCard();
+          try {
+            response = await fetch(targetUrl, {
+              method: 'POST',
+              headers: { 'x-api-key': activeAcc.apiKey },
+              body: formData
+            });
+          } catch (directErr) {
+            console.error('Direct fetch error:', directErr);
+            this.robloxUploadStatus += '\n\n⚠️ KONEKSI GAGAL ATAU DI-BLOCK CORS!';
+            this.robloxUploadStatus += '\nUntuk mengunggah file langsung ke Roblox dari browser, Anda harus memasang ekstensi CORS di browser Anda.';
+            this.robloxUploadStatus += '\n\n👉 Silakan pasang ekstensi Chrome/Edge seperti "Allow CORS: Access-Control-Allow-Origin", aktifkan ekstensi tersebut, lalu ulangi proses unggah.';
+            this.robloxIsUploading = false;
+            this.updateRobloxCard();
+            return;
+          }
+        } else {
+          this.robloxUploadStatus += '\n\n⚠️ KONEKSI GAGAL ATAU DI-BLOCK CORS!';
+          this.robloxUploadStatus += '\nUntuk mengunggah file langsung ke Roblox dari browser, Anda harus memasang ekstensi CORS di browser Anda.';
+          this.robloxUploadStatus += '\n\n👉 Silakan pasang ekstensi Chrome/Edge seperti "Allow CORS: Access-Control-Allow-Origin", aktifkan ekstensi tersebut, lalu ulangi proses unggah.';
+          this.robloxIsUploading = false;
+          this.updateRobloxCard();
+          return;
+        }
       }
 
       if (!response.ok) {
@@ -656,10 +695,12 @@ const BypassMusicPage = {
         try {
           const errJson = JSON.parse(errorText);
           errorMsg = errJson.message || (errJson.errors && errJson.errors[0]?.message) || errorText;
-        } catch (e) { }
+        } catch (e) {}
 
         this.robloxUploadStatus += `\n\n❌ ERROR API (${response.status}): ${errorMsg}`;
-        if (response.status === 403) {
+        if (response.status === 413 && useBackend) {
+          this.robloxUploadStatus += '\n\n💡 Batas ukuran request backend Vercel terlampaui. Sistem akan otomatis beralih menggunakan upload langsung via browser. Pastikan Anda mengaktifkan ekstensi CORS di browser.';
+        } else if (response.status === 403) {
           this.robloxUploadStatus += '\n\n💡 Tips: Pastikan API Key Anda memiliki izin scope "assets" (asset:write) dan setelan IP Address diijinkan untuk IP publik Anda (atau diisi 0.0.0.0/0).';
         }
         this.robloxIsUploading = false;
@@ -678,7 +719,6 @@ const BypassMusicPage = {
       this.updateRobloxCard();
 
       // Poll operation status
-      const pollUrl = `https://apis.roblox.com/assets/v1/${operationPath}`;
       let done = false;
       let attempts = 0;
       const maxAttempts = 30; // 60 seconds max
@@ -689,9 +729,19 @@ const BypassMusicPage = {
         this.robloxUploadStatus += `\nMemeriksa status pemrosesan (Percobaan #${attempts})...`;
         this.updateRobloxCard();
 
+        let pollUrl;
+        let pollHeaders = {};
+        if (useBackend) {
+          pollUrl = `/api/poll-operation?path=${encodeURIComponent(operationPath)}`;
+          pollHeaders['x-api-key'] = activeAcc.apiKey;
+        } else {
+          pollUrl = `https://apis.roblox.com/assets/v1/${operationPath}`;
+          pollHeaders['x-api-key'] = activeAcc.apiKey;
+        }
+
         try {
           const pollRes = await fetch(pollUrl, {
-            headers: { 'x-api-key': activeAcc.apiKey }
+            headers: pollHeaders
           });
 
           if (!pollRes.ok) {
