@@ -46,14 +46,14 @@ const StorePage = {
       fallbackText: 'GoPay',
       fallbackColor: '#00aa13',
       type: 'transfer',
-      info: { number: '0081393246006', name: 'Mei Liya Nandawardani' }
+      info: { number: '081393246006', name: 'Mei Liya Nandawardani' }
     },
     {
       id: 'seabank',
       name: 'SeaBank',
       logo: 'assets/seabanklogo.png',
       fallbackText: 'SeaBank',
-      fallbackColor: '#2196f3',
+      fallbackColor: '#f35621ff',
       type: 'transfer',
       info: { number: '901763070918', name: 'Mei Liya Nandawardani' }
     }
