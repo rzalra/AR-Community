@@ -237,29 +237,43 @@ const LoginPage = {
             name = name.split(/[._-]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
             localStorage.setItem('userName', name);
             localStorage.setItem('userTier', 'Unlimited');
+            
+            let pluginId = 'b4629de2' + Math.random().toString(16).substring(2, 10);
+            localStorage.setItem('user_plugin_id', pluginId);
 
-            // Success screen overlay
-            const container = document.getElementById('login-step-container');
-            container.innerHTML = `
-              <div style="text-align: center; animation: scaleIn 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both; padding: 20px 0;">
-                <div style="font-size: 3rem; margin-bottom: 16px;">✨</div>
-                <h3 style="font-size: var(--text-md); font-weight: var(--font-weight-black); color: var(--color-accent-green); margin-bottom: 8px; font-family: var(--font-heading);">VERIFIKASI SUKSES</h3>
-                <p style="font-size: 0.72rem; color: var(--color-text-secondary); margin-bottom: 20px;">Selamat datang di AR Community, ${name}.</p>
-                <div style="width: 20px; height: 20px; border: 2px solid var(--color-border); border-top-color: var(--color-accent-cyan); border-radius: 50%; animation: rotate 1s linear infinite; margin: 0 auto;"></div>
-              </div>
-            `;
+            // Fetch cloud data and sync
+            DB.fetchUserData(this.email).then(existingData => {
+              if (!existingData) {
+                // First-time signup, save default profile to Supabase
+                DB.saveUserData();
+              }
 
-            setTimeout(() => {
-              // Restore header and footer
-              const header = document.getElementById('header');
-              const footer = document.querySelector('.footer');
-              const scrollingBanner = document.querySelector('.scrolling-banner');
-              if (header) header.style.display = '';
-              if (footer) footer.style.display = '';
-              if (scrollingBanner) scrollingBanner.style.display = '';
+              const displayName = localStorage.getItem('userName') || name;
 
-              window.location.hash = '#/home';
-            }, 1800);
+              // Success screen overlay
+              const container = document.getElementById('login-step-container');
+              container.innerHTML = `
+                <div style="text-align: center; animation: scaleIn 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both; padding: 20px 0;">
+                  <div style="font-size: 3rem; margin-bottom: 16px;">✨</div>
+                  <h3 style="font-size: var(--text-md); font-weight: var(--font-weight-black); color: var(--color-accent-green); margin-bottom: 8px; font-family: var(--font-heading);">VERIFIKASI SUKSES</h3>
+                  <p style="font-size: 0.72rem; color: var(--color-text-secondary); margin-bottom: 20px;">Selamat datang di AR Community, ${displayName}.</p>
+                  <div style="width: 20px; height: 20px; border: 2px solid var(--color-border); border-top-color: var(--color-accent-cyan); border-radius: 50%; animation: rotate 1s linear infinite; margin: 0 auto;"></div>
+                </div>
+              `;
+
+              setTimeout(() => {
+                // Restore header and footer
+                const header = document.getElementById('header');
+                const footer = document.querySelector('.footer');
+                const scrollingBanner = document.querySelector('.scrolling-banner');
+                if (header) header.style.display = '';
+                if (footer) footer.style.display = '';
+                if (scrollingBanner) scrollingBanner.style.display = '';
+
+                // Redirect to home
+                window.location.hash = '#/home';
+              }, 1500);
+            });
           } else {
             this.errorMessage = 'Kode verifikasi salah. Harap masukkan kode yang dikirim ke email Anda.';
             this.render();

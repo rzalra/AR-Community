@@ -439,6 +439,8 @@ const ProfilePage = {
     if (newName && newName.trim()) {
       localStorage.setItem('userName', newName.trim());
       this.render();
+      // Sync to Supabase
+      if (typeof DB !== 'undefined') DB.saveUserData();
     }
   },
 
@@ -487,6 +489,8 @@ const ProfilePage = {
     localStorage.setItem('roblox_accounts', JSON.stringify(this.robloxAccounts));
     alert('Akun Roblox berhasil disimpan!');
     this.resetForm();
+    // Sync to Supabase
+    if (typeof DB !== 'undefined') DB.saveUserData();
   },
 
   deleteAccount(idx) {
@@ -494,6 +498,8 @@ const ProfilePage = {
       this.robloxAccounts.splice(idx, 1);
       localStorage.setItem('roblox_accounts', JSON.stringify(this.robloxAccounts));
       this.render();
+      // Sync to Supabase
+      if (typeof DB !== 'undefined') DB.saveUserData();
     }
   },
 

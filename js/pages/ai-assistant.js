@@ -719,6 +719,8 @@ const AiAssistantPage = {
     localStorage.setItem('ai_api_keys', JSON.stringify(this.apiKeys));
     this.showSettings = false;
     this.render();
+    // Sync to Supabase
+    if (typeof DB !== 'undefined') DB.saveUserData();
   },
 
   toggleModelPicker() {
