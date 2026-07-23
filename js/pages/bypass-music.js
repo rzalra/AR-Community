@@ -640,9 +640,10 @@ const BypassMusicPage = {
         metadata.creationContext.creator.userId = userId;
       }
 
+      const ext = wavBlob.type === 'audio/mp3' ? 'mp3' : 'wav';
       const formData = new FormData();
       formData.append('request', JSON.stringify(metadata));
-      formData.append('fileContent', wavBlob, `${assetName}.wav`);
+      formData.append('fileContent', wavBlob, `${assetName}.${ext}`);
 
       let response;
       let targetUrl;
@@ -911,6 +912,7 @@ const BypassMusicPage = {
         const assetIdStr = fileItem.robloxAssetId ? fileItem.robloxAssetId.toString() : '[MASUKKAN_ID]';
         const copyScriptFn = `BypassMusicPage.copyRobloxScript('${(1 / fileItem.playbackSpeed).toFixed(4)}', '${fileItem.name}', '${assetIdStr}')`;
 
+        const ext = fileItem.blob && fileItem.blob.type === 'audio/mp3' ? 'mp3' : 'wav';
         playDownloadMarkup = `
           <div class="processed-file-controls" style="margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.01); border: 1px solid var(--color-border); border-radius: var(--radius-md);">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
@@ -919,7 +921,7 @@ const BypassMusicPage = {
             </div>
             <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
               <audio src="${fileItem.downloadUrl}" controls style="flex: 1; height: 32px; filter: invert(0.9) hue-rotate(180deg); outline: none;"></audio>
-              <a href="${fileItem.downloadUrl}" download="bypassed_${fileItem.name.replace(/\.[^/.]+$/, '')}.wav" class="btn btn-primary btn-sm" style="border-radius: var(--radius-sm); padding: 8px 12px; font-size: 0.65rem;">
+              <a href="${fileItem.downloadUrl}" download="bypassed_${fileItem.name.replace(/\.[^/.]+$/, '')}.${ext}" class="btn btn-primary btn-sm" style="border-radius: var(--radius-sm); padding: 8px 12px; font-size: 0.65rem;">
                 📥 Download
               </a>
             </div>
@@ -1068,16 +1070,22 @@ const BypassMusicPage = {
     // Render the processed buffer
     const renderedBuffer = await offlineCtx.startRendering();
 
-    // Encode to WAV format
-    const wavBlob = this.bufferToWav(renderedBuffer);
+    // Encode to MP3 or fallback to WAV format
+    let outBlob;
+    if (typeof lamejs !== 'undefined') {
+      outBlob = this.bufferToMp3(renderedBuffer);
+    } else {
+      outBlob = this.bufferToWav(renderedBuffer);
+    }
 
     // Revoke old URL if exists
     if (fileItem.downloadUrl) {
       URL.revokeObjectURL(fileItem.downloadUrl);
     }
 
-    fileItem.downloadUrl = URL.createObjectURL(wavBlob);
-    fileItem.blob = wavBlob;
+    fileItem.downloadUrl = URL.createObjectURL(outBlob);
+    fileItem.blob = outBlob;
+    fileItem.size = outBlob.size; // Update to the new processed file size
     fileItem.duration = renderedBuffer.duration;
   },
 
@@ -1130,6 +1138,56 @@ const BypassMusicPage = {
     this.floatTo16BitPCM(view, 44, result);
 
     return new Blob([view], { type: 'audio/wav' });
+  },
+
+  bufferToMp3(buffer, kbps = 128) {
+    const numOfChan = buffer.numberOfChannels;
+    const sampleRate = buffer.sampleRate;
+    const mp3encoder = new lamejs.Mp3Encoder(numOfChan, sampleRate, kbps);
+    const mp3Data = [];
+
+    // Convert Float32Array channel data to Int16Array
+    const floatTo16Bit = (float32Array) => {
+      const len = float32Array.length;
+      const int16Array = new Int16Array(len);
+      for (let i = 0; i < len; i++) {
+        let s = Math.max(-1, Math.min(1, float32Array[i]));
+        int16Array[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      }
+      return int16Array;
+    };
+
+    if (numOfChan === 2) {
+      const leftPCM = floatTo16Bit(buffer.getChannelData(0));
+      const rightPCM = floatTo16Bit(buffer.getChannelData(1));
+      
+      const sampleBlockSize = 1152;
+      for (let i = 0; i < leftPCM.length; i += sampleBlockSize) {
+        const leftChunk = leftPCM.subarray(i, i + sampleBlockSize);
+        const rightChunk = rightPCM.subarray(i, i + sampleBlockSize);
+        const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+        if (mp3buf.length > 0) {
+          mp3Data.push(mp3buf);
+        }
+      }
+    } else {
+      const monoPCM = floatTo16Bit(buffer.getChannelData(0));
+      const sampleBlockSize = 1152;
+      for (let i = 0; i < monoPCM.length; i += sampleBlockSize) {
+        const monoChunk = monoPCM.subarray(i, i + sampleBlockSize);
+        const mp3buf = mp3encoder.encodeBuffer(monoChunk);
+        if (mp3buf.length > 0) {
+          mp3Data.push(mp3buf);
+        }
+      }
+    }
+
+    const mp3buf = mp3encoder.flush();
+    if (mp3buf.length > 0) {
+      mp3Data.push(mp3buf);
+    }
+
+    return new Blob(mp3Data, { type: 'audio/mp3' });
   },
 
   interleave(inputL, inputR) {
