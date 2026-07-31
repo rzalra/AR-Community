@@ -21,9 +21,14 @@ const MusicLooperPage = {
             <div class="tool-breadcrumbs">
               <a href="#/tools">🔧 Tools</a> <span>&gt;</span> <span class="active">Music Looper</span>
             </div>
-            <div class="tool-page-header">
-              <h1>🎶 Music Looper</h1>
-              <p>Buat seamless music loops dari track audio untuk background musik game Roblox</p>
+            <div class="tool-page-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: var(--space-6);">
+              <div>
+                <h1 style="margin: 0 0 var(--space-2) 0; font-family: var(--font-heading); font-weight: var(--font-weight-black);">🎶 Music Looper</h1>
+                <p style="margin: 0; color: var(--color-text-secondary); font-size: var(--text-sm);">Buat seamless music loops dari track audio untuk background musik game Roblox</p>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="window.showToolGuide('music-looper')" style="border-radius: 8px; font-weight: bold; flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
+                💻 Panduan & Tips
+              </button>
             </div>
 
             <div class="tool-section">

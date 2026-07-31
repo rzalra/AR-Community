@@ -17,17 +17,23 @@ const ToolHelper = {
   },
 
   renderHeader(title, subtitle, categoryBadge) {
+    const toolKey = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     return `
-      <div class="tool-header" style="margin-bottom: var(--space-6);">
-        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--radius-full); margin-bottom: var(--space-3);">
-          <span style="font-size: 0.7rem; color: var(--color-accent-red); font-weight: bold; letter-spacing: 0.05em;">${categoryBadge.toUpperCase()}</span>
+      <div class="tool-header" style="margin-bottom: var(--space-6); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+        <div>
+          <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--radius-full); margin-bottom: var(--space-3);">
+            <span style="font-size: 0.7rem; color: var(--color-accent-red); font-weight: bold; letter-spacing: 0.05em;">${categoryBadge.toUpperCase()}</span>
+          </div>
+          <h1 style="font-size: var(--text-4xl); font-weight: var(--font-weight-black); margin-bottom: var(--space-2); line-height: 1.1;">
+            ${title}
+          </h1>
+          <p style="color: var(--color-text-secondary); font-size: var(--text-sm); line-height: var(--line-height-relaxed);">
+            ${subtitle}
+          </p>
         </div>
-        <h1 style="font-size: var(--text-4xl); font-weight: var(--font-weight-black); margin-bottom: var(--space-2); line-height: 1.1;">
-          ${title}
-        </h1>
-        <p style="color: var(--color-text-secondary); font-size: var(--text-sm); line-height: var(--line-height-relaxed);">
-          ${subtitle}
-        </p>
+        <button class="btn btn-ghost btn-sm" onclick="window.showToolGuide('${toolKey}')" style="border-radius: 8px; margin-top: 12px; font-weight: bold; flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
+          💻 Panduan & Tips
+        </button>
       </div>
     `;
   }

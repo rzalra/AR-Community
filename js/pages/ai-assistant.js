@@ -529,8 +529,10 @@ const AiAssistantPage = {
             <a href="#/tools" style="font-size:0.62rem; color:var(--color-text-muted); text-decoration:none;">Tools</a>
             <span style="font-size:0.62rem; color:var(--color-text-muted);">›</span>
             <span style="font-size:0.62rem; color:var(--color-accent-red); font-weight:bold; text-transform:uppercase; letter-spacing:0.04em;">AI Assistant</span>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button class="btn btn-ghost btn-sm" onclick="window.showToolGuide('ai-assistant')" style="border-radius: 8px; font-size:0.65rem; font-weight:bold; height:30px; padding:4px 12px;">💻 Panduan & Tips</button>
+            <button class="lua-settings-btn" onclick="AiAssistantPage.openSettings()" style="height:30px;">⚙ Settings</button>
           </div>
-          <button class="lua-settings-btn" onclick="AiAssistantPage.openSettings()">⚙ Settings</button>
         </div>
 
         <!-- Title row -->

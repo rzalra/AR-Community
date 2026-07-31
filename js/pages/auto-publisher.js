@@ -17,9 +17,14 @@ const AutoPublisherPage = {
             <div class="tool-breadcrumbs">
               <a href="#/tools">🔧 Tools</a> <span>&gt;</span> <span class="active">Auto Publisher</span>
             </div>
-            <div class="tool-page-header">
-              <h1>🚀 Auto Publisher</h1>
-              <p>Otomatiskan proses publish game ke platform Roblox dengan scheduling dan versioning</p>
+            <div class="tool-page-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: var(--space-6);">
+              <div>
+                <h1 style="margin: 0 0 var(--space-2) 0; font-family: var(--font-heading); font-weight: var(--font-weight-black);">🚀 Auto Publisher</h1>
+                <p style="margin: 0; color: var(--color-text-secondary); font-size: var(--text-sm);">Otomatiskan proses publish game ke platform Roblox dengan scheduling dan versioning</p>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="window.showToolGuide('auto-publisher')" style="border-radius: 8px; font-weight: bold; flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
+                💻 Panduan & Tips
+              </button>
             </div>
 
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:var(--space-4);">

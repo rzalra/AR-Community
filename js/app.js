@@ -519,3 +519,461 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
   App.init();
 });
+
+// ── Global Tool Guide System ──
+window.showToolGuide = function(key) {
+  // Normalize keys to support aliases
+  if (key === 'sprite-sheet') key = 'sprite-sheet-generator';
+  if (key === 'robux-tax') key = 'robux-tax-calculator';
+  if (key === 'localization') key = 'localization-table-generator';
+  if (key === 'ds-keygen') key = 'ds-key-gen';
+
+  const guides = {
+    'lua-editor': {
+      title: 'Lua Editor Pro',
+      category: '✏️ EDITOR',
+      steps: [
+        { num: '01', title: 'TULIS KODE LUA', desc: 'Masukkan script Lua kamu di area editor untuk mulai coding.' },
+        { num: '02', title: 'GUNAKAN TEMPLATE ROBLOX', desc: 'Pilih template siap pakai seperti Server, Local, Module, atau DataStore.' },
+        { num: '03', title: 'SYNTAX CHECK & SALIN', desc: 'Klik Syntax Check untuk memvalidasi kesalahan kode sebelum menyalin hasil.' }
+      ]
+    },
+    'skybox-converter': {
+      title: 'Skybox Converter',
+      category: '🎨 ASSET',
+      steps: [
+        { num: '01', title: 'UPLOAD EQUIRECTANGULAR IMAGE', desc: 'Pilih gambar panorama 360 derajat di komputermu.' },
+        { num: '02', title: 'ATUR RESOLUSI OUTPUT', desc: 'Pilih resolusi optimal (e.g. 1024px) untuk masing-masing sisi cubemap.' },
+        { num: '03', title: 'DOWNLOAD & EKSTRAK ZIP', desc: 'Unduh ZIP berisi 6 sisi gambar (Front, Back, dll) untuk dipasang di Roblox Sky.' }
+      ]
+    },
+    'ai-assistant': {
+      title: 'AI Assistant',
+      category: '🤖 AI TOOLS',
+      steps: [
+        { num: '01', title: 'TULIS PERTANYAAN/TUGAS', desc: 'Tanyakan coding atau cara memperbaiki bug script game kamu di chat area.' },
+        { num: '02', title: 'GUNAKAN TEMPLATE PROMPT', desc: 'Pilih template prompt instan seperti "Perbaiki Error" di atas input.' },
+        { num: '03', title: 'TEMPEL KODE KE STUDIO', desc: 'Salin kode output AI dan gunakan langsung di script game Roblox Studio kamu.' }
+      ]
+    },
+    'sound-fx': {
+      title: 'Sound FX Generator',
+      category: '🎵 AUDIO',
+      steps: [
+        { num: '01', title: 'PILIH PRESET RETRO', desc: 'Klik tombol preset instan seperti Laser, Explosion, Coin, atau PowerUp.' },
+        { num: '02', title: 'SESUAIKAN SLIDERS', desc: 'Gunakan slider Decay, Pitch, dan Duration untuk memodifikasi tekstur efek suara.' },
+        { num: '03', title: 'DOWNLOAD FORMAT WAV/OGG', desc: 'Unduh hasil suara secara gratis dan gunakan sebagai Sound Asset di game kamu.' }
+      ]
+    },
+    'studio-helper': {
+      title: 'Roblox Studio Helper',
+      category: '🎮 ROBLOX',
+      steps: [
+        { num: '01', title: 'INSTALL PLUGIN', desc: 'Pastikan plugin pendukung AR Helper aktif di Roblox Studio.' },
+        { num: '02', title: 'PILIH KATEGORI TOOL', desc: 'Pilih kategori generator seperti Terrain, UI Builder, atau Lighting.' },
+        { num: '03', title: 'JALANKAN DI COMMAND BAR', desc: 'Salin script output konfigurasi dan jalankan di Command Bar Roblox Studio.' }
+      ]
+    },
+    'discord-bot': {
+      title: 'Discord Bot Builder',
+      category: '💬 SOSIAL',
+      steps: [
+        { num: '01', title: 'TAMBAH COMMAND BARU', desc: 'Buat command trigger bot Discord baru (seperti !rules atau !ping).' },
+        { num: '02', title: 'RANCANG RESPONS EMBED', desc: 'Isi teks respons, judul, deskripsi, dan warna border card respons bot.' },
+        { num: '03', title: 'GENERATE & RUN KODE', desc: 'Salin kode script Node.js atau Python yang telah digenerate untuk di-run di hosting.' }
+      ]
+    },
+    'texture-studio': {
+      title: 'Texture Pack Studio',
+      category: '🎨 ASSET',
+      steps: [
+        { num: '01', title: 'GAMBAR DI KANVAS', desc: 'Gunakan kuas, penghapus, dan pemilih warna untuk menggambar tekstur.' },
+        { num: '02', title: 'KLIK MAKE SEAMLESS', desc: 'Pastikan sambungan gambar rata agar bisa di-loop secara mulus (tileable).' },
+        { num: '03', title: 'EKSPOR & DOWNLOAD PNG', desc: 'Download file tekstur PNG untuk dipasang di Roblox Part.' }
+      ]
+    },
+    'script-obfuscator': {
+      title: 'Script Obfuscator',
+      category: '🔒 SECURITY',
+      steps: [
+        { num: '01', title: 'TEMPEL KODE LUA ASLI', desc: 'Masukkan script Lua murni kamu di kolom input.' },
+        { num: '02', title: 'PILIH LEVEL ENKRIPSI', desc: 'Pilih tingkat acak (Light, Medium, atau Heavy) sesuai kebutuhan.' },
+        { num: '03', title: 'SALIN HASILNYA', desc: 'Salin script hasil enkripsi. *Selalu simpan backup kode aslimu!*' }
+      ]
+    },
+    'map-planner': {
+      title: 'Map Layout Planner',
+      category: '✏️ EDITOR',
+      steps: [
+        { num: '01', title: 'PILIH TIPE BLOK', desc: 'Pilih tipe blok seperti Wall, Floor, Lava, atau Spawner di palet warna.' },
+        { num: '02', title: 'GAMBAR DENGAN MOUSE', desc: 'Klik kiri grid untuk menaruh blok, klik kanan untuk menghapusnya.' },
+        { num: '03', title: 'EKSPOR DAN GUNAKAN', desc: 'Download file JSON peta untuk dimuat secara dinamis di server game Roblox.' }
+      ]
+    },
+    'auto-publisher': {
+      title: 'Auto Publisher',
+      category: '🚀 AUTOMATION',
+      steps: [
+        { num: '01', title: 'ISI CONFIG PUBLISH', desc: 'Masukkan Place ID target dan Token API Open Cloud milikmu.' },
+        { num: '02', title: 'UPLOAD FILE GAME PLACE', desc: 'Pilih file game lokal `.rbxl` yang ingin dirilis.' },
+        { num: '03', title: 'PUBLISH INSTAN', desc: 'Klik Publish. Sistem akan mengunggah versi baru game secara otomatis.' }
+      ]
+    },
+    'music-looper': {
+      title: 'Music Looper',
+      category: '🎵 AUDIO',
+      steps: [
+        { num: '01', title: 'UPLOAD FILE AUDIO', desc: 'Pilih file lagu berformat MP3 atau WAV.' },
+        { num: '02', title: 'ATUR TITIK LOOP', desc: 'Geser penanda Start dan End pada visualizer gelombang audio.' },
+        { num: '03', title: 'TEST & DOWNLOAD LOOP', desc: 'Play lagu untuk mendengar transisi loop, lalu download hasilnya.' }
+      ]
+    },
+    'ai-image-gen': {
+      title: 'AI Image Generator',
+      category: '🤖 AI TOOLS',
+      steps: [
+        { num: '01', title: 'TULISKAN DESKRIPSI', desc: 'Ketik prompt gambar yang kamu inginkan secara detail.' },
+        { num: '02', title: 'PILIH GAYA & RESOLUSI', desc: 'Pilih gaya visual (Pixel Art, Cartoon, Realistic) dan resolusi target.' },
+        { num: '03', title: 'GENERATE & UNDUH PNG', desc: 'Tunggu AI menggambar aset tersebut, lalu unduh hasilnya.' }
+      ]
+    },
+    'bypass-music': {
+      title: 'Bypass Music Copyright',
+      category: '🎵 AUDIO',
+      steps: [
+        { num: '01', title: 'UPLOAD FILE MUSIK', desc: 'Pilih file MP3 atau WAV berukuran maksimal 20MB.' },
+        { num: '02', title: 'PILIH METODE MODIFIKASI', desc: 'Gunakan Speed atau Pitch shift agar file tidak terdeteksi bot hak cipta.' },
+        { num: '03', title: 'DOWNLOAD & UPLOAD', desc: 'Unduh file MP3 hasil bypass dan upload ke katalog asset Roblox.' }
+      ]
+    },
+    'audio-converter': {
+      title: 'Audio Converter',
+      category: '🎵 AUDIO',
+      steps: [
+        { num: '01', title: 'PILIH SUMBER AUDIO', desc: 'Masukkan link YouTube di tab pertama, atau upload file lokal di tab kedua.' },
+        { num: '02', title: 'PILIH FORMAT TARGET', desc: 'Pilih format output yang diinginkan (MP3, WAV, atau OGG).' },
+        { num: '03', title: 'UNDUH INSTAN', desc: 'Mulai konversi dan unduh file hasil konversi langsung ke browsermu.' }
+      ]
+    },
+    'video-converter': {
+      title: 'Video Compressor & Converter',
+      category: '📹 VIDEO',
+      steps: [
+        { num: '01', title: 'UPLOAD FILE VIDEO', desc: 'Pilih video MP4 atau WebM dari laptop/komputer.' },
+        { num: '02', title: 'PILIH RESOLUSI TARGET', desc: 'Gunakan resolusi 480p dan kualitas Sedang untuk kompresi maksimal.' },
+        { num: '03', title: 'KOMPRES & DOWNLOAD', desc: 'Tunggu progress kompresi selesai, lalu unduh video barumu.' }
+      ]
+    },
+    'lua-cleaner': {
+      title: 'Lua Cleaner',
+      category: '🧹 EDITOR',
+      steps: [
+        { num: '01', title: 'TEMPEL SCRIPT LUA', desc: 'Tempelkan kode Lua yang berantakan atau penuh komentar di kolom kiri.' },
+        { num: '02', title: 'JALANKAN CLEANING', desc: 'Klik Bersihkan Script. Sistem akan menghapus komentar dan merapikan spasi.' },
+        { num: '03', title: 'SALIN HASIL BERSIH', desc: 'Salin hasil script yang bersih dan pasang kembali ke Roblox Studio.' }
+      ]
+    },
+    'gui-builder': {
+      title: 'GUI Builder',
+      category: '📐 EDITOR',
+      steps: [
+        { num: '01', title: 'TAMBAH ELEMEN UI', desc: 'Gunakan toolbox untuk menaruh Frame, TextLabel, atau Button.' },
+        { num: '02', title: 'EDIT PROPERTIES ELEMEN', desc: 'Klik elemen pada kanvas dan sesuaikan posisi, warna, dan ukurannya.' },
+        { num: '03', title: 'EKSPOR LUA / XML', desc: 'Ekspor desain menjadi Roblox XML (.rbxmx) atau kode script Lua.' }
+      ]
+    },
+    'bio-link': {
+      title: 'Bio Link',
+      category: '🔗 SOSIAL',
+      steps: [
+        { num: '01', title: 'MASUKKAN BIODATA', desc: 'Tulis nama pengguna, deskripsi singkat, dan pilih tema warna.' },
+        { num: '02', title: 'TAMBAHKAN TAUTAN', desc: 'Masukkan judul tombol dan URL link sosial mediamu.' },
+        { num: '03', title: 'EKSPOR FILE HTML', desc: 'Klik Export & Salin HTML untuk di-host secara gratis di Github/Vercel.' }
+      ]
+    },
+    'discord-styler': {
+      title: 'Discord Channel Styler',
+      category: '💬 SOSIAL',
+      steps: [
+        { num: '01', title: 'KETIK NAMA CHANNEL', desc: 'Ketikkan nama channel baru Discord yang kamu inginkan.' },
+        { num: '02', title: 'PILIH VARIASI STYLE', desc: 'Pilih variasi layout teks estetik yang didesain otomatis.' },
+        { num: '03', title: 'SALIN & TEMPEL', desc: 'Klik Salin dan tempelkan ke kolom pengaturan nama channel Discord kamu.' }
+      ]
+    },
+    'skybox-assembler': {
+      title: 'Skybox Assembler',
+      category: '🧩 ASSET',
+      steps: [
+        { num: '01', title: 'UPLOAD 6 SISI GAMBAR', desc: 'Pilih file gambar untuk Front, Back, Up, Down, Left, dan Right.' },
+        { num: '02', title: 'KLIK GABUNG SKYBOX', desc: 'Sistem WebGL akan menggabungkan keenam gambar menjadi layout cubemap cross.' },
+        { num: '03', title: 'DOWNLOAD SEAMLESS MAP', desc: 'Unduh file gambar panorama cross untuk dipakai di game engine.' }
+      ]
+    },
+    'image-uploader': {
+      title: 'Image Uploader',
+      category: '☁️ ASSET',
+      steps: [
+        { num: '01', title: 'UNGHAH FILE GAMBAR', desc: 'Pilih atau seret file gambar JPG, PNG, atau WebP.' },
+        { num: '02', title: 'SALIN LINK DIRECT HOSTING', desc: 'Sistem akan langsung memberikan URL langsung (.png/.jpg) gambar tersebut.' }
+      ]
+    },
+    'sprite-sheet-generator': {
+      title: 'Sprite Sheet Generator',
+      category: '🎞️ ASSET',
+      steps: [
+        { num: '01', title: 'PILIH BEBERAPA FRAME', desc: 'Upload file gambar frame gerakan animasi satu per satu.' },
+        { num: '02', title: 'JALANKAN SPRITE STITCH', desc: 'Klik Satukan Sprite Sheet untuk menggabungkan frame ke grid atlas.' },
+        { num: '03', title: 'UNDUH PNG TEXTURE', desc: 'Unduh file gambar sprite sheet akhir untuk aset animasi game 2D.' }
+      ]
+    },
+    'material-generator': {
+      title: 'Material Generator',
+      category: '🧱 ASSET',
+      steps: [
+        { num: '01', title: 'UPLOAD DIFFUSE TEXTURE', desc: 'Pilih file tekstur utama gambar permukaan material.' },
+        { num: '02', title: 'PILIH JENIS PBR MAP', desc: 'Klik Generate Normal Map (Sobel) atau Generate Roughness.' },
+        { num: '03', title: 'UNDUH MAPS', desc: 'Unduh file normal/roughness map PNG untuk efek kedalaman 3D di Roblox.' }
+      ]
+    },
+    'font-preview': {
+      title: 'Font Preview',
+      category: '🔤 ASSET',
+      steps: [
+        { num: '01', title: 'PILIH KELUARGA FONT', desc: 'Pilih Google Fonts populer dari menu dropdown.' },
+        { num: '02', title: 'UBAH UKURAN & TEKS', desc: 'Gunakan slider ukuran untuk melihat pratinjau teks kustom.' },
+        { num: '03', title: 'SALIN KODE FONT', desc: 'Gunakan kode styling CSS font yang telah disediakan.' }
+      ]
+    },
+    'color-palette': {
+      title: 'Color Palette',
+      category: '🎨 ASSET',
+      steps: [
+        { num: '01', title: 'PILIH WARNA UTAMA', desc: 'Gunakan color picker untuk memilih warna dasar skema UI kamu.' },
+        { num: '02', title: 'GENERATE PALET WARNA', desc: 'Sistem akan merancang perpaduan warna komplementer yang harmonis.' },
+        { num: '03', title: 'SALIN HEX CODE', desc: 'Salin kode HEX warna favoritmu untuk digunakan di Roblox Studio.' }
+      ]
+    },
+    'seamless-maker': {
+      title: 'Seamless Maker',
+      category: '🔄 ASSET',
+      steps: [
+        { num: '01', title: 'UPLOAD FILE TEKSTUR', desc: 'Pilih gambar tekstur yang sambungannya patah.' },
+        { num: '02', title: 'JALANKAN BLENDING', desc: 'Klik Make Seamless. Sistem akan menggeser dan membaurkan tepi sambungan.' },
+        { num: '03', title: 'UNDUH TEKSTUR TILEABLE', desc: 'Download file tekstur PNG baru untuk tekstur tanah/lantai yang bisa di-loop.' }
+      ]
+    },
+    'obj-inspector': {
+      title: 'OBJ Inspector',
+      category: '📦 ASSET',
+      steps: [
+        { num: '01', title: 'UPLOAD FILE .OBJ', desc: 'Pilih file model 3D berekstensi .obj dari blender/software 3D.' },
+        { num: '02', title: 'INSPEKSI WIREFRAME', desc: 'Periksa koordinat jaring segitiga model 3D di viewport interaktif.' }
+      ]
+    },
+    'mesh-decimator': {
+      title: 'Mesh Decimator',
+      category: '📐 ASSET',
+      steps: [
+        { num: '01', title: 'INPUT JUMLAH TRIANGLE', desc: 'Masukkan jumlah triangle mesh kamu saat ini.' },
+        { num: '02', title: 'PILIH % REDUKSI', desc: 'Geser slider persentase target reduksi polygon.' },
+        { num: '03', title: 'CEK BATAS ROBLOX', desc: 'Sistem akan menganalisis apakah mesh aman (<10k tris) untuk Roblox.' }
+      ]
+    },
+    'anim-converter': {
+      title: 'Anim Converter',
+      category: '🏃 ASSET',
+      steps: [
+        { num: '01', title: 'TEMPEL KODE ANIMASI', desc: 'Tempel data keyframe atau JSON animasi game Roblox kamu.' },
+        { num: '02', title: 'KLIK KONVERSI', desc: 'Sistem akan langsung memformat data tersebut ke format baru.' }
+      ]
+    },
+    'auto-spoof': {
+      title: 'Auto Spoof Animasi',
+      category: '🎭 ASSET',
+      steps: [
+        { num: '01', title: 'MASUKKAN ANIMATION ID', desc: 'Ketikkan ID aset animasi Roblox asli.' },
+        { num: '02', title: 'GENERATE SCRIPT SPOOF', desc: 'Klik tombol generate untuk membikin script bypass hak milik animasi.' },
+        { num: '03', title: 'GUNAKAN DI GAME', desc: 'Salin script spoof tersebut ke dalam folder StarterPlayerScripts.' }
+      ]
+    },
+    'audio-optimizer': {
+      title: 'Audio Optimizer',
+      category: '🎧 AUDIO',
+      steps: [
+        { num: '01', title: 'UPLOAD FILE LAGU/SFX', desc: 'Pilih berkas lagu MP3 atau WAV yang ukurannya terlalu besar.' },
+        { num: '02', title: 'OPTIMALKAN DATA', desc: 'Jalankan kompresor untuk mereduksi kbps agar lolos filter Roblox.' }
+      ]
+    },
+    'audio-alter': {
+      title: 'Audio Alter',
+      category: '🎛️ AUDIO',
+      steps: [
+        { num: '01', title: 'PLAY TRACK AUDIO', desc: 'Pilih audio dan bunyikan audio di browser.' },
+        { num: '02', title: 'GESER SLIDER EFEK', desc: 'Atur filter pitch, bass boost, atau equalizer secara real-time.' }
+      ]
+    },
+    'roblox-info': {
+      title: 'Roblox Info',
+      category: 'ℹ️ ROBLOX',
+      steps: [
+        { num: '01', title: 'KETIK USERNAME TARGET', desc: 'Masukkan nama pengguna akun Roblox yang dicari.' },
+        { num: '02', title: 'CARI PROFIL', desc: 'Sistem akan mendeteksi ID akun, status lencana verifikasi, dan info penting.' }
+      ]
+    },
+    'game-info': {
+      title: 'Game Info',
+      category: '🎮 ROBLOX',
+      steps: [
+        { num: '01', title: 'INPUT PLACE ID', desc: 'Masukkan Place/Universe ID game Roblox target.' },
+        { num: '02', title: 'AMBIL STATISTIK', desc: 'Sistem menampilkan jumlah kunjungan game, pemain aktif, dan favorit.' }
+      ]
+    },
+    'group-info': {
+      title: 'Group Info',
+      category: '👥 ROBLOX',
+      steps: [
+        { num: '01', title: 'INPUT GROUP ID', desc: 'Ketikkan nomor identitas (ID) grup Roblox.' },
+        { num: '02', title: 'DETEKSI DATA', desc: 'Dapatkan informasi jumlah member, roles grup, dan link owner.' }
+      ]
+    },
+    'username-history': {
+      title: 'Username History',
+      category: '📜 ROBLOX',
+      steps: [
+        { num: '01', title: 'MASUKKAN USERNAME SEKARANG', desc: 'Ketik nama akun Roblox target.' },
+        { num: '02', title: 'CARI SEJARAH USERNAME', desc: 'Sistem melacak riwayat pergantian nama pengguna masa lalu.' }
+      ]
+    },
+    'server-status': {
+      title: 'Server Status',
+      category: '🖥️ ROBLOX',
+      steps: [
+        { num: '01', title: 'BACA STATUS ONLINE', desc: 'Pantau keaktifan server Roblox global regional.' },
+        { num: '02', title: 'UJI LATENCY (PING)', desc: 'Klik Uji Ping untuk mendeteksi ping koneksi internetmu ke server.' }
+      ]
+    },
+    'upscale-image': {
+      title: 'Upscale Image',
+      category: '🔍 AI IMAGE',
+      steps: [
+        { num: '01', title: 'UPLOAD FILE GAMBAR BURAM', desc: 'Pilih gambar beresolusi rendah.' },
+        { num: '02', title: 'PROSES UPSCALE', desc: 'AI akan memproses penajaman piksel gambar agar berukuran 2x lebih tajam.' }
+      ]
+    },
+    'robux-tax-calculator': {
+      title: 'Robux Tax Calculator',
+      category: '🪙 UTILITY',
+      steps: [
+        { num: '01', title: 'MASUKKAN JUMLAH ROBUX', desc: 'Ketikkan harga jual aset atau target Robux bersih yang kamu inginkan.' },
+        { num: '02', title: 'LIHAT PAJAK 30%', desc: 'Sistem merinci potongan biaya creator fee Roblox secara instan.' }
+      ]
+    },
+    'snippet-share': {
+      title: 'Snippet Share',
+      category: '✂️ EDITOR',
+      steps: [
+        { num: '01', title: 'PASTE SCRIPT KAMU', desc: 'Tempelkan potongan kode Lua yang ingin dibagikan.' },
+        { num: '02', title: 'GENERATE SHARE LINK', desc: 'Dapatkan link unik instan untuk dibagikan ke forum/grup developer.' }
+      ]
+    },
+    'localization-table-generator': {
+      title: 'Localization Table Generator',
+      category: '🌐 UTILITY',
+      steps: [
+        { num: '01', title: 'TULIS DAFTAR BAHASA', desc: 'Gunakan format: SourceText,TranslationText.' },
+        { num: '02', title: 'DOWNLOAD CSV', desc: 'Unduh tabel hasil lokalisasi untuk di-upload ke Roblox Translator.' }
+      ]
+    },
+    'ds-manager': {
+      title: 'DS Manager',
+      category: '🗄️ ROBLOX',
+      steps: [
+        { num: '01', title: 'AUTHENTIKASI OPEN CLOUD', desc: 'Masukkan API Key Open Cloud game Roblox kamu.' },
+        { num: '02', title: 'BACA/EDIT DATASTORE', desc: 'Kelola isi nilai simpanan pemain secara langsung.' }
+      ]
+    },
+    'ds-key-gen': {
+      title: 'DS Key Gen',
+      category: '🔑 ROBLOX',
+      steps: [
+        { num: '01', title: 'KLIK GENERATE', desc: 'Generate kunci kriptografis DataStore Roblox baru.' },
+        { num: '02', title: 'SALIN & SIMPAN', desc: 'Salin kunci enkripsi yang kuat tersebut untuk mengamankan data.' }
+      ]
+    },
+    'rbxl-analyzer': {
+      title: 'RBXL Analyzer',
+      category: '📊 ROBLOX',
+      steps: [
+        { num: '01', title: 'UPLOAD FILE GAME .RBXL', desc: 'Pilih file game Roblox Studio kamu.' },
+        { num: '02', title: 'BACA LAPORAN INSTANCE', desc: 'Analisis performa game berdasarkan total part dan baris script.' }
+      ]
+    },
+    'script-sync': {
+      title: 'Script Sync',
+      category: '🔄 ROBLOX',
+      steps: [
+        { num: '01', title: 'AKTIFKAN PORT LOKAL', desc: 'Jalankan port server lokal sinkronisasi script.' },
+        { num: '02', title: 'HUBUNGKAN DENGAN VS CODE', desc: 'Gunakan ekstensi VS Code Rojo untuk sinkronisasi otomatis.' }
+      ]
+    },
+    'script-reference': {
+      title: 'Script Reference',
+      category: '📖 EDITOR',
+      steps: [
+        { num: '01', title: 'CARI DOKUMENTASI API', desc: 'Temukan referensi class dan method penting Roblox Engine.' },
+        { num: '02', title: 'SALIN KODE CONTOH', desc: 'Gunakan contoh kode scripting untuk ditaruh ke game.' }
+      ]
+    }
+  };
+
+  const g = guides[key];
+  if (!g) {
+    console.warn("Guide not found for tool key:", key);
+    return;
+  }
+  
+  // Remove existing modal if any
+  const old = document.getElementById('global-tool-guide-modal');
+  if (old) old.remove();
+
+  // Create modal overlay element
+  const overlay = document.createElement('div');
+  overlay.className = 'sky-modal-overlay';
+  overlay.id = 'global-tool-guide-modal';
+  overlay.style.position = 'fixed';
+  overlay.style.inset = '0';
+  overlay.style.background = 'rgba(0, 0, 0, 0.85)';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  overlay.style.zIndex = '99999';
+  overlay.style.backdropFilter = 'blur(8px)';
+  
+  overlay.innerHTML = `
+    <div class="sky-modal-content" style="background:#0f1015; border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:32px; width:100%; max-width:520px; position:relative; box-shadow:0 20px 25px -5px rgba(0,0,0,0.5); box-sizing:border-box; margin: 20px; animation: fadeInUp 300ms ease;">
+      <button class="sky-modal-close" onclick="document.getElementById('global-tool-guide-modal').remove()" style="position:absolute; top:16px; right:16px; background:none; border:none; color:var(--color-text-muted); font-size:1.2rem; cursor:pointer;">✕</button>
+      
+      <div class="sky-modal-title" style="display:flex; gap:12px; margin-bottom:24px; align-items:center;">
+        <span style="font-size:1.8rem;">📖</span>
+        <div>
+          <h2 style="font-size:var(--text-md); font-weight:var(--font-weight-black); margin:0; color:white; font-family:var(--font-heading);">${g.title}</h2>
+          <p style="font-size:0.6rem; color:var(--color-text-muted); margin:0; font-weight:bold; letter-spacing:0.05em;">PANDUAN & TIPS (${g.category})</p>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:16px; text-align:left;">
+        ${g.steps.map(s => `
+          <div class="sky-step-item" style="display:flex; gap:16px; align-items:flex-start;">
+            <div class="sky-step-num-circle" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); color:var(--color-accent-red); font-size:0.55rem; font-weight:bold; padding:4px 8px; border-radius:4px; align-self:flex-start; flex-shrink:0;">STEP ${s.num}</div>
+            <div>
+              <h4 style="font-size:0.72rem; font-weight:bold; color:white; margin:0 0 4px 0; font-family:var(--font-heading); letter-spacing:0.02em;">${s.title}</h4>
+              <p style="font-size:0.68rem; color:var(--color-text-secondary); line-height:1.5; margin:0;">${s.desc}</p>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(overlay);
+};

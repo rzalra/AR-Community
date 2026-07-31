@@ -137,16 +137,21 @@ const VideoConverterPage = {
 
   renderHeader() {
     return `
-      <div class="tool-header" style="margin-bottom: var(--space-6);">
-        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--radius-full); margin-bottom: var(--space-3);">
-          <span style="font-size: 0.7rem; color: var(--color-accent-red); font-weight: bold; letter-spacing: 0.05em;">📹 VIDEO UTILITY</span>
+      <div class="tool-header" style="margin-bottom: var(--space-6); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+        <div>
+          <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--radius-full); margin-bottom: var(--space-3);">
+            <span style="font-size: 0.7rem; color: var(--color-accent-red); font-weight: bold; letter-spacing: 0.05em;">📹 VIDEO UTILITY</span>
+          </div>
+          <h1 style="font-size: var(--text-4xl); font-weight: var(--font-weight-black); margin-bottom: var(--space-2); line-height: 1.1;">
+            Video <span class="text-gradient" style="background: linear-gradient(135deg, var(--color-accent-cyan), var(--color-accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Compressor</span>
+          </h1>
+          <p style="color: var(--color-text-secondary); font-size: var(--text-sm); line-height: var(--line-height-relaxed);">
+            Kompres ukuran file video kamu agar lebih ringan untuk diunggah ke Discord, email, atau web portal lainnya.
+          </p>
         </div>
-        <h1 style="font-size: var(--text-4xl); font-weight: var(--font-weight-black); margin-bottom: var(--space-2); line-height: 1.1;">
-          Video <span class="text-gradient" style="background: linear-gradient(135deg, var(--color-accent-cyan), var(--color-accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Compressor</span>
-        </h1>
-        <p style="color: var(--color-text-secondary); font-size: var(--text-sm); line-height: var(--line-height-relaxed);">
-          Kompres ukuran file video kamu agar lebih ringan untuk diunggah ke Discord, email, atau web portal lainnya.
-        </p>
+        <button class="btn btn-ghost btn-sm" onclick="window.showToolGuide('video-converter')" style="border-radius: 8px; margin-top: 12px; font-weight: bold; flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
+          💻 Panduan & Tips
+        </button>
       </div>
     `;
   },

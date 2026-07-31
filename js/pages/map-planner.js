@@ -31,9 +31,14 @@ const MapPlannerPage = {
             <div class="tool-breadcrumbs">
               <a href="#/tools">🔧 Tools</a> <span>&gt;</span> <span class="active">Map Layout Planner</span>
             </div>
-            <div class="tool-page-header">
-              <h1>🗺️ Map Layout Planner</h1>
-              <p>Rencanakan layout map/level 2D untuk game Roblox Anda</p>
+            <div class="tool-page-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: var(--space-6);">
+              <div>
+                <h1 style="margin: 0 0 var(--space-2) 0; font-family: var(--font-heading); font-weight: var(--font-weight-black);">🗺️ Map Layout Planner</h1>
+                <p style="margin: 0; color: var(--color-text-secondary); font-size: var(--text-sm);">Rencanakan layout map/level 2D untuk game Roblox Anda</p>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="window.showToolGuide('map-planner')" style="border-radius: 8px; font-weight: bold; flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
+                💻 Panduan & Tips
+              </button>
             </div>
 
             <div class="tool-section">
