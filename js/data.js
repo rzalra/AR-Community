@@ -183,6 +183,28 @@ const APP_DATA = {
       link: '#/tools/bypass-music',
       docLink: '#',
       featured: true
+    },
+    {
+      id: 14,
+      name: 'Audio Converter',
+      description: 'Konversi link YouTube menjadi MP3/WAV, atau konversi file audio lokal ke berbagai format pilihan.',
+      category: 'audio',
+      icon: '🎧',
+      tags: ['Audio', 'Converter', 'YouTube'],
+      link: '#/tools/audio-converter',
+      docLink: '#',
+      featured: true
+    },
+    {
+      id: 15,
+      name: 'Video Converter & Compressor',
+      description: 'Perkecil ukuran file video (compress) atau ubah format video lokal secara langsung di browser.',
+      category: 'asset',
+      icon: '📹',
+      tags: ['Video', 'Converter', 'Compressor'],
+      link: '#/tools/video-converter',
+      docLink: '#',
+      featured: true
     }
   ],
 
