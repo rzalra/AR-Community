@@ -546,6 +546,17 @@ const APP_DATA = {
       link: '#/tools/script-reference',
       docLink: '#',
       featured: false
+    },
+    {
+      id: 47,
+      name: 'Image Converter',
+      description: 'Konversi format gambar (PNG, JPG, WEBP) secara massal langsung di browser Anda.',
+      category: 'asset',
+      icon: '🖼️',
+      tags: ['Asset', 'Image', 'Converter'],
+      link: '#/tools/image-converter',
+      docLink: '#',
+      featured: true
     }
   ],
 

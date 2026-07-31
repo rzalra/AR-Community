@@ -59,6 +59,7 @@ const App = {
     '#/tools/rbxl-analyzer': { page: 'RbxlAnalyzerPage', title: 'RBXL Analyzer' },
     '#/tools/script-sync': { page: 'ScriptSyncPage', title: 'Script Sync' },
     '#/tools/script-reference': { page: 'ScriptReferencePage', title: 'Script Reference' },
+    '#/tools/image-converter': { page: 'ImageConverterPage', title: 'Image Converter' },
     '#/store': { page: 'StorePage', title: 'Store' },
     '#/maps': { page: 'MapsPage', title: 'Maps' },
     '#/more': { page: 'MorePage', title: 'More' },
@@ -118,6 +119,7 @@ const App = {
       'RbxlAnalyzerPage': RbxlAnalyzerPage,
       'ScriptSyncPage': ScriptSyncPage,
       'ScriptReferencePage': ScriptReferencePage,
+      'ImageConverterPage': ImageConverterPage,
       'StorePage': StorePage,
       'MapsPage': MapsPage,
       'MorePage': MorePage,
@@ -662,6 +664,15 @@ window.showToolGuide = function(key) {
         { num: '01', title: 'UPLOAD FILE VIDEO', desc: 'Pilih video MP4 atau WebM dari laptop/komputer.' },
         { num: '02', title: 'PILIH RESOLUSI TARGET', desc: 'Gunakan resolusi 480p dan kualitas Sedang untuk kompresi maksimal.' },
         { num: '03', title: 'KOMPRES & DOWNLOAD', desc: 'Tunggu progress kompresi selesai, lalu unduh video barumu.' }
+      ]
+    },
+    'image-converter': {
+      title: 'Image Converter',
+      category: '🖼️ ASSET',
+      steps: [
+        { num: '01', title: 'UNGHAH GAMBAR (BISA BANYAK)', desc: 'Klik atau seret satu atau beberapa file gambar (PNG, JPG, WEBP) ke area upload.' },
+        { num: '02', title: 'ATUR FORMAT & KUALITAS', desc: 'Pilih format target (WEBP, PNG, JPEG) dan atur slider kualitas kompresinya.' },
+        { num: '03', title: 'KONVERSI & UNDUH HASIL', desc: 'Klik Konversi Sekarang, lalu unduh file hasil konversi satu per satu atau secara massal.' }
       ]
     },
     'lua-cleaner': {
