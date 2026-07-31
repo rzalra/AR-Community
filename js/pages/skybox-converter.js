@@ -27,48 +27,83 @@ const SkyboxConverterPage = {
   presets: {
     cinematic: {
       name: 'Cinematic Sky Atmosphere',
-      gradient: 'linear-gradient(135deg, #1e3c72, #2a5298, #f12711, #f5af19)',
+      image: 'assets/cinematic-sky-atmosphere.jpeg',
       prompt: 'Epic celestial cinematic dramatic sky atmosphere, volumetric lighting, epic dramatic clouds, high altitude sunset, golden hour, deep orange and blue contrast, realistic horizon, seamless 360° equirectangular panorama, spherical environment map, highly detailed, octane render, 8k, zero artifacts, no ground, no buildings, no text, no watermark.'
     },
     heavenly: {
       name: 'Fantasy Heavenly Clouds',
-      gradient: 'linear-gradient(135deg, #e0c3fc, #8ec5fc, #fbc2eb, #a1c4fd)',
+      image: 'assets/fantasy-heavenly-clouds.jpeg',
       prompt: 'Fantasy heavenly clouds, soft pink and pastel blue cumulus clouds, divine sunbeams piercing through, magical glowing particles, ethereal dreamscape, high resolution, seamless 360 degree equirectangular panorama, spherical environment map, unreal engine 5 render, extremely detailed, cinematic lighting, zero artifacts, no ground, no buildings, no text, no watermark.'
     },
     galaxy: {
       name: 'Fantasy Galaxy Sky',
-      gradient: 'linear-gradient(135deg, #0f0c20, #150e28, #300e40, #0a0b12)',
+      image: 'assets/fantasy-galaxy-sky.jpeg',
       prompt: 'Epic fantasy galaxy sky, vibrant nebula clouds in magenta, cyan and purple, scattered brilliant stars, distant cosmic clusters, magical space background, seamless 360° equirectangular panorama, spherical environment map, digital art, sharp focus, masterpiece, 8k resolution, zero artifacts, no ground, no buildings, no text, no watermark.'
     },
     celestial: {
       name: 'Celestial Fantasy Sky',
-      gradient: 'linear-gradient(135deg, #050515, #0a1128, #1c2541, #3a506b)',
-      prompt: 'Epic celestial fantasy sky, enormous moon, glowing stars, floating magical clouds, cosmic dust, aurora ribbons, blue and violet atmosphere, sparkling stardust, divine heavenly lighting, volumetric clouds, cinematic HDR lighting, seamless 360° equirectangular panorama, spherical environment map, physically based rendering, ultra realistic, ultra detailed, film-quality VFX, 8192×4096, 16K quality, zero artifacts, no ground, no buildings, no text, no watermark. GENERATE NOW'
+      image: 'assets/celestial-fantasy-sky.jpeg',
+      prompt: 'Epic celestial fantasy sky, enormous moon, glowing stars, floating magical clouds, cosmic dust, aurora ribbons, blue and violet atmosphere, sparkling stardust, divine heavenly lighting, volumetric clouds, cinematic HDR lighting, seamless 360° equirectangular panorama, spherical environment map, physically based rendering, ultra realistic, ultra detailed, film-quality VFX, 8192×4096, 16K quality, zero artifacts, no ground, no buildings, no text, no watermark.'
     },
     aurora: {
       name: 'Aurora Fantasy',
-      gradient: 'linear-gradient(135deg, #020b14, #051c2c, #0a3a40, #1d5f50)',
+      image: 'assets/aurora-fantasy.jpeg',
       prompt: 'Stunning aurora borealis green and purple ribbons waving across a starry night sky, high contrast, celestial lights, cinematic composition, seamless 360 degree equirectangular panorama, spherical environment map, highly detailed photography, 8k, zero artifacts, no ground, no buildings, no text, no watermark.'
     },
     dream: {
       name: 'Dream Clouds',
-      gradient: 'linear-gradient(135deg, #f3e7e9, #e3eeff, #a5c2f7)',
+      image: 'assets/dream-clouds.jpeg',
       prompt: 'Fluffy pastel dream clouds, soft purple and turquoise sunset sky, peaceful fantasy atmosphere, floating islands in far distance, seamless 360 degree equirectangular panorama, spherical environment map, digital painting, whimsical style, artstation trending, zero artifacts, no ground, no buildings, no text, no watermark.'
     },
     cosmic: {
       name: 'Cosmic Storm',
-      gradient: 'linear-gradient(135deg, #10061e, #2d0b32, #4d0a1b, #0d010d)',
+      image: 'assets/cosmic-storm.jpeg',
       prompt: 'Violent cosmic storm sky, dark thunderclouds infused with red and violet electric plasma, swirling galaxy vortex, epic sci-fi environment, seamless 360 degree equirectangular panorama, spherical environment map, octane render, photorealistic, 8k, zero artifacts, no ground, no buildings, no text, no watermark.'
     },
     anime: {
-      name: 'Dragon Ball / Anime Inspired',
-      gradient: 'linear-gradient(135deg, #ff5e62, #ff9966, #ffea7f)',
+      name: 'Anime Inspired Sky',
+      image: 'assets/anime-inspired-sky.jpeg',
       prompt: 'Dragon Ball style anime sky, stylized orange and yellow clouds, energy lines, dramatic sunburst, vibrant cartoon aesthetics, seamless 360 degree equirectangular panorama, spherical environment map, studio ghibli and dbz style, hand-drawn vector art, zero artifacts, no ground, no buildings, no text, no watermark.'
     },
     thunderstorm: {
       name: 'Thunderstorm',
-      gradient: 'linear-gradient(135deg, #0f172a, #1e293b, #0f172a)',
+      image: 'assets/thunderstorm.jpeg',
       prompt: 'Dark dramatic thunderstorm sky, lightning bolts striking through thick black rain clouds, dark moody atmosphere, hyper realistic, seamless 360 degree equirectangular panorama, spherical environment map, 8k resolution, cinematic lighting, zero artifacts, no ground, no buildings, no text, no watermark.'
+    },
+    'anime-fantasy': {
+      name: 'Anime Fantasy Blue Sky',
+      image: 'assets/anime-fantasy-blue-sky.jpeg',
+      prompt: 'Vibrant anime style fantasy blue sky with giant fluffy white cumulus clouds, hand-drawn aesthetic, highly detailed Ghibli style background art, bright sunshine, seamless 360 degree equirectangular panorama, spherical environment map, masterpiece, 8k resolution, no ground, no watermark.'
+    },
+    'cosmic-tree': {
+      name: 'Cosmic World Tree',
+      image: 'assets/cosmic-world-tree.jpeg',
+      prompt: 'Cosmic world tree yggdrasil glowing with ancient magic runes, giant roots spreading into starry space nebula, mystical branches touching galaxies, deep blue and teal cosmic background, seamless 360 degree equirectangular panorama, spherical environment map, unreal engine 5 render, highly detailed.'
+    },
+    'deep-space': {
+      name: 'Deep Space Galaxy',
+      image: 'assets/deep-space-galaxy.jpeg',
+      prompt: 'Epic deep space galaxy environment, massive rotating spiral galaxy, brilliant stellar clusters, glowing blue and purple nebulae, dense starfield background, seamless 360 degree equirectangular panorama, spherical environment map, 8k, zero artifacts.'
+    },
+    'deep-nebula': {
+      name: 'Deep Space Nebula',
+      image: 'assets/deep-space-nebula.jpeg',
+      prompt: 'Stunning deep space nebula, interstellar dust clouds in glowing magenta and violet shades, bright newborn stars shining through, outer space photography style, seamless 360 degree equirectangular panorama, spherical environment map, photorealistic.'
+    },
+    'cloud-kingdom': {
+      name: 'Dreamlike Cloud Kingdom',
+      image: 'assets/dreamlike-cloud-kingdom.jpeg',
+      prompt: 'Dreamlike cloud kingdom, golden palace spires floating on pink and white clouds, angelic sun rays, ethereal fantasy sky environment, seamless 360 degree equirectangular panorama, spherical environment map, cinema 4D render.'
+    },
+    'polar-sky': {
+      name: 'Endless Polar Sky',
+      image: 'assets/endless-polar-sky.jpeg',
+      prompt: 'Endless polar winter sky, majestic pastel purple and blue frozen atmosphere, dim cold sun, icy horizon, seamless 360 degree equirectangular panorama, spherical environment map, high altitude.'
+    },
+    'crystal-islands': {
+      name: 'Floating Crystal Islands',
+      image: 'assets/floating-crystal-islands.jpeg',
+      prompt: 'Floating crystal islands in a magical starry sky, glowing crystals casting light on surrounding nebulas, floating rocks, ethereal landscape, seamless 360 degree equirectangular panorama, spherical environment map, Unreal Engine render.'
     }
   },
 
@@ -600,7 +635,7 @@ const SkyboxConverterPage = {
         <div class="prompt-sidebar-list">
           ${Object.entries(this.presets).map(([key, p]) => `
             <button class="prompt-sidebar-item ${this.selectedPreset === key ? 'active' : ''}" onclick="SkyboxConverterPage.selectPreset('${key}')">
-              <div class="prompt-sidebar-item-thumb" style="background: ${p.gradient}"></div>
+              <div class="prompt-sidebar-item-thumb" style="background: url('${p.image || ''}') center/cover no-repeat; border: 1px solid rgba(255,255,255,0.08);"></div>
               <span>${p.name}</span>
             </button>
           `).join('')}
@@ -609,12 +644,12 @@ const SkyboxConverterPage = {
         <!-- Main Content Area -->
         <div class="prompt-main-content">
           <div>
-            <div class="prompt-preview-screen" style="background: ${activePreset.gradient}">
-              <div style="position: absolute; bottom: 16px; left: 16px; font-weight: 900; font-size: 1.2rem; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">${activePreset.name}</div>
+            <div class="prompt-preview-screen" style="background: url('${activePreset.image || ''}') center/cover no-repeat; border: 1px solid var(--color-border);">
+              <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 24px 16px 16px; background: linear-gradient(to top, rgba(0,0,0,0.85), transparent); font-weight: 900; font-size: 1.1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">${activePreset.name}</div>
             </div>
             
             <h2 style="font-size: var(--text-md); font-weight: var(--font-weight-black); margin-bottom: 2px;">${activePreset.name}</h2>
-            <p style="font-size: 0.68rem; color: var(--color-text-secondary); margin-bottom: 20px;">Copy prompt ini ke Midjourney/DALL-E/Bing Image Creator</p>
+            <p style="font-size: 0.68rem; color: var(--color-text-secondary); margin-bottom: 20px;">Salin prompt di bawah ini ke Midjourney / DALL-E / Bing Image Creator untuk membikin skybox serupa.</p>
           </div>
 
           <div class="tool-section" style="margin-bottom: 0; background: #08080a;">
