@@ -28,82 +28,82 @@ const SkyboxConverterPage = {
     cinematic: {
       name: 'Cinematic Sky Atmosphere',
       image: 'assets/cinematic-sky-atmosphere.jpeg',
-      prompt: 'Epic celestial cinematic dramatic sky atmosphere, volumetric lighting, epic dramatic clouds, high altitude sunset, golden hour, deep orange and blue contrast, realistic horizon, seamless 360° equirectangular panorama, spherical environment map, highly detailed, octane render, 8k, zero artifacts, no ground, no buildings, no text, no watermark.'
+      prompt: 'Equirectangular 360° panoramic skybox, seamless HDRI environment, perfect latitude-longitude projection, ultra high resolution, hyper realistic, AAA game environment, Unreal Engine 5 quality, cinematic sky atmosphere, physically based rendering (PBR), volumetric clouds with intricate micro details, realistic cloud density, atmospheric scattering, subsurface scattering, global illumination, ray traced lighting, soft ambient light, realistic sun lighting, HDR lighting, natural sky gradients, ultra sharp focus, crystal clear details, extreme dynamic range, high contrast, zero visible seams, zero distortion, zero stretching at poles, zero artifacts, zero pixelation, clean image, professional VFX quality, photorealistic, 8192×4096 output, 16K quality, HDRI environment map. GENERATE NOW'
     },
     heavenly: {
       name: 'Fantasy Heavenly Clouds',
       image: 'assets/fantasy-heavenly-clouds.jpeg',
-      prompt: 'Fantasy heavenly clouds, soft pink and pastel blue cumulus clouds, divine sunbeams piercing through, magical glowing particles, ethereal dreamscape, high resolution, seamless 360 degree equirectangular panorama, spherical environment map, unreal engine 5 render, extremely detailed, cinematic lighting, zero artifacts, no ground, no buildings, no text, no watermark.'
+      prompt: 'Ultra realistic fantasy sky, colossal floating cloud kingdoms, gigantic soft white cumulus clouds, glowing cloud mountains, divine atmosphere, heavenly sunlight, ethereal mist, volumetric cloud oceans, cinematic god rays, magical atmosphere, soft golden illumination, physically based rendering, HDR lighting, true 360° equirectangular panorama, seamless spherical environment map, perfect 2:1 projection, full 360° coverage, ultra detailed volumetric clouds, film-quality VFX, hyper realistic, no seams, no distortion, no stretching, 8192×4096, 16K quality, no ground, no buildings, no text, no watermark. GENERATE NOW'
     },
     galaxy: {
       name: 'Fantasy Galaxy Sky',
       image: 'assets/fantasy-galaxy-sky.jpeg',
-      prompt: 'Epic fantasy galaxy sky, vibrant nebula clouds in magenta, cyan and purple, scattered brilliant stars, distant cosmic clusters, magical space background, seamless 360° equirectangular panorama, spherical environment map, digital art, sharp focus, masterpiece, 8k resolution, zero artifacts, no ground, no buildings, no text, no watermark.'
+      prompt: 'Ultra realistic fantasy galaxy sky, gigantic colorful nebula clouds, billions of stars, glowing Milky Way, deep cosmic atmosphere, purple, blue and cyan nebulae, subtle aurora, distant galaxies, volumetric cosmic clouds, cinematic space lighting, HDR environment, true 360° equirectangular panorama, seamless spherical projection, physically based rendering, ultra detailed, hyper realistic, film-quality VFX, no visible seams, no distortion, no stretching, 8192×4096, 16K quality, no planets on horizon, no spacecraft, no text, no watermark. GENERATE NOW'
     },
     celestial: {
       name: 'Celestial Fantasy Sky',
       image: 'assets/celestial-fantasy-sky.jpeg',
-      prompt: 'Epic celestial fantasy sky, enormous moon, glowing stars, floating magical clouds, cosmic dust, aurora ribbons, blue and violet atmosphere, sparkling stardust, divine heavenly lighting, volumetric clouds, cinematic HDR lighting, seamless 360° equirectangular panorama, spherical environment map, physically based rendering, ultra realistic, ultra detailed, film-quality VFX, 8192×4096, 16K quality, zero artifacts, no ground, no buildings, no text, no watermark.'
+      prompt: 'Epic celestial fantasy sky, enormous moon, glowing stars, floating magical clouds, cosmic dust, aurora ribbons, blue and violet atmosphere, sparkling stardust, divine heavenly lighting, volumetric clouds, cinematic HDR lighting, seamless 360° equirectangular panorama, spherical environment map, physically based rendering, ultra realistic, ultra detailed, film-quality VFX, 8192×4096, 16K quality, zero artifacts, no ground, no buildings, no text, no watermark. GENERATE NOW'
     },
     aurora: {
       name: 'Aurora Fantasy',
       image: 'assets/aurora-fantasy.jpeg',
-      prompt: 'Stunning aurora borealis green and purple ribbons waving across a starry night sky, high contrast, celestial lights, cinematic composition, seamless 360 degree equirectangular panorama, spherical environment map, highly detailed photography, 8k, zero artifacts, no ground, no buildings, no text, no watermark.'
+      prompt: 'Hyper realistic aurora fantasy sky, vibrant green, blue and purple aurora curtains dancing across the heavens, glowing cloud layers, crystal atmosphere, soft stars, cinematic volumetric clouds, HDR environment lighting, true 360° equirectangular panorama, seamless spherical projection, physically based rendering, ultra detailed, film-quality VFX, 8192×4096, 16K quality, no seams, no distortion, no mountains, no text, no watermark. GENERATE NOW'
     },
     dream: {
       name: 'Dream Clouds',
       image: 'assets/dream-clouds.jpeg',
-      prompt: 'Fluffy pastel dream clouds, soft purple and turquoise sunset sky, peaceful fantasy atmosphere, floating islands in far distance, seamless 360 degree equirectangular panorama, spherical environment map, digital painting, whimsical style, artstation trending, zero artifacts, no ground, no buildings, no text, no watermark.'
+      prompt: 'Dreamlike fantasy cloudscape, endless cotton candy clouds, pastel pink, lavender, cyan and gold color palette, magical sunlight, glowing mist, floating cloud islands, volumetric clouds with intricate detail, cinematic atmosphere, HDR lighting, true 360° equirectangular panorama, seamless spherical environment map, physically based rendering, ultra realistic, film-quality VFX, 8192×4096, 16K quality, no seams, no distortion, no text, no watermark. GENERATE NOW'
     },
     cosmic: {
       name: 'Cosmic Storm',
       image: 'assets/cosmic-storm.jpeg',
-      prompt: 'Violent cosmic storm sky, dark thunderclouds infused with red and violet electric plasma, swirling galaxy vortex, epic sci-fi environment, seamless 360 degree equirectangular panorama, spherical environment map, octane render, photorealistic, 8k, zero artifacts, no ground, no buildings, no text, no watermark.'
+      prompt: 'Epic cosmic thunderstorm sky, gigantic nebula clouds swirling across the universe, glowing purple lightning, massive galactic vortex, blue plasma clouds, billions of stars, cinematic HDR lighting, volumetric cosmic clouds, physically based rendering, true 360° equirectangular panorama, seamless spherical environment map, hyper realistic, ultra detailed, film-quality VFX, 8192×4096, 16K quality, zero seams, zero distortion, no text, no watermark. GENERATE NOW'
     },
     anime: {
       name: 'Anime Inspired Sky',
       image: 'assets/anime-inspired-sky.jpeg',
-      prompt: 'Dragon Ball style anime sky, stylized orange and yellow clouds, energy lines, dramatic sunburst, vibrant cartoon aesthetics, seamless 360 degree equirectangular panorama, spherical environment map, studio ghibli and dbz style, hand-drawn vector art, zero artifacts, no ground, no buildings, no text, no watermark.'
+      prompt: 'Anime-inspired fantasy blue sky, gigantic glowing cloud formations, vibrant cyan atmosphere, brilliant divine sunlight, floating celestial clouds, magical energy particles, ultra detailed volumetric clouds, cinematic anime atmosphere, ultra high dynamic range (HDR) lighting, physically accurate HDRI environment, image-based lighting (IBL), physically based rendering (PBR), physically accurate light transport, global illumination, realistic indirect lighting, physically correct luminance, production-quality VFX lighting, true 360° equirectangular panorama, seamless spherical HDRI environment map, hyper realistic anime-inspired rendering, 8192×4096, 16K quality, no seams, no distortion, no ground, no text, no watermark. GENERATE NOW'
     },
     thunderstorm: {
       name: 'Thunderstorm',
       image: 'assets/thunderstorm.jpeg',
-      prompt: 'Dark dramatic thunderstorm sky, lightning bolts striking through thick black rain clouds, dark moody atmosphere, hyper realistic, seamless 360 degree equirectangular panorama, spherical environment map, 8k resolution, cinematic lighting, zero artifacts, no ground, no buildings, no text, no watermark.'
+      prompt: 'Epic supercell thunderstorm sky, gigantic dark cumulonimbus clouds, powerful lightning strikes, swirling storm formation, dramatic blue-gray atmosphere, heavy volumetric clouds, intense cinematic lighting, ultra high dynamic range (HDR) lighting, physically accurate HDRI environment, image-based lighting (IBL), physically based rendering (PBR), physically accurate light transport, global illumination, realistic storm illumination, realistic exposure values, physically correct luminance, production-quality VFX lighting, true 360° equirectangular panorama, seamless spherical HDRI environment map, ultra detailed cloud simulation, realistic weather physics, 8192×4096, 16K quality, no seams, no distortion, no ground, no text, no watermark. GENERATE NOW'
     },
     'anime-fantasy': {
       name: 'Anime Fantasy Blue Sky',
       image: 'assets/anime-fantasy-blue-sky.jpeg',
-      prompt: 'Vibrant anime style fantasy blue sky with giant fluffy white cumulus clouds, hand-drawn aesthetic, highly detailed Ghibli style background art, bright sunshine, seamless 360 degree equirectangular panorama, spherical environment map, masterpiece, 8k resolution, no ground, no watermark.'
+      prompt: 'Anime-inspired fantasy blue sky, gigantic glowing cloud formations, vibrant cyan atmosphere, brilliant divine sunlight, floating celestial clouds, magical energy particles, ultra detailed volumetric clouds, cinematic anime atmosphere, ultra high dynamic range (HDR) lighting, physically accurate HDRI environment, image-based lighting (IBL), physically based rendering (PBR), physically accurate light transport, global illumination, realistic indirect lighting, physically correct luminance, production-quality VFX lighting, true 360° equirectangular panorama, seamless spherical HDRI environment map, hyper realistic anime-inspired rendering, 8192×4096, 16K quality, no seams, no distortion, no ground, no text, no watermark. GENERATE NOW'
     },
     'cosmic-tree': {
       name: 'Cosmic World Tree',
       image: 'assets/cosmic-world-tree.jpeg',
-      prompt: 'Cosmic world tree yggdrasil glowing with ancient magic runes, giant roots spreading into starry space nebula, mystical branches touching galaxies, deep blue and teal cosmic background, seamless 360 degree equirectangular panorama, spherical environment map, unreal engine 5 render, highly detailed.'
+      prompt: 'An impossibly gigantic cosmic world tree whose luminous crystalline branches stretch across the entire sky, glowing leaves made of stardust drifting endlessly through the atmosphere, colossal floating islands orbiting the trunk, waterfalls of liquid light cascading into clouds below, radiant nebulae weaving between the branches, colorful auroras illuminating billions of sparkling particles, distant ringed planets, volumetric clouds glowing with sunset gold and sapphire blue, mystical fog, god rays piercing through celestial foliage, cinematic fantasy atmosphere, masterpiece, best quality, absurdres, ultra detailed, cinematic composition, award-winning concept art, ultra high dynamic range (HDR) lighting, physically accurate HDRI environment, image-based lighting (IBL), physically based rendering (PBR), unbiased path tracing, physically accurate light transport, spectral lighting, ray-traced global illumination, realistic indirect lighting, volumetric lighting, physically accurate atmospheric scattering, cinematic HDR lighting, physically correct luminance, realistic exposure values, ACEScg color workflow, production-quality VFX rendering, hyper realistic anime-inspired rendering, seamless true 360° equirectangular panorama, seamless spherical HDRI environment map, ultra high resolution 16384×8192, 16K HDR quality, no seams, no distortion, no ground, no text, no logo, no watermark, no artifacts, no low quality. GENERATE NOW'
     },
     'deep-space': {
       name: 'Deep Space Galaxy',
       image: 'assets/deep-space-galaxy.jpeg',
-      prompt: 'Epic deep space galaxy environment, massive rotating spiral galaxy, brilliant stellar clusters, glowing blue and purple nebulae, dense starfield background, seamless 360 degree equirectangular panorama, spherical environment map, 8k, zero artifacts.'
+      prompt: 'Ultra realistic deep space galaxy environment, gigantic colorful nebula clouds, glowing Milky Way, billions of stars, distant galaxies, cosmic dust, purple, blue and cyan nebulae, glowing plasma clouds, cinematic space lighting, ultra high dynamic range (HDR) lighting, physically accurate HDRI environment, image-based lighting (IBL), physically based rendering (PBR), physically accurate light transport, global illumination, realistic exposure values, physically correct luminance, production-quality VFX rendering, seamless 360° equirectangular panorama, spherical HDRI environment map, ultra detailed, 8192×4096, 16K quality, no seams, no distortion, no planets, no spacecraft, no text, no watermark. GENERATE NOW'
     },
     'deep-nebula': {
       name: 'Deep Space Nebula',
       image: 'assets/deep-space-nebula.jpeg',
-      prompt: 'Stunning deep space nebula, interstellar dust clouds in glowing magenta and violet shades, bright newborn stars shining through, outer space photography style, seamless 360 degree equirectangular panorama, spherical environment map, photorealistic.'
+      prompt: 'Deep space nebula, colorful galaxies, billions of stars, glowing dust clouds, black hole in the distance, cinematic science fiction, realistic astronomical scale, HDRI environment map, seamless 360 panoramic skybox, AAA quality, Unreal Engine 5, ultra detailed, 16K. GENERATE NOW'
     },
     'cloud-kingdom': {
       name: 'Dreamlike Cloud Kingdom',
       image: 'assets/dreamlike-cloud-kingdom.jpeg',
-      prompt: 'Dreamlike cloud kingdom, golden palace spires floating on pink and white clouds, angelic sun rays, ethereal fantasy sky environment, seamless 360 degree equirectangular panorama, spherical environment map, cinema 4D render.'
+      prompt: 'Dreamlike fantasy cloud kingdom, endless cotton candy clouds, pastel pink, lavender, cyan and gold palette, floating cloud islands, magical sunlight, glowing mist, sparkling particles, cinematic atmosphere, volumetric cloud simulation, ultra high dynamic range (HDR) lighting, physically accurate HDRI environment, image-based lighting (IBL), physically based rendering (PBR), physically accurate light transport, global illumination, realistic indirect lighting, physically correct luminance, production-quality VFX lighting, seamless true 360° equirectangular panorama, ultra detailed HDR environment map, 8192×4096, 16K quality, no seams, no distortion, no ground, no text, no watermark. GENERATE NOW'
     },
     'polar-sky': {
       name: 'Endless Polar Sky',
       image: 'assets/endless-polar-sky.jpeg',
-      prompt: 'Endless polar winter sky, majestic pastel purple and blue frozen atmosphere, dim cold sun, icy horizon, seamless 360 degree equirectangular panorama, spherical environment map, high altitude.'
+      prompt: 'An endless polar sky filled with colossal floating crystal mountains, dancing green, violet and cyan auroras stretching across the entire atmosphere, shimmering ice dust carried by gentle winds, glowing frozen clouds reflecting spectral light, celestial halos surrounding multiple moons, sparkling snow particles suspended in the air, surreal frozen fantasy atmosphere, masterpiece, best quality, absurdres, ultra detailed, cinematic composition, award-winning concept art, ultra high dynamic range (HDR) lighting, physically accurate HDRI environment, image-based lighting (IBL), physically based rendering (PBR), unbiased path tracing, physically accurate light transport, spectral lighting, ray-traced global illumination, realistic indirect lighting, volumetric lighting, physically accurate atmospheric scattering, cinematic HDR lighting, physically correct luminance, realistic exposure values, ACEScg color workflow, production-quality VFX rendering, hyper realistic anime-inspired rendering, seamless true 360° equirectangular panorama, seamless spherical HDRI environment map, ultra high resolution 16384×8192, 16K HDR quality, no seams, no distortion, no ground, no text, no logo, no watermark, no artifacts, no low quality. GENERATE NOW'
     },
     'crystal-islands': {
       name: 'Floating Crystal Islands',
       image: 'assets/floating-crystal-islands.jpeg',
-      prompt: 'Floating crystal islands in a magical starry sky, glowing crystals casting light on surrounding nebulas, floating rocks, ethereal landscape, seamless 360 degree equirectangular panorama, spherical environment map, Unreal Engine render.'
+      prompt: 'Enormous floating crystal islands suspended above an endless sea of clouds, gigantic glowing sapphire crystals, magical waterfalls flowing into the sky, radiant divine sunlight, turquoise atmosphere, shimmering crystal dust, fantasy anime world, breathtaking cinematic landscape, ultra detailed volumetric clouds, physically realistic atmospheric scattering, masterpiece, best quality, absurdres, ultra detailed, cinematic composition, breathtaking environment, award-winning concept art, ultra high dynamic range (HDR) lighting, physically accurate HDRI environment, image-based lighting (IBL), physically based rendering (PBR), unbiased path tracing, physically accurate light transport, multi-bounce global illumination, realistic indirect lighting, physically accurate sky illumination, volumetric lighting, cinematic HDR lighting, physically correct luminance, realistic exposure values, ACEScg color pipeline, production-quality VFX rendering, hyper realistic anime-inspired rendering, seamless true 360° equirectangular panorama, seamless spherical HDRI environment map, ultra high resolution 16384×8192, 16K HDR quality, no seams, no distortion, no ground, no text, no logo, no watermark. GENERATE NOW'
     }
   },
 
@@ -787,12 +787,12 @@ const SkyboxConverterPage = {
 
     // Approximated equirectangular coordinates mappings for Cubemap slicing
     const regions = [
-      { sx: 0,         sy: h/3,   sw: w/4, sh: h/3 },   // Front
-      { sx: w/2,       sy: h/3,   sw: w/4, sh: h/3 },   // Back
-      { sx: 3*w/4,     sy: h/3,   sw: w/4, sh: h/3 },   // Left
-      { sx: w/4,       sy: h/3,   sw: w/4, sh: h/3 },   // Right
-      { sx: w/4,       sy: 0,     sw: w/4, sh: h/3 },   // Top
-      { sx: w/4,       sy: 2*h/3, sw: w/4, sh: h/3 }   // Bottom
+      { sx: 0, sy: h / 3, sw: w / 4, sh: h / 3 },   // Front
+      { sx: w / 2, sy: h / 3, sw: w / 4, sh: h / 3 },   // Back
+      { sx: 3 * w / 4, sy: h / 3, sw: w / 4, sh: h / 3 },   // Left
+      { sx: w / 4, sy: h / 3, sw: w / 4, sh: h / 3 },   // Right
+      { sx: w / 4, sy: 0, sw: w / 4, sh: h / 3 },   // Top
+      { sx: w / 4, sy: 2 * h / 3, sw: w / 4, sh: h / 3 }   // Bottom
     ];
 
     regions.forEach((r, idx) => {
