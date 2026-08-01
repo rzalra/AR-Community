@@ -597,12 +597,12 @@ window.showToolGuide = function(key) {
       ]
     },
     'script-obfuscator': {
-      title: 'Script Obfuscator',
+      title: 'Script Obfuscator Pro',
       category: '🔒 SECURITY',
       steps: [
-        { num: '01', title: 'TEMPEL KODE LUA ASLI', desc: 'Masukkan script Lua murni kamu di kolom input.' },
-        { num: '02', title: 'PILIH LEVEL ENKRIPSI', desc: 'Pilih tingkat acak (Light, Medium, atau Heavy) sesuai kebutuhan.' },
-        { num: '03', title: 'SALIN HASILNYA', desc: 'Salin script hasil enkripsi. *Selalu simpan backup kode aslimu!*' }
+        { num: '01', title: 'TEMPEL KODE LUA ASLI', desc: 'Masukkan script Lua murni Anda di kolom input kiri.' },
+        { num: '02', title: 'PILIH TINGKAT PROTEKSI', desc: 'Pilih tingkat proteksi (Light, Medium, Heavy, atau Extreme untuk proteksi mirip Luraph).' },
+        { num: '03', title: 'PROSES & AMANKAN KODE', desc: 'Klik OBFUSCATE untuk mengenkripsi string, merename variabel, mengacak control flow, dan menambahkan layer XOR.' }
       ]
     },
     'map-planner': {
