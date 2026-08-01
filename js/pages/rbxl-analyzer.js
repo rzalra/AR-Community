@@ -33,9 +33,9 @@ const RbxlAnalyzerPage = {
           <div>
             <!-- Header Logo -->
             <div style="display:flex; align-items:center; gap:12px; padding:0 20px; margin-bottom:24px;">
-              <div style="background:#ff0055; width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:900;">📊</div>
+              <div style="background:var(--gradient-accent); width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:900; color:#000;">📊</div>
               <div>
-                <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:0.9rem; color:#ff0055; letter-spacing:0.5px;">RBXL ANALYZER</div>
+                <div style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:0.9rem; color:var(--color-accent-cyan); letter-spacing:0.5px;">RBXL ANALYZER</div>
                 <div style="font-size:0.55rem; color:var(--color-text-muted); font-weight:bold; letter-spacing:1px;">AR COMMUNITY</div>
               </div>
             </div>
@@ -52,13 +52,13 @@ const RbxlAnalyzerPage = {
               <div style="height:1px; background:rgba(255,255,255,0.05); margin:12px 4px;"></div>
 
               <!-- Action Tabs -->
-              <button onclick="RbxlAnalyzerPage.setTab('findings')" id="tab-findings" style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:6px; font-size:0.75rem; text-align:left; border:none; width:100%; cursor:pointer; font-weight:bold; transition:all 0.2s; background:${this.activeTab==='findings'?'rgba(255,0,85,0.1)':'transparent'}; color:${this.activeTab==='findings'?'#ff0055':'#aaa'};">
+              <button onclick="RbxlAnalyzerPage.setTab('findings')" id="tab-findings" style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:6px; font-size:0.75rem; text-align:left; border:none; width:100%; cursor:pointer; font-weight:bold; transition:all 0.2s; background:${this.activeTab==='findings'?'rgba(0,240,255,0.1)':'transparent'}; color:${this.activeTab==='findings'?'var(--color-accent-cyan)':'#aaa'};">
                 <span>❗</span> AUTOMATED FINDINGS
               </button>
-              <button onclick="RbxlAnalyzerPage.setTab('explorer')" id="tab-explorer" style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:6px; font-size:0.75rem; text-align:left; border:none; width:100%; cursor:pointer; font-weight:bold; transition:all 0.2s; background:${this.activeTab==='explorer'?'rgba(255,0,85,0.1)':'transparent'}; color:${this.activeTab==='explorer'?'#ff0055':'#aaa'};" ${!this.parsedData?'disabled style="opacity:0.4; cursor:not-allowed;"':''}>
+              <button onclick="RbxlAnalyzerPage.setTab('explorer')" id="tab-explorer" style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:6px; font-size:0.75rem; text-align:left; border:none; width:100%; cursor:pointer; font-weight:bold; transition:all 0.2s; background:${this.activeTab==='explorer'?'rgba(0,240,255,0.1)':'transparent'}; color:${this.activeTab==='explorer'?'var(--color-accent-cyan)':'#aaa'};" ${!this.parsedData?'disabled style="opacity:0.4; cursor:not-allowed;"':''}>
                 <span>📁</span> MAP EXPLORER
               </button>
-              <button onclick="RbxlAnalyzerPage.setTab('scripts')" id="tab-scripts" style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:6px; font-size:0.75rem; text-align:left; border:none; width:100%; cursor:pointer; font-weight:bold; transition:all 0.2s; background:${this.activeTab==='scripts'?'rgba(255,0,85,0.1)':'transparent'}; color:${this.activeTab==='scripts'?'#ff0055':'#aaa'};" ${!this.parsedData?'disabled style="opacity:0.4; cursor:not-allowed;"':''}>
+              <button onclick="RbxlAnalyzerPage.setTab('scripts')" id="tab-scripts" style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:6px; font-size:0.75rem; text-align:left; border:none; width:100%; cursor:pointer; font-weight:bold; transition:all 0.2s; background:${this.activeTab==='scripts'?'rgba(0,240,255,0.1)':'transparent'}; color:${this.activeTab==='scripts'?'var(--color-accent-cyan)':'#aaa'};" ${!this.parsedData?'disabled style="opacity:0.4; cursor:not-allowed;"':''}>
                 <span>&lt;/&gt;</span> SCRIPT BROWSER
               </button>
             </div>
@@ -67,7 +67,7 @@ const RbxlAnalyzerPage = {
           <!-- Bottom Upload Button -->
           <div style="padding:0 16px;">
             <input type="file" id="rbxl-file-input" style="display:none;" accept=".rbxl,.rbxlx" onchange="RbxlAnalyzerPage.handleFileUpload(this.files)">
-            <button onclick="document.getElementById('rbxl-file-input').click()" style="width:100%; padding:10px; background:#ff0055; border:none; border-radius:6px; color:#fff; font-size:0.75rem; font-weight:bold; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px;">
+            <button onclick="document.getElementById('rbxl-file-input').click()" style="width:100%; padding:10px; background:var(--gradient-accent); border:none; border-radius:6px; color:#000; font-size:0.75rem; font-weight:bold; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px;">
               📤 UPLOAD NEW FILE
             </button>
           </div>
@@ -109,8 +109,8 @@ const RbxlAnalyzerPage = {
     if (zone) {
       zone.addEventListener('dragover', (e) => {
         e.preventDefault();
-        zone.style.borderColor = '#ff0055';
-        zone.style.background = 'rgba(255,0,85,0.05)';
+        zone.style.borderColor = 'var(--color-accent-cyan)';
+        zone.style.background = 'rgba(0,240,255,0.03)';
       });
       zone.addEventListener('dragleave', (e) => {
         e.preventDefault();
@@ -139,7 +139,7 @@ const RbxlAnalyzerPage = {
         <!-- Center Placeholder Screen -->
         <div style="margin:auto; text-align:center; max-width:600px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
           <h1 style="font-family:'Orbitron', sans-serif; font-weight:900; font-size:2rem; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
-            RBXL <span style="color:#ff0055;">Place Analyzer</span> <span style="font-size:0.55rem; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px; font-family:'Inter', sans-serif; font-weight:bold; vertical-align:middle; margin-left:8px;">BETA</span>
+            RBXL <span style="color:var(--color-accent-cyan);">Place Analyzer</span> <span style="font-size:0.55rem; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px; font-family:'Inter', sans-serif; font-weight:bold; vertical-align:middle; margin-left:8px;">BETA</span>
           </h1>
           <p style="font-size:0.78rem; color:var(--color-text-secondary); line-height:1.6; margin-bottom:24px;">
             Upload file map (.rbxlx atau .rbxl), lihat struktur, koordinat, penyebab lag, dan scan script mencurigakan. 100% di browser, file gak pernah dikirim ke server.
@@ -189,7 +189,7 @@ const RbxlAnalyzerPage = {
           </div>
           <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); padding:16px; border-radius:8px;">
             <div style="font-size:0.62rem; color:var(--color-text-muted); font-weight:bold; text-transform:uppercase;">Backdoors / Warnings</div>
-            <div style="font-size:1.6rem; font-weight:bold; margin-top:4px; color:${this.findings.length > 0 ? '#ff0055' : '#00ff66'}; font-family:monospace;">${this.findings.length}</div>
+            <div style="font-size:1.6rem; font-weight:bold; margin-top:4px; color:${this.findings.length > 0 ? 'var(--color-accent-red)' : '#00ff66'}; font-family:monospace;">${this.findings.length}</div>
           </div>
         </div>
 
@@ -206,10 +206,10 @@ const RbxlAnalyzerPage = {
           ` : `
             <div style="display:flex; flex-direction:column; gap:12px;">
               ${this.findings.map(f => `
-                <div style="background:rgba(255,255,255,0.01); border:1px solid ${f.severity === 'high' ? 'rgba(255,0,85,0.15)' : 'rgba(255,170,0,0.15)'}; border-left:4px solid ${f.severity === 'high' ? '#ff0055' : '#ffa000'}; border-radius:4px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="background:rgba(255,255,255,0.01); border:1px solid ${f.severity === 'high' ? 'rgba(239,68,68,0.15)' : 'rgba(250,204,21,0.15)'}; border-left:4px solid ${f.severity === 'high' ? 'var(--color-accent-red)' : 'var(--color-accent-yellow)'}; border-radius:4px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
                   <div>
                     <div style="display:flex; align-items:center; gap:8px;">
-                      <span style="font-size:0.65rem; font-weight:bold; background:${f.severity === 'high' ? 'rgba(255,0,85,0.1)' : 'rgba(255,170,0,0.1)'}; color:${f.severity === 'high' ? '#ff0055' : '#ffa000'}; padding:2px 6px; border-radius:3px; text-transform:uppercase;">
+                      <span style="font-size:0.65rem; font-weight:bold; background:${f.severity === 'high' ? 'rgba(239,68,68,0.1)' : 'rgba(250,204,21,0.1)'}; color:${f.severity === 'high' ? 'var(--color-accent-red)' : 'var(--color-accent-yellow)'}; padding:2px 6px; border-radius:3px; text-transform:uppercase;">
                         ${f.severity}
                       </span>
                       <strong style="font-size:0.75rem; color:#fff;">${f.title}</strong>
@@ -315,7 +315,7 @@ const RbxlAnalyzerPage = {
       inspector.innerHTML = `
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); padding:12px; border-radius:6px; margin-bottom:12px;">
           <div style="font-size:0.75rem; font-weight:bold; color:#fff;">${node.name}</div>
-          <div style="font-size:0.6rem; color:#ff0055; margin-top:2px; font-family:monospace;">Class: ${node.className}</div>
+          <div style="font-size:0.6rem; color:var(--color-accent-cyan); margin-top:2px; font-family:monospace;">Class: ${node.className}</div>
           ${node.children ? `<div style="font-size:0.6rem; color:var(--color-text-muted); margin-top:4px;">Children: ${node.children.length} items</div>` : ''}
         </div>
         <div style="max-height:300px; overflow-y:auto; padding-right:4px;">
@@ -337,7 +337,7 @@ const RbxlAnalyzerPage = {
             ${this.allScripts.length === 0 ? `
               <div style="font-size:0.68rem; color:var(--color-text-muted);">Tidak ada script ditemukan.</div>
             ` : this.allScripts.map((scr, idx) => `
-              <button onclick="RbxlAnalyzerPage.viewScript(${idx})" class="script-list-btn" style="text-align:left; border:none; padding:8px 10px; font-size:0.65rem; border-radius:4px; cursor:pointer; background:${this.selectedScript === scr ? 'rgba(255,0,85,0.1)' : 'transparent'}; color:${this.selectedScript === scr ? '#ff0055' : '#ccc'}; transition:all 0.2s;" onmouseover="if(this.style.background!=='rgba(255,0,85,0.1)')this.style.background='rgba(255,255,255,0.02)'" onmouseout="if(this.style.background!=='rgba(255,0,85,0.1)')this.style.background='transparent'">
+              <button onclick="RbxlAnalyzerPage.viewScript(${idx})" class="script-list-btn" style="text-align:left; border:none; padding:8px 10px; font-size:0.65rem; border-radius:4px; cursor:pointer; background:${this.selectedScript === scr ? 'rgba(0,240,255,0.1)' : 'transparent'}; color:${this.selectedScript === scr ? 'var(--color-accent-cyan)' : '#ccc'}; transition:all 0.2s;" onmouseover="if(this.style.background!=='rgba(0,240,255,0.1)')this.style.background='rgba(255,255,255,0.02)'" onmouseout="if(this.style.background!=='rgba(0,240,255,0.1)')this.style.background='transparent'">
                 <div style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${scr.name}</div>
                 <div style="font-size:0.55rem; color:var(--color-text-muted); margin-top:2px;">${scr.className} · ${scr.source.length} byte</div>
               </button>

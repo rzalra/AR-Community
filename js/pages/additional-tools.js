@@ -853,18 +853,6 @@ const SpriteSheetPage = {
     placeholder.style.display = 'none';
     canvas.style.display = 'block';
     dlBtn.style.display = 'block';
-  },
-
-  download() {
-    const canvas = document.getElementById('sprite-canvas');
-    if (!canvas) return;
-    const a = document.createElement('a');
-    a.href = canvas.toDataURL('image/png');
-    a.download = 'spritesheet_atlas.png';
-    a.click();
-  }
-};
-
 // 8. MATERIAL GENERATOR
 const MaterialGeneratorPage = {
   imgFile: null,
@@ -885,7 +873,7 @@ const MaterialGeneratorPage = {
               <a href="#/tools">🔧 Tools</a> <span>&gt;</span> <span class="active">PBR Material Generator</span>
             </div>
             <div class="tool-page-header" style="margin-bottom: var(--space-6);">
-              <h1 style="margin: 0 0 var(--space-2) 0; font-family: var(--font-heading); font-weight: var(--font-weight-black); font-size: 2.2rem; background: linear-gradient(135deg, #00f0ff 0%, #ff007f 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">PBR Material Generator</h1>
+              <h1 style="margin: 0 0 var(--space-2) 0; font-family: var(--font-heading); font-weight: var(--font-weight-black); font-size: 2.2rem; background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">PBR Material Generator</h1>
               <p style="margin: 0; color: var(--color-text-secondary); font-size: var(--text-sm);">Upload tekstur, dapatkan 5 map PBR (Color, Normal, Roughness, Metalness, Emissive) siap pakai di MaterialVariant Roblox.</p>
             </div>
 
@@ -913,10 +901,10 @@ const MaterialGeneratorPage = {
                 <div class="tool-section" style="padding:16px;">
                   <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px;">UKURAN OUTPUT</h3>
                   <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px;">
-                    <button class="btn btn-sm btn-size" onclick="MaterialGeneratorPage.setSize(512)" style="padding:6px 0; border-radius:6px; font-weight:bold; font-size:0.7rem; border:1px solid rgba(255,255,255,0.1); background:${this.outputSize===512?'#ff0055':'transparent'}; color:#fff;">512</button>
-                    <button class="btn btn-sm btn-size" onclick="MaterialGeneratorPage.setSize(1024)" style="padding:6px 0; border-radius:6px; font-weight:bold; font-size:0.7rem; border:1px solid rgba(255,255,255,0.1); background:${this.outputSize===1024?'#ff0055':'transparent'}; color:#fff;">1024</button>
-                    <button class="btn btn-sm btn-size" onclick="MaterialGeneratorPage.setSize(2048)" style="padding:6px 0; border-radius:6px; font-weight:bold; font-size:0.7rem; border:1px solid rgba(255,255,255,0.1); background:${this.outputSize===2048?'#ff0055':'transparent'}; color:#fff;">2048</button>
-                    <button class="btn btn-sm btn-size" onclick="MaterialGeneratorPage.setSize(4096)" style="padding:6px 0; border-radius:6px; font-weight:bold; font-size:0.7rem; border:1px solid rgba(255,255,255,0.1); background:${this.outputSize===4096?'#ff0055':'transparent'}; color:#fff;">4096</button>
+                    <button class="btn btn-sm btn-size" onclick="MaterialGeneratorPage.setSize(512)" style="padding:6px 0; border-radius:6px; font-weight:bold; font-size:0.7rem; border:1px solid rgba(255,255,255,0.1); background:${this.outputSize===512?'var(--color-accent-cyan)':'transparent'}; color:${this.outputSize===512?'#000':'#fff'};">512</button>
+                    <button class="btn btn-sm btn-size" onclick="MaterialGeneratorPage.setSize(1024)" style="padding:6px 0; border-radius:6px; font-weight:bold; font-size:0.7rem; border:1px solid rgba(255,255,255,0.1); background:${this.outputSize===1024?'var(--color-accent-cyan)':'transparent'}; color:${this.outputSize===1024?'#000':'#fff'};">1024</button>
+                    <button class="btn btn-sm btn-size" onclick="MaterialGeneratorPage.setSize(2048)" style="padding:6px 0; border-radius:6px; font-weight:bold; font-size:0.7rem; border:1px solid rgba(255,255,255,0.1); background:${this.outputSize===2048?'var(--color-accent-cyan)':'transparent'}; color:${this.outputSize===2048?'#000':'#fff'};">2048</button>
+                    <button class="btn btn-sm btn-size" onclick="MaterialGeneratorPage.setSize(4096)" style="padding:6px 0; border-radius:6px; font-weight:bold; font-size:0.7rem; border:1px solid rgba(255,255,255,0.1); background:${this.outputSize===4096?'var(--color-accent-cyan)':'transparent'}; color:${this.outputSize===4096?'#000':'#fff'};">4096</button>
                   </div>
                   <div style="font-size:0.6rem; color:var(--color-text-muted); margin-top:8px;" id="output-size-desc">Output: 5 file PNG masing-masing ${this.outputSize}×${this.outputSize}px</div>
                 </div>
@@ -928,42 +916,42 @@ const MaterialGeneratorPage = {
                   <div style="margin-bottom:14px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                       <span style="font-size:0.7rem; font-weight:bold;">Normal Strength</span>
-                      <span style="font-size:0.7rem; font-weight:bold; color:#ff0055;" id="val-normal-strength">${this.normalStrength}</span>
+                      <span style="font-size:0.7rem; font-weight:bold; color:var(--color-accent-cyan);" id="val-normal-strength">${this.normalStrength}</span>
                     </div>
-                    <input type="range" min="0" max="10" step="0.1" value="${this.normalStrength}" oninput="MaterialGeneratorPage.updateParam('normalStrength', parseFloat(this.value))" style="width:100%; accent-color:#ff0055;">
+                    <input type="range" min="0" max="10" step="0.1" value="${this.normalStrength}" oninput="MaterialGeneratorPage.updateParam('normalStrength', parseFloat(this.value))" style="width:100%; accent-color:var(--color-accent-cyan);">
                     <div style="font-size:0.58rem; color:var(--color-text-muted); margin-top:2px;">Makin tinggi, permukaan terasa makin 3D/bergelombang</div>
                   </div>
 
                   <div style="margin-bottom:14px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                       <span style="font-size:0.7rem; font-weight:bold;">Roughness Bias</span>
-                      <span style="font-size:0.7rem; font-weight:bold; color:#ff0055;" id="val-roughness-bias">${this.roughnessBias}</span>
+                      <span style="font-size:0.7rem; font-weight:bold; color:var(--color-accent-cyan);" id="val-roughness-bias">${this.roughnessBias}</span>
                     </div>
-                    <input type="range" min="-128" max="128" step="1" value="${this.roughnessBias}" oninput="MaterialGeneratorPage.updateParam('roughnessBias', parseInt(this.value))" style="width:100%; accent-color:#ff0055;">
+                    <input type="range" min="-128" max="128" step="1" value="${this.roughnessBias}" oninput="MaterialGeneratorPage.updateParam('roughnessBias', parseInt(this.value))" style="width:100%; accent-color:var(--color-accent-cyan);">
                     <div style="font-size:0.58rem; color:var(--color-text-muted); margin-top:2px;">Negatif = lebih glossy, positif = lebih kasar</div>
                   </div>
 
                   <div style="margin-bottom:14px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                       <span style="font-size:0.7rem; font-weight:bold;">Metal Threshold</span>
-                      <span style="font-size:0.7rem; font-weight:bold; color:#ff0055;" id="val-metal-threshold">${this.metalThreshold}</span>
+                      <span style="font-size:0.7rem; font-weight:bold; color:var(--color-accent-cyan);" id="val-metal-threshold">${this.metalThreshold}</span>
                     </div>
-                    <input type="range" min="0.0" max="1.0" step="0.01" value="${this.metalThreshold}" oninput="MaterialGeneratorPage.updateParam('metalThreshold', parseFloat(this.value))" style="width:100%; accent-color:#ff0055;">
+                    <input type="range" min="0.0" max="1.0" step="0.01" value="${this.metalThreshold}" oninput="MaterialGeneratorPage.updateParam('metalThreshold', parseFloat(this.value))" style="width:100%; accent-color:var(--color-accent-cyan);">
                     <div style="font-size:0.58rem; color:var(--color-text-muted); margin-top:2px;">Saturasi di bawah threshold dianggap metal (abu-abu/perak)</div>
                   </div>
 
                   <div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                       <span style="font-size:0.7rem; font-weight:bold;">Emissive Threshold</span>
-                      <span style="font-size:0.7rem; font-weight:bold; color:#ff0055;" id="val-emissive-threshold">${this.emissiveThreshold}</span>
+                      <span style="font-size:0.7rem; font-weight:bold; color:var(--color-accent-cyan);" id="val-emissive-threshold">${this.emissiveThreshold}</span>
                     </div>
-                    <input type="range" min="0" max="255" step="1" value="${this.emissiveThreshold}" oninput="MaterialGeneratorPage.updateParam('emissiveThreshold', parseInt(this.value))" style="width:100%; accent-color:#ff0055;">
+                    <input type="range" min="0" max="255" step="1" value="${this.emissiveThreshold}" oninput="MaterialGeneratorPage.updateParam('emissiveThreshold', parseInt(this.value))" style="width:100%; accent-color:var(--color-accent-cyan);">
                     <div style="font-size:0.58rem; color:var(--color-text-muted); margin-top:2px;">Pixel dengan luminance di atas nilai ini dianggap glowing/emissive</div>
                   </div>
                 </div>
 
                 <!-- GENERATE BUTTON -->
-                <button class="btn btn-primary" onclick="MaterialGeneratorPage.generateAll()" style="width:100%; padding:12px; font-weight:bold; font-size:0.8rem; background:#ff0055; border:none; display:flex; justify-content:center; align-items:center; gap:8px;">
+                <button class="btn" onclick="MaterialGeneratorPage.generateAll()" style="width:100%; padding:12px; font-weight:bold; font-size:0.8rem; background:var(--gradient-accent); color:#000; border:none; display:flex; justify-content:center; align-items:center; gap:8px;">
                   🔄 Generate PBR Maps
                 </button>
 
@@ -1006,14 +994,14 @@ const MaterialGeneratorPage = {
                   
                   <div style="display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:24px;">
                     <!-- Left grid icon -->
-                    <div style="background:#2a1b15; border: 1px solid #ff4400; border-radius: 8px; width: 48px; height: 48px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:#fff;">🧱</div>
+                    <div style="background:#2a1b15; border: 1px solid var(--color-accent-purple); border-radius: 8px; width: 48px; height: 48px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:#fff;">🧱</div>
                     <div style="font-size:1.2rem; color:var(--color-text-muted);">→</div>
                     <!-- Right badges -->
                     <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
-                      <span style="background:rgba(255,0,0,0.15); color:#ff5555; border:1px solid rgba(255,0,0,0.3); padding:2px 8px; border-radius:4px; font-size:0.55rem; font-weight:bold; font-family:monospace; line-height:1;">Color</span>
-                      <span style="background:rgba(0,100,255,0.15); color:#5599ff; border:1px solid rgba(0,100,255,0.3); padding:2px 8px; border-radius:4px; font-size:0.55rem; font-weight:bold; font-family:monospace; line-height:1;">Normal</span>
+                      <span style="background:rgba(0,240,255,0.15); color:var(--color-accent-cyan); border:1px solid rgba(0,240,255,0.3); padding:2px 8px; border-radius:4px; font-size:0.55rem; font-weight:bold; font-family:monospace; line-height:1;">Color</span>
+                      <span style="background:rgba(168,85,247,0.15); color:var(--color-accent-purple); border:1px solid rgba(168,85,247,0.3); padding:2px 8px; border-radius:4px; font-size:0.55rem; font-weight:bold; font-family:monospace; line-height:1;">Normal</span>
                       <span style="background:rgba(255,255,255,0.05); color:#aaa; border:1px solid rgba(255,255,255,0.15); padding:2px 8px; border-radius:4px; font-size:0.55rem; font-weight:bold; font-family:monospace; line-height:1;">Rough</span>
-                      <span style="background:rgba(255,0,100,0.15); color:#ff55aa; border:1px solid rgba(255,0,100,0.3); padding:2px 8px; border-radius:4px; font-size:0.55rem; font-weight:bold; font-family:monospace; line-height:1;">Metal</span>
+                      <span style="background:rgba(0,240,255,0.15); color:var(--color-accent-cyan); border:1px solid rgba(0,240,255,0.3); padding:2px 8px; border-radius:4px; font-size:0.55rem; font-weight:bold; font-family:monospace; line-height:1;">Metal</span>
                     </div>
                   </div>
 
@@ -1037,7 +1025,7 @@ const MaterialGeneratorPage = {
                 <div id="material-result" style="display:none; width:100%;">
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px;">
                     <h3 style="font-size:0.85rem; font-weight:bold; color:#fff; margin:0;">✨ Hasil PBR Maps</h3>
-                    <button class="btn btn-primary btn-sm" onclick="MaterialGeneratorPage.downloadAll()" style="background:#ff0055; border:none; font-size:0.7rem; font-weight:bold;">📥 Download Semua Map</button>
+                    <button class="btn btn-sm" onclick="MaterialGeneratorPage.downloadAll()" style="background:var(--gradient-accent); color:#000; border:none; font-size:0.7rem; font-weight:bold; padding:6px 12px; border-radius:4px;">📥 Download Semua Map</button>
                   </div>
 
                   <!-- Grid of 5 output maps -->
@@ -1103,8 +1091,8 @@ const MaterialGeneratorPage = {
       if (dropZone) {
         dropZone.addEventListener('dragover', (e) => {
           e.preventDefault();
-          dropZone.style.borderColor = '#ff0055';
-          dropZone.style.background = 'rgba(255,0,85,0.05)';
+          dropZone.style.borderColor = 'var(--color-accent-cyan)';
+          dropZone.style.background = 'rgba(0,240,255,0.03)';
         });
         dropZone.addEventListener('dragleave', (e) => {
           e.preventDefault();
@@ -1131,9 +1119,11 @@ const MaterialGeneratorPage = {
     // Update active button classes & styles
     document.querySelectorAll('.btn-size').forEach(btn => {
       if (parseInt(btn.textContent, 10) === size) {
-        btn.style.background = '#ff0055';
+        btn.style.background = 'var(--color-accent-cyan)';
+        btn.style.color = '#000';
       } else {
         btn.style.background = 'transparent';
+        btn.style.color = '#fff';
       }
     });
   },
@@ -1778,25 +1768,256 @@ const MeshDecimatorPage = {
 };
 
 // 14. ANIM CONVERTER PAGE
+// 14. ANIM CONVERTER PAGE
 const AnimConverterPage = {
+  activeTab: 'catalog', // catalog, bundle
+  inputLinks: '',
+  bundleInput: '',
+
   render() {
     const app = document.getElementById('app');
+    const bookmarkletCode = `javascript:(function(){const links=[];document.querySelectorAll('a[href*="/catalog/"],a[href*="/library/"]').forEach(a=>{const m=a.href.match(/\\/(catalog|library)\\/(\\d+)/);if(m)links.push(a.href)});if(links.length>0){const txt=links.join('\\n');navigator.clipboard.writeText(txt);alert(links.length+' link animasi berhasil disalin!');}else{alert('Tidak ada link katalog/library di halaman ini!');}})()`;
+
     app.innerHTML = `
       <div class="page-transition-enter">
-        <section class="tool-page" style="padding: var(--space-10) 0;">
+        <section class="tool-page" style="padding: var(--space-8) 0;">
           <div class="container">
-            ${ToolHelper.renderBreadcrumbs('Anim Converter')}
-            ${ToolHelper.renderHeader('Anim Converter', 'Konversi data keyframe animasi Roblox ke berbagai format, atau ubah struktur script animasinya.', '🎨 ASSET')}
-            
-            <div style="max-width: 600px; margin: 0 auto;" class="tool-section">
-              <h3>Keyframe Roblox Data</h3>
-              <textarea class="code-textarea" style="height:150px; font-family:monospace;" placeholder="Tempelkan data keyframe atau JSON animasi di sini..."></textarea>
-              <button onclick="alert('Data animasi berhasil dikonversi!');" class="btn btn-primary" style="width:100%; margin-top:12px; font-weight:bold;">🏃 KONVERSI ANIMASI</button>
+            <div class="tool-breadcrumbs">
+              <a href="#/tools">🔧 Tools</a> <span>&gt;</span> <span class="active">Anim Converter</span>
             </div>
+            
+            <div class="tool-page-header" style="margin-bottom: var(--space-6);">
+              <h1 style="margin: 0 0 var(--space-2) 0; font-family: var(--font-heading); font-weight: var(--font-weight-black); font-size: 2.2rem; background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Anim Converter</h1>
+              <p style="margin: 0; color: var(--color-text-secondary); font-size: var(--text-sm);">Konversi link katalog/bundle animasi Roblox jadi script siap pakai di Command Bar Studio.</p>
+            </div>
+
+            <!-- Tab Selection Buttons -->
+            <div style="display:flex; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:4px; border-radius:8px; margin-bottom:24px; max-width:600px; margin-left:auto; margin-right:auto;">
+              <button onclick="AnimConverterPage.setTab('catalog')" style="flex:1; border:none; padding:10px 0; border-radius:6px; font-size:0.75rem; font-weight:bold; cursor:pointer; background:${this.activeTab==='catalog'?'var(--gradient-accent)':'transparent'}; color:${this.activeTab==='catalog'?'#000':'#aaa'}; transition:all 0.2s;">
+                CATALOG CONVERTER
+              </button>
+              <button onclick="AnimConverterPage.setTab('bundle')" style="flex:1; border:none; padding:10px 0; border-radius:6px; font-size:0.75rem; font-weight:bold; cursor:pointer; background:${this.activeTab==='bundle'?'var(--gradient-accent)':'transparent'}; color:${this.activeTab==='bundle'?'#000':'#aaa'}; transition:all 0.2s;">
+                CONVERT BUNDLE
+              </button>
+            </div>
+
+            <div style="max-width:800px; margin:0 auto; display:flex; flex-direction:column; gap:24px;">
+              ${this.activeTab === 'catalog' ? `
+                <!-- Catalog Auto-Grab Box -->
+                <div class="tool-section" style="padding:20px; display:grid; grid-template-columns:1fr 220px; gap:20px; align-items:center;">
+                  <div>
+                    <h3 style="font-size:0.8rem; font-weight:bold; display:flex; align-items:center; gap:8px; color:#fff; margin-bottom:8px;">
+                      🔖 Catalog Auto-Grab
+                    </h3>
+                    <p style="font-size:0.68rem; color:var(--color-text-secondary); line-height:1.5; margin-bottom:12px;">
+                      Drag tombol ini ke bookmark bar browser kamu. Lalu buka halaman catalog Roblox, klik bookmark → semua link di halaman otomatis ter-copy ke clipboard.
+                    </p>
+                    <ol style="font-size:0.62rem; color:var(--color-text-muted); line-height:1.6; padding-left:14px; margin:0;">
+                      <li>Drag tombol ke bookmark bar</li>
+                      <li>Buka halaman catalog Roblox</li>
+                      <li>Klik bookmark → link ter-copy</li>
+                      <li>Paste di sini</li>
+                    </ol>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:8px;">
+                    <a href="${bookmarkletCode}" class="btn" style="background:var(--gradient-accent); color:#000; font-size:0.7rem; font-weight:bold; padding:10px; border-radius:6px; text-align:center; text-decoration:none; cursor:grab; box-shadow:0 0 10px rgba(0,240,255,0.15);" onclick="event.preventDefault(); alert('Silakan drag/seret tombol ini ke area bookmark bar browser Anda.');">
+                      Grab Roblox Links
+                    </a>
+                    <button class="btn btn-ghost" onclick="AnimConverterPage.copyBookmarklet()" style="font-size:0.65rem; padding:8px;">
+                      Salin kode
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Input Textarea Box -->
+                <div class="tool-section" style="padding:20px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin:0;">LINK ANIMASI</h3>
+                    <span id="link-count" style="font-size:0.65rem; color:var(--color-accent-cyan); font-weight:bold;">0 link</span>
+                  </div>
+                  
+                  <textarea id="anim-links-input" oninput="AnimConverterPage.updateCount(this.value)" class="code-textarea" style="height:150px; font-family:monospace; font-size:0.7rem; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.05); color:#fff;" placeholder="Tempel link animasi di sini..."></textarea>
+                  
+                  <button onclick="AnimConverterPage.convertCatalog()" class="btn" style="width:100%; margin-top:16px; padding:12px; font-weight:bold; font-size:0.8rem; background:var(--gradient-accent); color:#000; border:none; box-shadow:0 0 12px rgba(0,240,255,0.1);">
+                    ⚡ Konversi Katalog Animasi
+                  </button>
+                </div>
+              ` : `
+                <!-- Convert Bundle -->
+                <div class="tool-section" style="padding:20px;">
+                  <h3 style="font-size:0.8rem; font-weight:bold; color:#fff; margin-bottom:8px;">📦 Convert Roblox Animation Bundle</h3>
+                  <p style="font-size:0.68rem; color:var(--color-text-secondary); line-height:1.5; margin-bottom:16px;">
+                    Masukkan link bundle animasi Roblox (e.g. <code>https://www.roblox.com/bundles/123/...</code>) atau ID bundle secara langsung untuk membuat load-script siap pakai di Studio Command Bar.
+                  </p>
+                  
+                  <div style="display:flex; gap:12px; margin-bottom:16px;">
+                    <input type="text" id="bundle-id-input" class="form-input" placeholder="Masukkan Link atau ID Bundle Animasi (e.g. 81)" style="font-size:0.72rem; flex:1; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.05); color:#fff;">
+                    <button onclick="AnimConverterPage.convertBundle()" class="btn" style="background:var(--gradient-accent); color:#000; font-weight:bold; font-size:0.75rem; border:none; padding:0 24px;">
+                      Convert Bundle
+                    </button>
+                  </div>
+                </div>
+              `}
+
+              <!-- Converted Output Result -->
+              <div id="converter-result-box" style="display:none;" class="tool-section">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <h3 style="font-size:0.8rem; font-weight:bold; color:#fff; margin:0;">📋 Script Command Bar Studio</h3>
+                  <button class="btn btn-ghost btn-xs" onclick="AnimConverterPage.copyResultCode()" style="font-size:0.62rem; padding:4px 10px;">Salin Script</button>
+                </div>
+                <textarea id="converter-output-code" readonly class="code-textarea" style="height:250px; font-family:monospace; font-size:0.7rem; background:rgba(0,0,0,0.3); color:#fff; border:1px solid rgba(255,255,255,0.05); resize:none;"></textarea>
+                <div style="font-size:0.6rem; color:var(--color-text-muted); margin-top:8px;">
+                  💡 <strong>Cara Pakai:</strong> Salin script di atas, buka <strong>Roblox Studio</strong>, buka <strong>Command Bar</strong> (View → Command Bar), paste script, lalu tekan Enter.
+                </div>
+              </div>
+            </div>
+
           </div>
         </section>
       </div>
     `;
+  },
+
+  setTab(tab) {
+    this.activeTab = tab;
+    this.render();
+  },
+
+  updateCount(val) {
+    this.inputLinks = val;
+    const lines = val.split('\n').map(l => l.trim()).filter(l => l);
+    const countEl = document.getElementById('link-count');
+    if (countEl) {
+      countEl.textContent = `${lines.length} link`;
+    }
+  },
+
+  copyBookmarklet() {
+    const bookmarkletCode = `javascript:(function(){const links=[];document.querySelectorAll('a[href*="/catalog/"],a[href*="/library/"]').forEach(a=>{const m=a.href.match(/\\/(catalog|library)\\/(\\d+)/);if(m)links.push(a.href)});if(links.length>0){const txt=links.join('\\n');navigator.clipboard.writeText(txt);alert(links.length+' link animasi berhasil disalin!');}else{alert('Tidak ada link katalog/library di halaman ini!');}})()`;
+    navigator.clipboard.writeText(bookmarkletCode);
+    alert('Kode Auto-Grab berhasil disalin! Anda dapat menambahkannya secara manual ke bookmark bar.');
+  },
+
+  convertCatalog() {
+    const inputVal = document.getElementById('anim-links-input')?.value || '';
+    const lines = inputVal.split('\n').map(l => l.trim()).filter(l => l);
+    
+    if (lines.length === 0) {
+      alert('Silakan masukkan link katalog animasi terlebih dahulu.');
+      return;
+    }
+
+    const anims = [];
+    lines.forEach(line => {
+      const idMatch = line.match(/\/(catalog|library)\/(\d+)/);
+      if (idMatch) {
+        const id = idMatch[2];
+        let name = 'Animation';
+        const parts = line.split('/');
+        const lastPart = parts[parts.length - 1];
+        if (lastPart && isNaN(parseInt(lastPart, 10)) && lastPart !== id) {
+          name = decodeURIComponent(lastPart).replace(/-/g, ' ');
+        }
+        anims.push({ id, name });
+      } else if (!isNaN(parseInt(line, 10))) {
+        anims.push({ id: line.trim(), name: 'Animation' });
+      }
+    });
+
+    if (anims.length === 0) {
+      alert('Tidak dapat mendeteksi ID animasi yang valid dari input Anda.');
+      return;
+    }
+
+    let lua = `-- Generated by AR Community Anim Converter\n`;
+    lua += `-- Total animations: ${anims.length}\n\n`;
+    lua += `local anims = {\n`;
+    anims.forEach(anim => {
+      lua += `  ["${anim.name}"] = "${anim.id}",\n`;
+    });
+    lua += `}\n\n`;
+    lua += `local folder = Instance.new("Folder")\n`;
+    lua += `folder.Name = "ImportedAnimations"\n`;
+    lua += `folder.Parent = game.Workspace\n\n`;
+    lua += `for name, id in pairs(anims) do\n`;
+    lua += `  local anim = Instance.new("Animation")\n`;
+    lua += `  anim.Name = name\n`;
+    lua += `  anim.AnimationId = "rbxassetid://" .. id\n`;
+    lua += `  anim.Parent = folder\n`;
+    lua += `  print("Imported animation: " .. name .. " (ID: " .. id .. ")")\n`;
+    lua += `end\n`;
+    lua += `print("Import selesai! Folder ImportedAnimations dibuat di Workspace.")\n`;
+
+    const resBox = document.getElementById('converter-result-box');
+    const outCode = document.getElementById('converter-output-code');
+    if (resBox && outCode) {
+      resBox.style.display = 'block';
+      outCode.value = lua;
+    }
+  },
+
+  convertBundle() {
+    const inputVal = document.getElementById('bundle-id-input')?.value.trim() || '';
+    if (!inputVal) {
+      alert('Silakan masukkan Link atau ID Bundle terlebih dahulu.');
+      return;
+    }
+
+    let bundleId = inputVal;
+    const match = inputVal.match(/\/bundles\/(\d+)/);
+    if (match) {
+      bundleId = match[1];
+    }
+
+    if (isNaN(parseInt(bundleId, 10))) {
+      alert('ID Bundle tidak valid.');
+      return;
+    }
+
+    let lua = `-- Generated by AR Community Anim Converter (Bundle Loader)\n`;
+    lua += `-- Target Bundle ID: ${bundleId}\n\n`;
+    lua += `local AssetService = game:GetService("AssetService")\n`;
+    lua += `local InsertService = game:GetService("InsertService")\n`;
+    lua += `local bundleId = ${bundleId}\n\n`;
+    lua += `local success, bundleInfo = pcall(function()\n`;
+    lua += `  return AssetService:GetBundleDetailsAsync(bundleId)\n`;
+    lua += `end)\n\n`;
+    lua += `if success and bundleInfo then\n`;
+    lua += `  print("Loading Bundle: " .. bundleInfo.Name)\n`;
+    lua += `  local folder = Instance.new("Folder")\n`;
+    lua += `  folder.Name = bundleInfo.Name .. " Animations"\n`;
+    lua += `  folder.Parent = game.Workspace\n\n`;
+    lua += `  for _, item in ipairs(bundleInfo.Items) do\n`;
+    lua += `    if item.Type == "Asset" then\n`;
+    lua += `      local successLoad, asset = pcall(function()\n`;
+    lua += `        return InsertService:LoadAsset(item.Id)\n`;
+    lua += `      end)\n`;
+    lua += `      if successLoad and asset then\n`;
+    lua += `        asset.Name = item.Name\n`;
+    lua += `        asset.Parent = folder\n`;
+    lua += `        print("Loaded asset: " .. item.Name .. " (" .. item.Id .. ")")\n`;
+    lua += `      end\n`;
+    lua += `    end\n`;
+    lua += `  end\n`;
+    lua += `  print("Bundle loaded successfully to Workspace!")\n`;
+    lua += `else\n`;
+    lua += `  warn("Gagal mengambil info bundle: " .. tostring(bundleInfo))\n`;
+    lua += `end\n`;
+
+    const resBox = document.getElementById('converter-result-box');
+    const outCode = document.getElementById('converter-output-code');
+    if (resBox && outCode) {
+      resBox.style.display = 'block';
+      outCode.value = lua;
+    }
+  },
+
+  copyResultCode() {
+    const outCode = document.getElementById('converter-output-code');
+    if (outCode && outCode.value) {
+      navigator.clipboard.writeText(outCode.value);
+      alert('Script Command Bar berhasil disalin!');
+    }
   }
 };
 
