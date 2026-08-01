@@ -1894,75 +1894,304 @@ const MaterialGeneratorPage = {
 
 // 9. FONT PREVIEW PAGE
 const FontPreviewPage = {
-  inputText: 'The quick brown fox jumps over the lazy dog',
-  selectedFont: 'Inter',
-  fontSize: 24,
+  inputText: 'Terakhir Community',
+  fontSize: 48,
+  textColor: '#ffffff',
+  bgColor: '#3a0f14', // Default dark red background
+  isBold: false,
+  isItalic: false,
+  searchQuery: '',
+
+  fonts: [
+    { name: 'Gotham SSm', googleFamily: 'Montserrat', enum: 'Enum.Font.GothamSsm' },
+    { name: 'Gotham Bold', googleFamily: 'Montserrat', enum: 'Enum.Font.GothamBold' },
+    { name: 'Gotham Black', googleFamily: 'Montserrat', enum: 'Enum.Font.GothamBlack' },
+    { name: 'Amatic SC', googleFamily: 'Amatic SC', enum: 'Enum.Font.AmaticSC' },
+    { name: 'Arcade', googleFamily: 'Press Start 2P', enum: 'Enum.Font.Arcade' },
+    { name: 'Arial', googleFamily: 'Arial', enum: 'Enum.Font.Arial' },
+    { name: 'Bangers', googleFamily: 'Bangers', enum: 'Enum.Font.Bangers' },
+    { name: 'Bodoni', googleFamily: 'Bodoni Moda', enum: 'Enum.Font.Bodoni' },
+    { name: 'Cartoon', googleFamily: 'Luckiest Guy', enum: 'Enum.Font.Cartoon' },
+    { name: 'Code', googleFamily: 'Source Code Pro', enum: 'Enum.Font.Code' },
+    { name: 'Creepster', googleFamily: 'Creepster', enum: 'Enum.Font.Creepster' },
+    { name: 'Fantasy', googleFamily: 'MedievalSharp', enum: 'Enum.Font.Fantasy' },
+    { name: 'Fredoka One', googleFamily: 'Fredoka', enum: 'Enum.Font.FredokaOne' },
+    { name: 'Garamond', googleFamily: 'EB Garamond', enum: 'Enum.Font.Garamond' },
+    { name: 'Highway', googleFamily: 'Oswald', enum: 'Enum.Font.Highway' },
+    { name: 'Indie Flower', googleFamily: 'Indie Flower', enum: 'Enum.Font.IndieFlower' },
+    { name: 'Josefin Sans', googleFamily: 'Josefin Sans', enum: 'Enum.Font.JosefinSans' },
+    { name: 'Jura', googleFamily: 'Jura', enum: 'Enum.Font.Jura' },
+    { name: 'Luckiest Guy', googleFamily: 'Luckiest Guy', enum: 'Enum.Font.LuckiestGuy' },
+    { name: 'Merriweather', googleFamily: 'Merriweather', enum: 'Enum.Font.Merriweather' },
+    { name: 'Michroma', googleFamily: 'Michroma', enum: 'Enum.Font.Michroma' },
+    { name: 'Nunito', googleFamily: 'Nunito', enum: 'Enum.Font.Nunito' },
+    { name: 'Oswald', googleFamily: 'Oswald', enum: 'Enum.Font.Oswald' },
+    { name: 'Patrick Hand', googleFamily: 'Patrick Hand', enum: 'Enum.Font.PatrickHand' },
+    { name: 'Permanent Marker', googleFamily: 'Permanent Marker', enum: 'Enum.Font.PermanentMarker' },
+    { name: 'Ribeye', googleFamily: 'Ribeye', enum: 'Enum.Font.Ribeye' },
+    { name: 'Sacramento', googleFamily: 'Sacramento', enum: 'Enum.Font.Sacramento' },
+    { name: 'SciFi', googleFamily: 'Orbitron', enum: 'Enum.Font.SciFi' },
+    { name: 'Source Sans Pro', googleFamily: 'Source Sans 3', enum: 'Enum.Font.SourceSansPro' },
+    { name: 'Special Elite', googleFamily: 'Special Elite', enum: 'Enum.Font.SpecialElite' },
+    { name: 'Ubuntu', googleFamily: 'Ubuntu', enum: 'Enum.Font.Ubuntu' }
+  ],
 
   render() {
     const app = document.getElementById('app');
+
+    // Dynamic Google Fonts loading helper
+    const googleFonts = [
+      'Montserrat:wght@400;700;900', 'Amatic+SC', 'Press+Start+2P', 'Bangers', 'Bodoni+Moda',
+      'Luckiest+Guy', 'Source+Code+Pro', 'Creepster', 'MedievalSharp', 'Fredoka',
+      'EB+Garamond', 'Oswald', 'Indie+Flower', 'Josefin+Sans', 'Jura', 'Merriweather',
+      'Michroma', 'Nunito', 'Patrick+Hand', 'Permanent+Marker', 'Ribeye', 'Sacramento',
+      'Orbitron', 'Source+Sans+3', 'Special+Elite', 'Ubuntu'
+    ];
+    const linkId = 'roblox-preview-fonts';
+    if (!document.getElementById(linkId)) {
+      const link = document.createElement('link');
+      link.id = linkId;
+      link.rel = 'stylesheet';
+      link.href = `https://fonts.googleapis.com/css2?${googleFonts.map(f => `family=${f}`).join('&')}&display=swap`;
+      document.head.appendChild(link);
+    }
+
+    const textColors = [
+      '#ffffff', '#ff4d4d', '#ffeb3b', '#00e676', '#29b6f6', '#ec407a', '#000000', 'transparent'
+    ];
+
+    const bgColors = [
+      '#3a0f14', '#000000', '#ffffff', '#1e1b4b', '#0f172a', '#ef4444', 'transparent'
+    ];
+
+    const filteredFonts = this.fonts.filter(f => 
+      f.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+    );
+
     app.innerHTML = `
       <div class="page-transition-enter">
-        <section class="tool-page" style="padding: var(--space-10) 0;">
+        <section class="tool-page" style="padding: var(--space-8) 0;">
           <div class="container">
-            ${ToolHelper.renderBreadcrumbs('Font Preview')}
-            ${ToolHelper.renderHeader('Font Preview', 'Uji coba dan lihat pratinjau berbagai Google Fonts populer dengan modifikasi style dan salin kode CSS.', '🎨 ASSET')}
             
-            <div style="display:grid; grid-template-columns: 280px 1fr; gap:20px; align-items:start;">
-              <div class="tool-section">
-                <h3>Style Tools</h3>
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                  <div>
-                    <label style="font-size:0.62rem; display:block; margin-bottom:4px;">PILIH FONT</label>
-                    <select class="form-input" style="background:var(--color-bg-secondary);" onchange="FontPreviewPage.updateFont(this.value)">
-                      <option value="Inter">Inter</option>
-                      <option value="Outfit">Outfit</option>
-                      <option value="Roboto">Roboto</option>
-                      <option value="Merriweather">Merriweather</option>
-                      <option value="Ubuntu">Ubuntu</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style="font-size:0.62rem; display:block; margin-bottom:4px;">UKURAN FONT</label>
-                    <input type="range" class="range-slider-red" min="14" max="72" value="${this.fontSize}" oninput="FontPreviewPage.updateSize(this.value)">
-                  </div>
-                  <div>
-                    <label style="font-size:0.62rem; display:block; margin-bottom:4px;">TEXT MASUKAN</label>
-                    <textarea class="form-input" style="min-height:60px;" oninput="FontPreviewPage.updateText(this.value)">${this.inputText}</textarea>
+            <!-- Breadcrumbs -->
+            <div class="tool-breadcrumbs">
+              <a href="#/tools">🔧 Tools</a> <span>&gt;</span> <span class="active">Roblox Font Preview</span>
+            </div>
+
+            <!-- Page Header -->
+            <div class="tool-page-header" style="margin-bottom: 24px;">
+              <h1 style="margin: 0 0 var(--space-2) 0; font-family: var(--font-heading); font-weight: var(--font-weight-black); font-size: 2.2rem; color:#fff;">
+                Roblox Font <span style="background:var(--gradient-accent); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Preview</span>
+              </h1>
+              <p style="margin: 0; color: var(--color-text-secondary); font-size: var(--text-sm);">
+                Preview semua font Roblox, copy kode langsung ke Studio, download PNG.
+              </p>
+            </div>
+
+            <!-- Style Controls Dashboard -->
+            <div class="tool-section" style="padding:20px; margin-bottom:24px; display:flex; flex-direction:column; gap:16px;">
+              
+              <!-- First Row Controls -->
+              <div style="display:flex; flex-wrap:wrap; align-items:center; gap:20px;">
+                
+                <!-- Preview Text Input -->
+                <div style="flex:1; min-width:200px;">
+                  <label style="font-size:0.58rem; font-weight:bold; color:var(--color-text-muted); display:block; margin-bottom:6px; letter-spacing:0.5px;">TEKS PREVIEW</label>
+                  <input type="text" value="${this.inputText}" oninput="FontPreviewPage.updateText(this.value)" style="width:100%; box-sizing:border-box; padding:10px 12px; font-size:0.75rem; border-radius:6px; border:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.02); color:#fff;">
+                </div>
+
+                <!-- Font Size Slider -->
+                <div style="width:180px;">
+                  <label style="font-size:0.58rem; font-weight:bold; color:var(--color-text-muted); display:block; margin-bottom:6px; letter-spacing:0.5px;">UKURAN: ${this.fontSize}PX</label>
+                  <input type="range" min="12" max="100" value="${this.fontSize}" oninput="FontPreviewPage.updateSize(this.value)" style="width:100%; accent-color:var(--color-accent-cyan);">
+                </div>
+
+                <!-- Text Color Circles -->
+                <div>
+                  <label style="font-size:0.58rem; font-weight:bold; color:var(--color-text-muted); display:block; margin-bottom:6px; letter-spacing:0.5px;">WARNA TEKS</label>
+                  <div style="display:flex; gap:6px;">
+                    ${textColors.map(c => `
+                      <button onclick="FontPreviewPage.setTextColor('${c}')" style="width:20px; height:20px; border-radius:50%; cursor:pointer; background:${c === 'transparent' ? 'none' : c}; border:${c === 'transparent' ? '1px dashed #fff' : (this.textColor === c ? '2px solid var(--color-accent-cyan)' : '1px solid rgba(255,255,255,0.2)')}; transition:all 0.2s;" title="${c}"></button>
+                    `).join('')}
                   </div>
                 </div>
+
+                <!-- Background Color Circles -->
+                <div>
+                  <label style="font-size:0.58rem; font-weight:bold; color:var(--color-text-muted); display:block; margin-bottom:6px; letter-spacing:0.5px;">BACKGROUND</label>
+                  <div style="display:flex; gap:6px;">
+                    ${bgColors.map(c => `
+                      <button onclick="FontPreviewPage.setBgColor('${c}')" style="width:20px; height:20px; border-radius:50%; cursor:pointer; background:${c === 'transparent' ? 'none' : c}; border:${c === 'transparent' ? '1px dashed #fff' : (this.bgColor === c ? '2px solid var(--color-accent-cyan)' : '1px solid rgba(255,255,255,0.2)')}; transition:all 0.2s;" title="${c}"></button>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Bold & Italic Toggles -->
+                <div style="display:flex; gap:6px;">
+                  <button onclick="FontPreviewPage.toggleBold()" style="width:32px; height:32px; border-radius:50%; border:1px solid ${this.isBold ? 'var(--color-accent-cyan)' : 'rgba(255,255,255,0.1)'}; background:${this.isBold ? 'rgba(0,240,255,0.1)' : 'rgba(255,255,255,0.02)'}; color:#fff; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.75rem;">B</button>
+                  <button onclick="FontPreviewPage.toggleItalic()" style="width:32px; height:32px; border-radius:50%; border:1px solid ${this.isItalic ? 'var(--color-accent-cyan)' : 'rgba(255,255,255,0.1)'}; background:${this.isItalic ? 'rgba(0,240,255,0.1)' : 'rgba(255,255,255,0.02)'}; color:#fff; font-style:italic; font-family:serif; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.75rem;">I</button>
+                </div>
+
               </div>
 
-              <div class="tool-section">
-                <h3>Output Preview</h3>
-                <div id="font-preview-box" style="font-family:'${this.selectedFont}', sans-serif; font-size:${this.fontSize}px; padding:32px; background:rgba(0,0,0,0.2); border:1px solid var(--color-border); border-radius:8px; min-height:180px; color:white; line-height:1.4;">
-                  ${this.inputText}
-                </div>
+              <!-- Search Bar -->
+              <div style="border-top:1px solid rgba(255,255,255,0.05); padding-top:16px;">
+                <label style="font-size:0.58rem; font-weight:bold; color:var(--color-text-muted); display:block; margin-bottom:6px; letter-spacing:0.5px;">CARI FONT</label>
+                <input type="text" id="font-search-input" value="${this.searchQuery}" oninput="FontPreviewPage.updateSearch(this.value)" placeholder="Cari nama font..." style="width:100%; box-sizing:border-box; padding:12px; font-size:0.75rem; border-radius:30px; border:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.02); color:#fff;">
               </div>
+
             </div>
+
+            <!-- Grid View -->
+            <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:20px;">
+              ${filteredFonts.map(f => {
+                const isSelectedBgTrans = this.bgColor === 'transparent';
+                return `
+                  <div class="tool-section" style="padding:0; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; height:200px; border:1px solid rgba(255,255,255,0.05);">
+                    
+                    <!-- Font Preview Area -->
+                    <div style="flex:1; padding:20px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:${isSelectedBgTrans ? 'transparent' : this.bgColor};">
+                      <div style="font-family:'${f.googleFamily}', sans-serif; font-size:${this.fontSize}px; color:${this.textColor}; font-weight:${this.isBold ? 'bold' : 'normal'}; font-style:${this.isItalic ? 'italic' : 'normal'}; text-align:center; word-break:break-all; max-height:100%; overflow:hidden;">
+                        ${this.inputText || 'Terakhir Community'}
+                      </div>
+                    </div>
+
+                    <!-- Footer Details -->
+                    <div style="background:#090a0f; padding:12px 16px; border-top:1px solid rgba(255,255,255,0.04); display:flex; justify-content:space-between; align-items:center;">
+                      <div style="text-align:left;">
+                        <h4 style="font-size:0.75rem; font-weight:bold; color:#fff; margin:0 0 2px 0;">${f.name}</h4>
+                        <span style="font-size:0.55rem; color:var(--color-text-muted); font-family:monospace; display:block;">${f.enum}</span>
+                      </div>
+                      <div style="display:flex; gap:6px;">
+                        <button onclick="FontPreviewPage.copyEnum('${f.enum}')" style="width:28px; height:28px; border-radius:6px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.02); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.75rem;" title="Copy Enum Studio" onmouseover="this.style.borderColor='var(--color-accent-cyan)';" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';">
+                          📋
+                        </button>
+                        <button onclick="FontPreviewPage.downloadPng('${f.name}', '${f.googleFamily}')" style="width:28px; height:28px; border-radius:6px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.02); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.75rem;" title="Download PNG" onmouseover="this.style.borderColor='var(--color-accent-cyan)';" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';">
+                          📥
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+                `;
+              }).join('')}
+            </div>
+
           </div>
         </section>
       </div>
     `;
   },
 
-  updateFont(font) {
-    this.selectedFont = font;
+  updateText(val) {
+    this.inputText = val;
+    this.render();
+    // Keep focus at the end of input
+    const input = document.querySelector('input[type="text"][value]');
+    if (input) {
+      input.focus();
+      input.setSelectionRange(val.length, val.length);
+    }
+  },
+
+  updateSize(val) {
+    this.fontSize = parseInt(val);
     this.render();
   },
 
-  updateSize(size) {
-    this.fontSize = parseInt(size);
-    const box = document.getElementById('font-preview-box');
-    if (box) box.style.fontSize = this.fontSize + 'px';
+  updateSearch(val) {
+    this.searchQuery = val;
+    this.render();
+    // Keep focus
+    const input = document.getElementById('font-search-input');
+    if (input) {
+      input.focus();
+      input.setSelectionRange(val.length, val.length);
+    }
   },
 
-  updateText(text) {
-    this.inputText = text;
-    const box = document.getElementById('font-preview-box');
-    if (box) box.textContent = this.inputText;
+  setTextColor(color) {
+    this.textColor = color;
+    this.render();
+  },
+
+  setBgColor(color) {
+    this.bgColor = color;
+    this.render();
+  },
+
+  toggleBold() {
+    this.isBold = !this.isBold;
+    this.render();
+  },
+
+  toggleItalic() {
+    this.isItalic = !this.isItalic;
+    this.render();
+  },
+
+  copyEnum(enumStr) {
+    navigator.clipboard.writeText(enumStr);
+    
+    // Toast notification
+    const toast = document.createElement('div');
+    toast.style.position = 'fixed';
+    toast.style.bottom = '24px';
+    toast.style.right = '24px';
+    toast.style.background = 'var(--gradient-accent)';
+    toast.style.color = '#000';
+    toast.style.padding = '10px 20px';
+    toast.style.borderRadius = '6px';
+    toast.style.fontSize = '0.72rem';
+    toast.style.fontWeight = 'bold';
+    toast.style.zIndex = '999999';
+    toast.style.boxShadow = '0 10px 15px -3px rgba(0,240,255,0.2)';
+    toast.style.animation = 'fadeInUp 200ms ease';
+    toast.textContent = `✓ "${enumStr}" disalin ke clipboard!`;
+    
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.animation = 'fadeOutDown 200ms ease';
+      setTimeout(() => toast.remove(), 200);
+    }, 2000);
+  },
+
+  downloadPng(fontName, googleFontFamily) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const text = this.inputText || 'Terakhir Community';
+    
+    // Text metrics calculation on temp canvas
+    ctx.font = `${this.isBold ? 'bold ' : ''}${this.isItalic ? 'italic ' : ''}${this.fontSize}px "${googleFontFamily}", sans-serif`;
+    const textMetrics = ctx.measureText(text);
+    const textWidth = Math.max(200, textMetrics.width + 40);
+    const textHeight = this.fontSize * 1.5 + 40;
+    
+    canvas.width = textWidth;
+    canvas.height = textHeight;
+    
+    // Background color
+    if (this.bgColor !== 'transparent') {
+      ctx.fillStyle = this.bgColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    
+    // Text settings
+    ctx.font = `${this.isBold ? 'bold ' : ''}${this.isItalic ? 'italic ' : ''}${this.fontSize}px "${googleFontFamily}", sans-serif`;
+    ctx.fillStyle = this.textColor;
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+    
+    // Draw text
+    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+    
+    // Trigger download
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = `roblox_font_${fontName.toLowerCase().replace(/\s+/g, '_')}.png`;
+    a.click();
   }
 };
-
 // 10. COLOR PALETTE PAGE
 const ColorPalettePage = {
   currentColor: '#ff3e55',
