@@ -1,7 +1,9 @@
 /* ========================================
    AR COMMUNITY — Lua Defuscator & Beautifier
-   Reverse-engineers obfuscated Lua code:
-   - Decodes \NNN string escapes back to text
+   Advanced reverse-engineering for obfuscated Lua:
+   - Decodes \NNN / \xHH string escapes
+   - Evaluates string.char() calls
+   - Expands minified code (semicolons → newlines)
    - Simplifies randomised variable names
    - Strips obfuscator headers/comments
    - Re-indents and beautifies code
@@ -12,6 +14,7 @@ const LuaDefuscatorPage = {
   optSimplify: true,
   optClean: true,
   optBeautify: true,
+  optExpand: true,
   _lastOutput: '',
 
   render() {
@@ -38,18 +41,28 @@ const LuaDefuscatorPage = {
               <h3>⚙️ Opsi Deobfuscation</h3>
               <div style="display:flex; flex-wrap:wrap; gap:16px;">
                 <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:0.72rem; color:var(--color-text-secondary);">
-                  <input type="checkbox" ${this.optDecode ? 'checked' : ''} onchange="LuaDefuscatorPage.optDecode=this.checked"> 🔤 Decode String Escapes
+                  <input type="checkbox" ${this.optDecode ? 'checked' : ''} onchange="LuaDefuscatorPage.optDecode=this.checked"> 🔤 Decode String & Char
                 </label>
                 <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:0.72rem; color:var(--color-text-secondary);">
-                  <input type="checkbox" ${this.optSimplify ? 'checked' : ''} onchange="LuaDefuscatorPage.optSimplify=this.checked"> 🏷️ Sederhanakan Nama Variabel
+                  <input type="checkbox" ${this.optExpand ? 'checked' : ''} onchange="LuaDefuscatorPage.optExpand=this.checked"> 📐 Expand Minified Code
                 </label>
                 <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:0.72rem; color:var(--color-text-secondary);">
-                  <input type="checkbox" ${this.optClean ? 'checked' : ''} onchange="LuaDefuscatorPage.optClean=this.checked"> 🧹 Hapus Header Obfuscator
+                  <input type="checkbox" ${this.optSimplify ? 'checked' : ''} onchange="LuaDefuscatorPage.optSimplify=this.checked"> 🏷️ Sederhanakan Variabel
                 </label>
                 <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:0.72rem; color:var(--color-text-secondary);">
-                  <input type="checkbox" ${this.optBeautify ? 'checked' : ''} onchange="LuaDefuscatorPage.optBeautify=this.checked"> ✨ Beautify / Format Kode
+                  <input type="checkbox" ${this.optClean ? 'checked' : ''} onchange="LuaDefuscatorPage.optClean=this.checked"> 🧹 Hapus Header & Junk
+                </label>
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:0.72rem; color:var(--color-text-secondary);">
+                  <input type="checkbox" ${this.optBeautify ? 'checked' : ''} onchange="LuaDefuscatorPage.optBeautify=this.checked"> ✨ Beautify / Format
                 </label>
               </div>
+            </div>
+
+            <!-- Warning for VM-based obfuscation -->
+            <div style="background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15); border-radius: 8px; padding: 12px 16px; margin-bottom: var(--space-4); font-size: 0.68rem; color: var(--color-text-secondary); line-height: 1.6;">
+              ⚠️ <strong style="color:var(--color-accent-red);">Penting:</strong> Obfuscator tingkat lanjut (Luraph, IronBrew, Moonsec, dll.) menggunakan teknik <em>Virtual Machine bytecode</em> yang mengubah total struktur kode.
+              Tool ini akan melakukan yang terbaik: decode string, expand kode, sederhanakan variabel, dan rapikan format — tetapi hasil mungkin tidak 100% identik dengan kode asli.
+              Untuk obfuscator sederhana (seperti AR Community Obfuscator), hasilnya akan sangat mendekati kode asli.
             </div>
 
             <div class="split-panel">
@@ -94,8 +107,9 @@ const LuaDefuscatorPage = {
     let stringsDecoded = 0;
     let varsSimplified = 0;
     let headersRemoved = 0;
+    let expansions = 0;
 
-    // ── Step 1: Clean obfuscator headers & comments ──
+    // ── Step 1: Clean obfuscator headers, comments & junk code ──
     if (this.optClean) {
       const headerPatterns = [
         /^--\s*Obfuscated by.*$/gm,
@@ -105,6 +119,11 @@ const LuaDefuscatorPage = {
         /^--\s*Encrypted by.*$/gm,
         /^--\s*DO NOT EDIT.*$/gm,
         /^--\s*This script.*obfuscate.*$/gim,
+        /^--\s*Luraph.*$/gim,
+        /^--\s*IronBrew.*$/gim,
+        /^--\s*Moonsec.*$/gim,
+        /^--\s*PSU.*$/gim,
+        /^--\[\[.*obfuscat.*\]\]--?\s*$/gim,
       ];
       headerPatterns.forEach(pat => {
         const before = code;
@@ -112,24 +131,75 @@ const LuaDefuscatorPage = {
         if (code !== before) headersRemoved++;
       });
 
-      // Remove heavy-mode wrappers like: local _ENV = getfenv() ... setmetatable ...
+      // Remove heavy-mode wrappers
       code = code.replace(/local\s+_ENV\s*=\s*getfenv\(\)\s*/g, () => { headersRemoved++; return ''; });
-      code = code.replace(/local\s+_R\s*=\s*setmetatable\(\s*\{\}\s*,\s*\{\s*__index\s*=\s*function\s*\(\s*t\s*,\s*k\s*\)\s*return\s+rawget\s*\(\s*_ENV\s*,\s*k\s*\)\s*end\s*\}\s*\)\s*/g, () => { headersRemoved++; return ''; });
+      code = code.replace(/local\s+_R\s*=\s*setmetatable\(\s*\{\}\s*,\s*\{[^}]*\}\s*\)\s*/g, () => { headersRemoved++; return ''; });
+
+      // Remove common anti-tamper / anti-debug patterns
+      code = code.replace(/pcall\s*\(\s*function\s*\(\s*\)\s*error\s*\([^)]*\)\s*end\s*\)/g, () => { headersRemoved++; return ''; });
     }
 
-    // ── Step 2: Decode string escape sequences ──
+    // ── Step 2: Decode all string encodings ──
     if (this.optDecode) {
-      // Decode decimal escapes: \108\101\97\100 → "lead"
-      code = code.replace(/\\(\d{1,3})/g, (match, dec) => {
-        const charCode = parseInt(dec, 10);
-        if (charCode >= 32 && charCode <= 126) {
-          stringsDecoded++;
-          return String.fromCharCode(charCode);
-        }
+      // 2a: Evaluate string.char(N, N, N...) calls
+      code = code.replace(/string\s*\.\s*char\s*\(([^)]+)\)/g, (match, args) => {
+        try {
+          const nums = args.split(',').map(s => {
+            const n = s.trim();
+            // Handle hex: 0x41
+            if (/^0x[0-9a-fA-F]+$/.test(n)) return parseInt(n, 16);
+            // Handle decimal
+            const val = parseInt(n, 10);
+            return isNaN(val) ? null : val;
+          });
+          if (nums.every(n => n !== null && n >= 0 && n <= 127)) {
+            const decoded = nums.map(n => String.fromCharCode(n)).join('');
+            stringsDecoded += nums.length;
+            return '"' + decoded.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+          }
+        } catch(e) {}
         return match;
       });
 
-      // Decode hex escapes: \x6C\x65\x61\x64 → "lead"
+      // 2b: Decode decimal escapes inside strings: \108\101\97\100 → "lead"
+      code = code.replace(/"([^"]*\\(\d{1,3})[^"]*)"/g, (match) => {
+        let inner = match.slice(1, -1);
+        let changed = false;
+        inner = inner.replace(/\\(\d{1,3})/g, (m, dec) => {
+          const charCode = parseInt(dec, 10);
+          if (charCode >= 32 && charCode <= 126) {
+            stringsDecoded++;
+            changed = true;
+            const ch = String.fromCharCode(charCode);
+            if (ch === '"') return '\\"';
+            if (ch === '\\') return '\\\\';
+            return ch;
+          }
+          return m;
+        });
+        return changed ? '"' + inner + '"' : match;
+      });
+
+      // Also for single-quoted strings
+      code = code.replace(/'([^']*\\(\d{1,3})[^']*)'/g, (match) => {
+        let inner = match.slice(1, -1);
+        let changed = false;
+        inner = inner.replace(/\\(\d{1,3})/g, (m, dec) => {
+          const charCode = parseInt(dec, 10);
+          if (charCode >= 32 && charCode <= 126) {
+            stringsDecoded++;
+            changed = true;
+            const ch = String.fromCharCode(charCode);
+            if (ch === "'") return "\\'";
+            if (ch === '\\') return '\\\\';
+            return ch;
+          }
+          return m;
+        });
+        return changed ? "'" + inner + "'" : match;
+      });
+
+      // 2c: Decode hex escapes: \x6C\x65 → "le"
       code = code.replace(/\\x([0-9a-fA-F]{2})/g, (match, hex) => {
         const charCode = parseInt(hex, 16);
         if (charCode >= 32 && charCode <= 126) {
@@ -139,21 +209,70 @@ const LuaDefuscatorPage = {
         return match;
       });
 
-      // Clean up redundant parentheses around strings: ("text") → "text"
+      // 2d: Simplify string concatenation of literals: "hel" .. "lo" → "hello"
+      let prevCode;
+      do {
+        prevCode = code;
+        code = code.replace(/"([^"]*)"\s*\.\.\s*"([^"]*)"/g, (m, a, b) => {
+          stringsDecoded++;
+          return '"' + a + b + '"';
+        });
+      } while (code !== prevCode);
+
+      // 2e: Clean up redundant parentheses around strings: ("text") → "text"
       code = code.replace(/\(("[^"]*")\)/g, '$1');
       code = code.replace(/\(('[^']*')\)/g, '$1');
+
+      // 2f: Simplify tonumber("123") → 123
+      code = code.replace(/tonumber\s*\(\s*"(\d+)"\s*\)/g, '$1');
+      code = code.replace(/tonumber\s*\(\s*'(\d+)'\s*\)/g, '$1');
+
+      // 2g: Simplify tostring(123) → "123"
+      code = code.replace(/tostring\s*\(\s*(\d+)\s*\)/g, '"$1"');
     }
 
-    // ── Step 3: Simplify randomised variable names ──
+    // ── Step 3: Expand minified code ──
+    if (this.optExpand) {
+      // 3a: Insert newlines after semicolons (Lua statement separator)
+      code = code.replace(/;/g, () => { expansions++; return ';\n'; });
+
+      // 3b: Put keywords on their own lines when they follow end/close-paren
+      // end followed by a keyword on the same line
+      code = code.replace(/\bend\b\s*(?=\b(?:local|if|for|while|repeat|function|return|do)\b)/g, () => {
+        expansions++;
+        return 'end\n';
+      });
+
+      // 3c: Break after 'then' if followed by code on same line (but not end)
+      code = code.replace(/\bthen\s+(?!end\b)(?=[a-zA-Z_])/g, () => {
+        expansions++;
+        return 'then\n  ';
+      });
+
+      // 3d: Break after 'do' if followed by code on same line
+      code = code.replace(/\bdo\s+(?!end\b)(?=[a-zA-Z_])/g, () => {
+        expansions++;
+        return 'do\n  ';
+      });
+
+      // 3e: Break before 'end' when preceded by code on same line
+      code = code.replace(/([^\n\s])\s*\bend\b/g, (m, pre) => {
+        if (/function\s*\(/.test(m)) return m; // skip inline function() end
+        expansions++;
+        return pre + '\nend';
+      });
+
+      // 3f: Break before 'else' and 'elseif'
+      code = code.replace(/([^\n])\s*\belse\b/g, '$1\nelse');
+      code = code.replace(/([^\n])\s*\belseif\b/g, '$1\nelseif');
+    }
+
+    // ── Step 4: Simplify randomised variable names ──
     if (this.optSimplify) {
-      // Collect all identifiers that look like obfuscated names: _XXXX with 3+ random chars
-      const obfVarRegex = /\b(_[a-zA-Z0-9_]{3,})\b/g;
       const luaKeywords = new Set([
         'and','break','do','else','elseif','end','false','for','function',
         'goto','if','in','local','nil','not','or','repeat','return','then',
-        'true','until','while',
-        // Common Roblox globals to preserve
-        '_G','_VERSION','_ENV'
+        'true','until','while','_G','_VERSION','_ENV'
       ]);
       const robloxGlobals = new Set([
         'game','workspace','script','self','wait','print','warn','error',
@@ -163,54 +282,71 @@ const LuaDefuscatorPage = {
         'setmetatable','getmetatable','getfenv','setfenv','Instance','Enum',
         'Vector3','Vector2','CFrame','Color3','BrickColor','UDim2','UDim',
         'Ray','Region3','NumberSequence','ColorSequence','TweenInfo',
-        'task','bit32'
+        'task','bit32','assert','loadstring','newproxy','rawequal','rawlen',
+        'collectgarbage'
       ]);
 
-      // Count occurrences of each obfuscated variable
-      const varCounts = {};
-      let m;
-      while ((m = obfVarRegex.exec(code)) !== null) {
-        const name = m[1];
-        if (!luaKeywords.has(name) && !robloxGlobals.has(name)) {
-          varCounts[name] = (varCounts[name] || 0) + 1;
-        }
-      }
+      // Pattern 1: Match _XXXX style (AR Community obfuscator output)
+      // Pattern 2: Match single letters used as variables (a-z, A-Z single char not keyword)
+      // Pattern 3: Match hex-prefixed vars like U0x3589, D, Y etc (advanced obfuscators)
+      const obfPatterns = [
+        /\b(_[a-zA-Z0-9_]{3,})\b/g,                    // _randomStuff
+        /\b([A-Z][0-9a-fx]{3,})\b/g,                    // U0x3589 style
+        /\b((?:ll|lI|Il|II|l1|I1)[lI1]{1,})\b/g,       // llIlIl confusion vars
+      ];
 
-      // Only rename variables that appear at least once and look truly random (3+ chars after _)
+      const varCounts = {};
+      obfPatterns.forEach(pat => {
+        let m;
+        while ((m = pat.exec(code)) !== null) {
+          const name = m[1];
+          if (!luaKeywords.has(name) && !robloxGlobals.has(name) && name.length >= 3) {
+            varCounts[name] = (varCounts[name] || 0) + 1;
+          }
+        }
+      });
+
+      // Sort by frequency (most used first) and assign clean names
       const sortedVars = Object.entries(varCounts)
-        .filter(([name]) => name.length >= 4)
-        .sort((a, b) => b[1] - a[1]); // Most used first
+        .filter(([name]) => name.length >= 3)
+        .sort((a, b) => b[1] - a[1]);
 
       const renameMap = {};
       let counter = 1;
       sortedVars.forEach(([name]) => {
-        renameMap[name] = `var${counter}`;
+        renameMap[name] = 'v' + counter;
         counter++;
         varsSimplified++;
       });
 
-      // Apply renames (whole-word only)
-      Object.entries(renameMap).forEach(([orig, newName]) => {
-        code = code.replace(new RegExp('\\b' + orig.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'g'), newName);
+      // Apply renames longest-first to avoid partial replacements
+      const sortedEntries = Object.entries(renameMap).sort((a, b) => b[0].length - a[0].length);
+      sortedEntries.forEach(([orig, newName]) => {
+        const escaped = orig.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        code = code.replace(new RegExp('\\b' + escaped + '\\b', 'g'), newName);
       });
     }
 
-    // ── Step 4: Beautify / format Lua code ──
+    // ── Step 5: Beautify / format Lua code ──
     if (this.optBeautify) {
       code = this.beautifyLua(code);
     }
 
-    // Trim excessive blank lines
+    // Final cleanup: trim excessive blank lines
     code = code.replace(/\n{3,}/g, '\n\n').trim();
+
+    // Add helpful comment at top
+    code = '-- Deobfuscated by AR Community Lua Defuscator\n-- ' + new Date().toLocaleString('id-ID') + '\n\n' + code;
 
     output.textContent = code;
     this._lastOutput = code;
 
     const newSize = new Blob([code]).size;
     const statParts = [];
-    if (stringsDecoded > 0) statParts.push(`🔤 ${stringsDecoded} karakter decoded`);
+    if (stringsDecoded > 0) statParts.push(`🔤 ${stringsDecoded} string decoded`);
+    if (expansions > 0) statParts.push(`📐 ${expansions} baris dipecah`);
     if (varsSimplified > 0) statParts.push(`🏷️ ${varsSimplified} variabel disederhanakan`);
-    if (headersRemoved > 0) statParts.push(`🧹 ${headersRemoved} header dihapus`);
+    if (headersRemoved > 0) statParts.push(`🧹 ${headersRemoved} junk dihapus`);
     statParts.push(`📊 ${originalSize}B → ${newSize}B`);
     stats.innerHTML = statParts.join(' · ');
   },
@@ -219,18 +355,17 @@ const LuaDefuscatorPage = {
     const lines = code.split('\n');
     const result = [];
     let indent = 0;
-    const indentStr = '  '; // 2 spaces
+    const indentStr = '  ';
 
-    const increasePatterns = [
-      /\bfunction\b.*\)$/,
-      /\bfunction\b.*\)\s*$/,
+    const increaseAfter = [
+      /\bfunction\b[^)]*\)\s*$/,
       /\bthen\s*$/,
       /\bdo\s*$/,
       /\brepeat\s*$/,
       /\belse\s*$/,
       /\belseif\b.*\bthen\s*$/,
     ];
-    const decreasePatterns = [
+    const decreaseBefore = [
       /^\s*\bend\b/,
       /^\s*\buntil\b/,
       /^\s*\belse\b/,
@@ -244,23 +379,21 @@ const LuaDefuscatorPage = {
         return;
       }
 
-      // Decrease indent before printing for end/else/until/elseif
-      let shouldDecrease = decreasePatterns.some(p => p.test(trimmed));
-      if (shouldDecrease && indent > 0) indent--;
+      // Check decrease before printing
+      if (decreaseBefore.some(p => p.test(trimmed)) && indent > 0) indent--;
 
       result.push(indentStr.repeat(indent) + trimmed);
 
-      // Check if this line opens a new block
-      // But skip one-liners like: function() return x end
-      const hasInlineEnd = /\bend\b/.test(trimmed) && (/\bfunction\b/.test(trimmed) || /\bthen\b.*\bend\b/.test(trimmed) || /\bdo\b.*\bend\b/.test(trimmed));
+      // Check if line is a one-liner (function()...end on same line)
+      const hasInlineEnd = /\bend\b/.test(trimmed) &&
+        (/\bfunction\b/.test(trimmed) || /\bthen\b.*\bend\b/.test(trimmed) || /\bdo\b.*\bend\b/.test(trimmed));
 
       if (!hasInlineEnd) {
-        let shouldIncrease = increasePatterns.some(p => p.test(trimmed));
-        // Also handle: function(...) without closing end on same line
-        if (/\bfunction\s*\(/.test(trimmed) && !/\bend\b/.test(trimmed)) {
-          shouldIncrease = true;
+        if (increaseAfter.some(p => p.test(trimmed))) {
+          indent++;
+        } else if (/\bfunction\s*\(/.test(trimmed) && !/\bend\b/.test(trimmed)) {
+          indent++;
         }
-        if (shouldIncrease) indent++;
       }
     });
 
