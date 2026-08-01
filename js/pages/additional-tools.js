@@ -499,59 +499,235 @@ const BioLinkPage = {
 
 // 4. DISCORD CHANNEL STYLER PAGE
 const DiscordStylerPage = {
-  inputText: '',
+  inputText: 'tulis apa aja',
+  activeTab: 'fonts', // fonts, antistrip, symbols
+  symbols: [
+    '💬','📢','📌','🤖','🛡️','🎮','🎁','🎫','🔒','🔑','📁','📎','🔔','💎','🌟','⚡','🎨','🎵','🔊','🎬',
+    '│','┃','｜','丨','•','○','★','☆','╭','╰','┌','└','╔','╚','──','━━','┄┄','┊┊','✦','✧','✿','⚓','✈','☁','☘','☠','☣','☢','☮','☯','🎯','🧿','🔮','🧸','🍭','🍩','🪐','🛸'
+  ],
+
   render() {
     const app = document.getElementById('app');
     app.innerHTML = `
       <div class="page-transition-enter">
-        <section class="tool-page" style="padding: var(--space-10) 0;">
+        <section class="tool-page" style="padding: var(--space-8) 0;">
           <div class="container">
-            ${ToolHelper.renderBreadcrumbs('Discord Channel Styler')}
-            ${ToolHelper.renderHeader('Discord Channel Styler', 'Rancang nama channel Discord yang estetik menggunakan font khusus, simbol, dan pembatas teks unik.', '💬 SOSIAL')}
-            
-            <div style="max-width: 600px; margin: 0 auto;" class="tool-section">
-              <div style="display:flex; flex-direction:column; gap:16px;">
-                <div>
-                  <label style="font-size:0.62rem; font-weight:bold; color:var(--color-text-secondary); display:block; margin-bottom:6px;">Masukkan Nama Channel</label>
-                  <input type="text" id="styler-input" class="form-input" placeholder="contoh: obrolan-umum" oninput="DiscordStylerPage.convert(this.value)">
-                </div>
-
-                <div style="margin-top:12px; display:flex; flex-direction:column; gap:12px;" id="styler-outputs">
-                  ${this.renderStyles()}
-                </div>
-              </div>
+            <div class="tool-breadcrumbs">
+              <a href="#/tools">🔧 Tools</a> <span>&gt;</span> <span class="active">Discord Channel Styler</span>
             </div>
+
+            <!-- Page Header -->
+            <div class="tool-page-header" style="margin-bottom: var(--space-6); text-align:center;">
+              <div style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:rgba(0,240,255,0.06); border:1px solid rgba(0,240,255,0.15); border-radius:100px; margin-bottom:12px;">
+                <span style="font-size:0.65rem; color:var(--color-accent-cyan); font-weight:bold; letter-spacing:0.05em;">💬 DISCORD TOOL</span>
+              </div>
+              <h1 style="margin: 0 0 var(--space-2) 0; font-family: var(--font-heading); font-weight: var(--font-weight-black); font-size: 2.2rem; color:#fff;">
+                Discord Channel <span style="background:var(--gradient-accent); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Styler</span>
+              </h1>
+              <p style="margin: 0; color: var(--color-text-secondary); font-size: var(--text-sm);">
+                Font Unicode keren, anti spasi-jadi-strip di nama channel, dan library simbol.
+              </p>
+            </div>
+
+            <!-- Tab Selection Buttons -->
+            <div style="display:flex; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:4px; border-radius:8px; margin-bottom:24px; max-width:600px; margin-left:auto; margin-right:auto;">
+              <button onclick="DiscordStylerPage.setTab('fonts')" style="flex:1; border:none; padding:10px 0; border-radius:6px; font-size:0.75rem; font-weight:bold; cursor:pointer; background:${this.activeTab==='fonts'?'var(--gradient-accent)':'transparent'}; color:${this.activeTab==='fonts'?'#000':'#aaa'}; transition:all 0.2s;">
+                FONT KEREN
+              </button>
+              <button onclick="DiscordStylerPage.setTab('antistrip')" style="flex:1; border:none; padding:10px 0; border-radius:6px; font-size:0.75rem; font-weight:bold; cursor:pointer; background:${this.activeTab==='antistrip'?'var(--gradient-accent)':'transparent'}; color:${this.activeTab==='antistrip'?'#000':'#aaa'}; transition:all 0.2s;">
+                ANTI STRIP
+              </button>
+              <button onclick="DiscordStylerPage.setTab('symbols')" style="flex:1; border:none; padding:10px 0; border-radius:6px; font-size:0.75rem; font-weight:bold; cursor:pointer; background:${this.activeTab==='symbols'?'var(--gradient-accent)':'transparent'}; color:${this.activeTab==='symbols'?'#000':'#aaa'}; transition:all 0.2s;">
+                SIMBOL
+              </button>
+            </div>
+
+            <div style="max-width:800px; margin:0 auto; display:flex; flex-direction:column; gap:20px;">
+              ${this.activeTab !== 'symbols' ? `
+                <!-- Input Box -->
+                <div class="tool-section" style="padding:20px;">
+                  <label style="font-size:0.68rem; font-weight:bold; color:var(--color-text-secondary); display:block; margin-bottom:8px;">Ketik teks kamu</label>
+                  <input type="text" id="styler-input" class="form-input" value="${this.inputText}" oninput="DiscordStylerPage.updateInput(this.value)" placeholder="tulis apa aja" style="font-size:0.75rem; padding:12px; border-radius:8px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); color:#fff; width:100%; box-sizing:border-box;">
+                </div>
+              ` : ''}
+
+              <!-- Content Cards -->
+              ${this.renderTabContent()}
+            </div>
+
           </div>
         </section>
       </div>
     `;
   },
 
-  convert(val) {
-    this.inputText = val.trim().toLowerCase().replace(/\s+/g, '-');
-    const out = document.getElementById('styler-outputs');
-    if (out) out.innerHTML = this.renderStyles();
+  setTab(tab) {
+    this.activeTab = tab;
+    this.render();
   },
 
-  renderStyles() {
-    const txt = this.inputText || 'nama-channel';
-    const styledFonts = [
-      `⚡｜${txt}`,
-      `╭📌｜${txt}`,
-      `╰💬｜${txt}`,
-      `───${txt}───`,
-      `【💬】${txt}`,
-      `『🤖』${txt}`,
-      `📢・${txt.replace(/-/g, '‐')}`,
-      `🔐│${txt}`
+  updateInput(val) {
+    this.inputText = val;
+    const outputs = document.getElementById('styler-outputs-container');
+    if (outputs) {
+      outputs.innerHTML = this.renderActiveOutputs();
+    }
+  },
+
+  renderTabContent() {
+    if (this.activeTab === 'symbols') {
+      return `
+        <div class="tool-section" style="padding:24px;">
+          <p style="font-size:0.68rem; color:var(--color-text-secondary); margin-bottom:16px; text-align:center;">
+            Koleksi simbol dekoratif populer untuk menghias nama channel Discord Anda. Klik simbol untuk menyalin secara instan.
+          </p>
+          <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap:10px; justify-items:center;">
+            ${this.symbols.map(sym => `
+              <button onclick="DiscordStylerPage.copyText('${sym}')" style="width:48px; height:48px; border:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.02); border-radius:8px; font-size:1.1rem; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-accent-cyan)'; this.style.background='rgba(0,240,255,0.03)';" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'; this.style.background='rgba(255,255,255,0.02)';">
+                ${sym}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    const desc = this.activeTab === 'fonts' 
+      ? 'Klik buat copy. Tempel langsung ke Discord (nama, bio, pesan, channel).' 
+      : 'Metode khusus untuk membuat nama channel memiliki spasi atau huruf kapital tanpa dirubah menjadi tanda strip oleh Discord.';
+
+    return `
+      <div class="tool-section" style="padding:20px;">
+        <p style="font-size:0.65rem; color:var(--color-text-muted); margin:0 0 16px 0; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">${desc}</p>
+        <div style="display:flex; flex-direction:column; gap:12px;" id="styler-outputs-container">
+          ${this.renderActiveOutputs()}
+        </div>
+      </div>
+    `;
+  },
+
+  renderActiveOutputs() {
+    const rawText = this.inputText || 'tulis apa aja';
+    
+    if (this.activeTab === 'fonts') {
+      const fontStyles = [
+        { name: 'BOLD SERIF', key: 'boldSerif' },
+        { name: 'ITALIC SERIF', key: 'italicSerif' },
+        { name: 'BOLD SANS', key: 'boldSans' },
+        { name: 'ITALIC SANS', key: 'italicSans' },
+        { name: 'BOLD ITALIC', key: 'boldItalic' },
+        { name: 'SCRIPT', key: 'script' },
+        { name: 'BOLD SCRIPT', key: 'boldScript' }
+      ];
+
+      return fontStyles.map(f => {
+        const val = this.convertToUnicode(rawText, f.key);
+        return `
+          <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.04); border-radius:6px; padding:12px 16px;">
+            <div style="display:flex; flex-direction:column; gap:4px; text-align:left;">
+              <span style="font-size:0.58rem; color:var(--color-text-muted); font-weight:bold; letter-spacing:0.5px;">${f.name}</span>
+              <span style="font-size:0.8rem; color:#fff; font-weight:500;">${val}</span>
+            </div>
+            <button onclick="DiscordStylerPage.copyText('${val.replace(/'/g, "\'")}')" style="background:none; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:4px; padding:6px 12px; font-size:0.65rem; cursor:pointer; font-weight:bold; transition:all 0.2s;" onmouseover="this.style.background='var(--gradient-accent)'; this.style.color='#000'; this.style.borderColor='transparent';" onmouseout="this.style.background='none'; this.style.color='#fff'; this.style.borderColor='rgba(255,255,255,0.1)';">
+              Copy
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ANTI STRIP options
+    const thinSpace = '\u2009';
+    const figureSpace = '\u2007';
+    const narrowNoBreak = '\u202F';
+    const mediumMath = '\u205F';
+
+    const antistripOptions = [
+      { name: 'SPASI TIPIS (THIN)', val: rawText.replace(/\s+/g, thinSpace) },
+      { name: 'SPASI ANGKA (FIGURE)', val: rawText.replace(/\s+/g, figureSpace) },
+      { name: 'SPASI RAPET (NARROW)', val: rawText.replace(/\s+/g, narrowNoBreak) },
+      { name: 'SPASI MATEMATIS (MATH)', val: rawText.replace(/\s+/g, mediumMath) },
+      { name: 'PEMBATAS BALOK (PIPE)', val: rawText.replace(/\s+/g, '│') },
+      { name: 'BULAT TENGAH (DOT)', val: rawText.replace(/\s+/g, '・') },
+      { name: 'BINTANG (STAR)', val: rawText.replace(/\s+/g, '★') },
+      { name: 'BINTANG CILIK (SPARK)', val: rawText.replace(/\s+/g, '✦') }
     ];
 
-    return styledFonts.map(f => `
-      <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.01); border:1px solid var(--color-border); border-radius:6px; padding:10px 14px; font-size:0.75rem; font-family:sans-serif;">
-        <span style="color:white; font-weight:bold; letter-spacing:0.04em;">${f}</span>
-        <button class="pay-copy-btn" onclick="navigator.clipboard.writeText('${f}'); alert('Teks disalin!')" style="font-size:0.6rem; padding:4px 10px;">📋 Salin</button>
+    return antistripOptions.map(o => `
+      <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.04); border-radius:6px; padding:12px 16px;">
+        <div style="display:flex; flex-direction:column; gap:4px; text-align:left;">
+          <span style="font-size:0.58rem; color:var(--color-text-muted); font-weight:bold; letter-spacing:0.5px;">${o.name}</span>
+          <span style="font-size:0.8rem; color:#fff; font-weight:500;">${o.val}</span>
+        </div>
+        <button onclick="DiscordStylerPage.copyText('${o.val.replace(/'/g, "\'")}')" style="background:none; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:4px; padding:6px 12px; font-size:0.65rem; cursor:pointer; font-weight:bold; transition:all 0.2s;" onmouseover="this.style.background='var(--gradient-accent)'; this.style.color='#000'; this.style.borderColor='transparent';" onmouseout="this.style.background='none'; this.style.color='#fff'; this.style.borderColor='rgba(255,255,255,0.1)';">
+          Copy
+        </button>
       </div>
     `).join('');
+  },
+
+  convertToUnicode(str, style) {
+    const map = {
+      boldSerif: { A: 0x1D400, a: 0x1D41A, '0': 0x1D7CE },
+      italicSerif: { A: 0x1D434, a: 0x1D44E, '0': null },
+      boldSans: { A: 0x1D5D4, a: 0x1D5EE, '0': 0x1D7EC },
+      italicSans: { A: 0x1D608, a: 0x1D622, '0': null },
+      boldItalic: { A: 0x1D63C, a: 0x1D656, '0': null },
+      script: { A: 0x1D49C, a: 0x1D4B6, '0': null },
+      boldScript: { A: 0x1D4D0, a: 0x1D4EA, '0': null }
+    }[style];
+
+    if (!map) return str;
+
+    const scriptExemptions = {
+      'B': 0x212C, 'E': 0x2130, 'F': 0x2131, 'H': 0x210B, 'I': 0x2110, 'L': 0x2112, 'M': 0x2133, 'R': 0x211B,
+      'g': 0x210A, 'o': 0x2134,
+      'h': style === 'italicSerif' ? 0x210E : null
+    };
+
+    return str.split('').map(char => {
+      if (scriptExemptions[char] && (style === 'script' || (style === 'italicSerif' && char === 'h'))) {
+        return String.fromCodePoint(scriptExemptions[char]);
+      }
+      
+      const code = char.charCodeAt(0);
+      if (code >= 65 && code <= 90) {
+        return String.fromCodePoint(map.A + (code - 65));
+      }
+      if (code >= 97 && code <= 122) {
+        return String.fromCodePoint(map.a + (code - 97));
+      }
+      if (code >= 48 && code <= 57 && map['0'] !== null) {
+        return String.fromCodePoint(map['0'] + (code - 48));
+      }
+      return char;
+    }).join('');
+  },
+
+  copyText(txt) {
+    navigator.clipboard.writeText(txt);
+    
+    // Custom non-blocking visual toast feedback
+    const toast = document.createElement('div');
+    toast.style.position = 'fixed';
+    toast.style.bottom = '24px';
+    toast.style.right = '24px';
+    toast.style.background = 'var(--gradient-accent)';
+    toast.style.color = '#000';
+    toast.style.padding = '10px 20px';
+    toast.style.borderRadius = '6px';
+    toast.style.fontSize = '0.72rem';
+    toast.style.fontWeight = 'bold';
+    toast.style.zIndex = '999999';
+    toast.style.boxShadow = '0 10px 15px -3px rgba(0,240,255,0.2)';
+    toast.style.animation = 'fadeInUp 200ms ease';
+    toast.textContent = `✓ "${txt}" disalin ke clipboard!`;
+    
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.animation = 'fadeOutDown 200ms ease';
+      setTimeout(() => toast.remove(), 200);
+    }, 2000);
   }
 };
 
