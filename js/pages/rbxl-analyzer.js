@@ -374,16 +374,23 @@ const RbxlAnalyzerPage = {
   handleFileUpload(files) {
     if (files.length === 0) return;
     const file = files[0];
-    this.stats.fileName = file.name;
-    this.stats.totalSize = file.size;
+
+    // 1. Check file extension first
+    if (file.name.toLowerCase().endsWith('.rbxl')) {
+      alert('File binary (.rbxl) tidak dapat dibaca langsung oleh browser.\n\nSilakan simpan file Anda sebagai Roblox XML Place (.rbxlx) melalui Roblox Studio (File → Save As → pilih format .rbxlx) sebelum mengunggah.');
+      this.resetStats();
+      this.render();
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target.result;
       
-      // Validate file signature/contents
-      if (!text.trim().startsWith('<roblox')) {
-        alert('File binary (.rbxl) tidak dapat dibaca langsung oleh browser.\n\nSilakan simpan file Anda sebagai Roblox XML Place (.rbxlx) melalui Roblox Studio (File → Save As → pilih format .rbxlx).');
+      // 2. Validate file signature/contents
+      const isXml = text.includes('<roblox') || text.includes('<?xml');
+      if (!isXml) {
+        alert('File yang diunggah bukan file XML Roblox (.rbxlx) yang valid.\n\nSilakan simpan file Anda sebagai Roblox XML Place (.rbxlx) melalui Roblox Studio (File → Save As → pilih format .rbxlx) sebelum mengunggah.');
         this.resetStats();
         this.render();
         return;
@@ -391,7 +398,15 @@ const RbxlAnalyzerPage = {
 
       try {
         // Parse place structure
-        this.parsedData = this.parseRbxlx(text);
+        const parsed = this.parseRbxlx(text);
+        if (!parsed || parsed.length === 0) {
+          throw new Error('No items parsed');
+        }
+        
+        // Only set file stats after successful parsing
+        this.stats.fileName = file.name;
+        this.stats.totalSize = file.size;
+        this.parsedData = parsed;
         
         // Analyze place properties, scripts and calculate stats
         this.allScripts = [];
@@ -421,7 +436,7 @@ const RbxlAnalyzerPage = {
 
       } catch (err) {
         console.error(err);
-        alert('Gagal membaca file .rbxlx. Pastikan file valid.');
+        alert('Gagal membaca file .rbxlx. Pastikan file Anda adalah file XML Roblox (.rbxlx) yang disimpan dengan benar.');
         this.resetStats();
         this.render();
       }
@@ -445,6 +460,11 @@ const RbxlAnalyzerPage = {
   parseRbxlx(xmlText) {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+    
+    const parserError = xmlDoc.querySelector('parsererror');
+    if (parserError) {
+      throw new Error('Gagal memproses XML: ' + parserError.textContent);
+    }
     
     const rootItems = [];
     const items = xmlDoc.querySelectorAll('roblox > Item');
