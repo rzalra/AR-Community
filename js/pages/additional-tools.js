@@ -2290,42 +2290,308 @@ const AnimConverterPage = {
 
 // 15. AUTO SPOOF PAGE
 const AutoSpoofPage = {
+  robloxAccounts: [],
+  uploadedFiles: [],
+  inputLinks: '',
+
   render() {
     const app = document.getElementById('app');
+    
+    // Load accounts from localStorage
+    this.robloxAccounts = JSON.parse(localStorage.getItem('roblox_accounts')) || [];
+
+    const lines = this.inputLinks.split('\n').map(l => l.trim()).filter(l => l);
+    const totalCount = lines.length + this.uploadedFiles.length;
+
     app.innerHTML = `
       <div class="page-transition-enter">
-        <section class="tool-page" style="padding: var(--space-10) 0;">
+        <section class="tool-page" style="padding: var(--space-8) 0;">
           <div class="container">
-            ${ToolHelper.renderBreadcrumbs('Auto Spoof Animasi')}
-            ${ToolHelper.renderHeader('Auto Spoof Animasi', 'Generate script khusus untuk mem-bypass dan mem-publish ulang ID animasi Roblox agar bisa dipakai di game lain.', '🎨 ASSET')}
             
-            <div style="max-width: 600px; margin: 0 auto;" class="tool-section">
-              <h3>Roblox Animation ID Bypasser</h3>
-              <div style="display:flex; flex-direction:column; gap:12px; margin-top:16px;">
-                <input type="text" class="form-input" id="spoof-id" placeholder="Masukkan Animation ID asli (e.g. 18273645)">
-                <button onclick="AutoSpoofPage.generate()" class="btn btn-primary" style="font-weight:bold;">🎭 GENERATE SPOOF SCRIPT</button>
+            <!-- Tab Browser / Breadcrumbs Sim -->
+            <div class="tool-breadcrumbs">
+              <a href="#/tools">🔧 Tools</a> <span>&gt;</span> <span class="active">Auto Spoof Animasi</span>
+            </div>
+
+            <!-- Status Banner -->
+            <div style="display:flex; align-items:center; padding:10px 16px; background:rgba(34,197,94,0.06); border:1px solid rgba(34,197,94,0.15); border-radius:6px; color:var(--color-accent-green); font-size:0.7rem; font-weight:500; margin-bottom:20px;">
+              <span style="margin-right:6px;">✓</span> Login aktif. Unlimited, gratis.
+            </div>
+
+            <div style="display:grid; grid-template-columns: 280px 1fr; gap:24px; align-items:start;">
+              
+              <!-- LEFT COLUMN -->
+              <div style="display:flex; flex-direction:column; gap:20px;">
+                
+                <!-- Upload ke Roblox Card -->
+                <div class="tool-section" style="padding:16px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <h3 style="font-size:0.72rem; font-weight:bold; color:#fff; margin:0;">Upload ke Roblox</h3>
+                    <span style="font-size:0.75rem; color:var(--color-text-muted); cursor:help;" title="Integrasi akun Roblox menggunakan API Key memungkinkan upload otomatis.">?</span>
+                  </div>
+                  
+                  ${this.robloxAccounts.length === 0 ? `
+                    <div style="border:1px dashed rgba(255,255,255,0.08); border-radius:6px; padding:20px; text-align:center; background:rgba(0,0,0,0.15);">
+                      <p style="font-size:0.65rem; color:var(--color-text-muted); margin-bottom:12px;">Belum ada akun Roblox tersimpan.</p>
+                      <a href="#/profile" class="btn btn-sm" style="font-size:0.62rem; font-weight:bold; padding:8px 12px; background:var(--color-accent-cyan); color:#000; text-decoration:none; display:inline-block; border-radius:4px;">
+                        + Tambah Akun di Profile
+                      </a>
+                    </div>
+                  ` : `
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                      <label style="font-size:0.6rem; color:var(--color-text-muted);">Pilih Akun</label>
+                      <select id="spoof-acc-select" style="width:100%; padding:6px; border:1px solid rgba(255,255,255,0.08); border-radius:4px; font-size:0.68rem; color:#fff; background:#111;">
+                        ${this.robloxAccounts.map((acc, index) => `<option value="${index}">${acc.name} (${acc.userId || 'No ID'})</option>`).join('')}
+                      </select>
+                      <div style="font-size:0.58rem; color:var(--color-accent-green); margin-top:4px;">✓ Akun siap digunakan</div>
+                    </div>
+                  `}
+                </div>
+
+                <!-- Cara Kerja Card -->
+                <div class="tool-section" style="padding:16px;">
+                  <h3 style="font-size:0.72rem; font-weight:bold; color:#fff; margin-bottom:12px;">Cara kerja</h3>
+                  <ol style="font-size:0.65rem; color:var(--color-text-secondary); line-height:1.6; padding-left:14px; margin:0 0 12px 0;">
+                    <li>Tempel link / ID animasi Roblox</li>
+                    <li>Tambah & pilih akun tujuan upload</li>
+                    <li>Klik Spoof → animasi di-upload ke akunmu</li>
+                    <li>Dapat Asset ID baru + script siap pakai</li>
+                  </ol>
+                  <p style="font-size:0.6rem; color:#eab308; line-height:1.4; margin:0; border-top:1px solid rgba(255,255,255,0.05); padding-top:8px;">
+                    Pakai buat animasi milik sendiri / free / yang kamu punya izinnya. Tanggung jawab ada di kamu sebagai pengguna.
+                  </p>
+                </div>
+
               </div>
 
-              <div id="spoof-result" style="margin-top:20px; display:none;">
-                <textarea class="code-textarea" id="spoof-output" readonly style="height:120px; font-family:monospace; font-size:0.7rem;"></textarea>
-                <button class="btn btn-secondary btn-sm" style="width:100%; margin-top:10px;" onclick="navigator.clipboard.writeText(document.getElementById('spoof-output').value); alert('Script disalin!')">📋 Salin Script</button>
+              <!-- RIGHT COLUMN -->
+              <div style="display:flex; flex-direction:column; gap:20px;">
+                
+                <!-- TC-Toolkit Download Banner -->
+                <div class="tool-section" style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(239,68,68,0.1); background:rgba(239,68,68,0.02);">
+                  <div style="display:flex; gap:16px; align-items:center;">
+                    <span style="font-size:1.8rem;">🚨</span>
+                    <div>
+                      <h4 style="font-size:0.75rem; font-weight:bold; color:#fff; margin:0 0 4px 0;">Animasi yang ga bisa lewat web?</h4>
+                      <p style="font-size:0.65rem; color:var(--color-text-secondary); margin:0; line-height:1.4;">
+                        Pakai aplikasi TC-Toolkit. Plugin Studio-nya udah include di dalam, tinggal klik install Plugin di aplikasinya. Hasilnya drag ke sini.
+                      </p>
+                    </div>
+                  </div>
+                  <button class="btn btn-sm" onclick="alert('TC-Toolkit Client Download Link: ar-community.vercel.app/download/tc-toolkit.zip')" style="background:var(--gradient-accent); color:#000; font-weight:bold; font-size:0.68rem; padding:8px 16px; border-radius:4px; white-space:nowrap;">
+                    ⬇️ Download TC-Toolkit
+                  </button>
+                </div>
+
+                <!-- Main Spoof Card -->
+                <div class="tool-section" style="padding:24px;">
+                  
+                  <!-- Dashed Drop Zone -->
+                  <div id="spoof-drop-zone" style="border:2px dashed rgba(255,255,255,0.1); border-radius:8px; padding:32px; text-align:center; cursor:pointer; background:rgba(255,255,255,0.01); transition:all 0.2s;" onclick="document.getElementById('spoof-file-input').click()">
+                    <input type="file" id="spoof-file-input" style="display:none;" accept=".rbxm,.rbxmx" onchange="AutoSpoofPage.handleFiles(this.files)">
+                    <div style="font-size:2rem; margin-bottom:8px;">🎬</div>
+                    <div style="font-size:0.78rem; font-weight:bold; color:#fff;">Drag & drop file <span style="color:var(--color-accent-cyan);">.rbxm</span> / <span style="color:var(--color-accent-cyan);">.rbxmx</span> di sini</div>
+                    <div style="font-size:0.62rem; color:var(--color-text-muted); margin-top:4px;">animasi punyamu (export Studio / download / hasil TC-Toolkit)</div>
+                  </div>
+
+                  ${this.uploadedFiles.length > 0 ? `
+                    <div style="margin-top:12px; display:flex; flex-direction:column; gap:6px;">
+                      ${this.uploadedFiles.map((f, i) => `
+                        <div style="background:rgba(0,240,255,0.05); border:1px solid rgba(0,240,255,0.1); padding:8px; border-radius:4px; display:flex; justify-content:space-between; align-items:center; font-size:0.65rem;">
+                          <span style="color:#fff; font-family:monospace;">📁 ${f.name} (${(f.size/1024).toFixed(1)} KB)</span>
+                          <button onclick="AutoSpoofPage.removeFile(${i})" style="background:none; border:none; color:var(--color-accent-red); cursor:pointer; font-weight:bold;">✕</button>
+                        </div>
+                      `).join('')}
+                    </div>
+                  ` : ''}
+
+                  <!-- ATAU Spacer -->
+                  <div style="text-align:center; font-size:0.62rem; color:var(--color-text-muted); font-weight:bold; letter-spacing:1px; margin:20px 0;">
+                    ATAU
+                  </div>
+
+                  <!-- Textarea Input -->
+                  <div style="margin-bottom:20px;">
+                    <label style="font-size:0.68rem; font-weight:bold; color:var(--color-text-secondary); display:block; margin-bottom:8px;">
+                      Link / ID Animasi atau Bundle (bisa banyak, 1 per baris)
+                    </label>
+                    <textarea id="spoof-links-input" oninput="AutoSpoofPage.updateInput(this.value)" class="code-textarea" style="height:120px; font-family:monospace; font-size:0.7rem; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.05); color:#fff; width:100%; box-sizing:border-box;" placeholder="roblox.com/bundles/667/...\nroblox.com/catalog/507771019\n5319900634">${this.inputLinks}</textarea>
+                  </div>
+
+                  <!-- Action Button -->
+                  <button onclick="AutoSpoofPage.convertSpoof()" class="btn" style="width:100%; padding:12px; font-weight:bold; font-size:0.8rem; background:var(--gradient-accent); color:#000; border:none; box-shadow:0 0 12px rgba(0,240,255,0.15);">
+                    → Siapkan (${totalCount})
+                  </button>
+
+                  <div style="font-size:0.6rem; color:var(--color-text-muted); margin-top:8px; text-align:left;">
+                    ${this.robloxAccounts.length === 0 ? 'Isi API Key di kiri buat aktifin upload.' : 'Pilih akun di kiri untuk mengaktifkan otomatisasi upload.'}
+                  </div>
+                </div>
+
+                <!-- Result Box (Hidden by default) -->
+                <div id="spoof-result-box" style="display:none;" class="tool-section">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px;">
+                    <h3 style="font-size:0.8rem; font-weight:bold; color:#fff; margin:0;">📋 Roblox Studio Spoof Script</h3>
+                    <button class="btn btn-ghost btn-xs" onclick="navigator.clipboard.writeText(document.getElementById('spoof-output-code').value); alert('Script berhasil disalin!')" style="font-size:0.62rem; padding:4px 10px;">Salin Script</button>
+                  </div>
+                  <textarea id="spoof-output-code" readonly class="code-textarea" style="height:250px; font-family:monospace; font-size:0.7rem; background:rgba(0,0,0,0.3); color:#fff; border:1px solid rgba(255,255,255,0.05); resize:none;"></textarea>
+                  <div style="font-size:0.6rem; color:var(--color-text-muted); margin-top:8px;">
+                    💡 <strong>Cara Pakai:</strong> Salin script di atas, buka <strong>Roblox Studio</strong>, buka <strong>Command Bar</strong> (View → Command Bar), paste script, lalu tekan Enter. Kemudian klik kanan folder/objek keyframes yang dihasilkan di Workspace, lalu pilih <strong>Save to Roblox</strong>.
+                  </div>
+                </div>
+
               </div>
+
             </div>
+
           </div>
         </section>
       </div>
     `;
+
+    // Dropzone event listeners
+    setTimeout(() => {
+      const dropZone = document.getElementById('spoof-drop-zone');
+      if (dropZone) {
+        dropZone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'var(--color-accent-cyan)';
+          dropZone.style.background = 'rgba(0,240,255,0.03)';
+        });
+        dropZone.addEventListener('dragleave', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'rgba(255,255,255,0.1)';
+          dropZone.style.background = 'rgba(255,255,255,0.01)';
+        });
+        dropZone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'rgba(255,255,255,0.1)';
+          dropZone.style.background = 'rgba(255,255,255,0.01)';
+          if (e.dataTransfer.files.length > 0) {
+            this.handleFiles(e.dataTransfer.files);
+          }
+        });
+      }
+    }, 150);
   },
 
-  generate() {
-    const id = document.getElementById('spoof-id')?.value.trim();
-    if (!id) return;
-    const code = `-- Roblox Animation Spoof Script\nlocal oldId = "rbxassetid://${id}"\nlocal newAnim = Instance.new("Animation")\nnewAnim.AnimationId = oldId\nprint("Bypassed animation target initialized with ID: " .. newAnim.AnimationId)`;
-    const box = document.getElementById('spoof-result');
-    const out = document.getElementById('spoof-output');
-    if (box && out) {
-      box.style.display = 'block';
-      out.value = code;
+  updateInput(val) {
+    this.inputLinks = val;
+    this.render();
+    // Keep focus at the end of textarea
+    const textarea = document.getElementById('spoof-links-input');
+    if (textarea) {
+      textarea.focus();
+      textarea.setSelectionRange(val.length, val.length);
+    }
+  },
+
+  handleFiles(files) {
+    Array.from(files).forEach(file => {
+      this.uploadedFiles.push({
+        name: file.name,
+        size: file.size
+      });
+    });
+    this.render();
+  },
+
+  removeFile(index) {
+    this.uploadedFiles.splice(index, 1);
+    this.render();
+  },
+
+  convertSpoof() {
+    const lines = this.inputLinks.split('\n').map(l => l.trim()).filter(l => l);
+
+    if (lines.length === 0 && this.uploadedFiles.length === 0) {
+      alert('Silakan masukkan link/ID animasi atau upload file .rbxm/.rbxmx terlebih dahulu.');
+      return;
+    }
+
+    const animIds = [];
+    const bundleIds = [];
+    lines.forEach(line => {
+      const bundleMatch = line.match(/\/bundles\/(\d+)/);
+      const catalogMatch = line.match(/\/(catalog|library)\/(\d+)/);
+      if (bundleMatch) {
+        bundleIds.push(bundleMatch[1]);
+      } else if (catalogMatch) {
+        animIds.push(catalogMatch[2]);
+      } else if (/^\d+$/.test(line)) {
+        animIds.push(line.trim());
+      }
+    });
+
+    if (this.uploadedFiles.length > 0 && animIds.length === 0 && bundleIds.length === 0) {
+      alert('File .rbxmx/.rbxm Anda terdeteksi!\n\nUntuk file model animasi lokal, Anda bisa langsung menariknya (drag) ke dalam Roblox Studio Workspace, lalu klik kanan dan "Save to Roblox" untuk menerbitkannya.');
+      return;
+    }
+
+    let lua = `-- AR Community Animation Auto-Spoofer Script\n`;
+    lua += `-- Jalankan script ini di Command Bar Roblox Studio Anda\n\n`;
+    lua += `local Selection = game:GetService("Selection")\n`;
+    lua += `local InsertService = game:GetService("InsertService")\n`;
+    lua += `local AssetService = game:GetService("AssetService")\n\n`;
+    lua += `local folder = Instance.new("Folder")\n`;
+    lua += `folder.Name = "SpoofedAnimations"\n`;
+    lua += `folder.Parent = game.Workspace\n\n`;
+
+    if (animIds.length > 0) {
+      lua += `-- Memuat daftar Animasi Tunggal\n`;
+      lua += `local animIds = { ${animIds.join(', ')} }\n`;
+      lua += `for _, id in ipairs(animIds) do\n`;
+      lua += `  local success, model = pcall(function()\n`;
+      lua += `    return game:GetObjects("rbxassetid://" .. id)[1]\n`;
+      lua += `  end)\n`;
+      lua += `  if success and model then\n`;
+      lua += `    model.Name = "Anim_" .. id\n`;
+      lua += `    model.Parent = folder\n`;
+      lua += `    print("✓ Berhasil memuat animasi ID: " .. id)\n`;
+      lua += `  else\n`;
+      lua += `    warn("✕ Gagal memuat animasi ID: " .. id .. ". Pastikan aset tidak dikunci oleh pembuatnya.")\n`;
+      lua += `  end\n`;
+      lua += `end\n\n`;
+    }
+
+    if (bundleIds.length > 0) {
+      lua += `-- Memuat daftar Bundle Animasi\n`;
+      lua += `local bundleIds = { ${bundleIds.join(', ')} }\n`;
+      lua += `for _, bid in ipairs(bundleIds) do\n`;
+      lua += `  local success, info = pcall(function()\n`;
+      lua += `    return AssetService:GetBundleDetailsAsync(bid)\n`;
+      lua += `  end)\n`;
+      lua += `  if success and info then\n`;
+      lua += `    print("Memproses Bundle: " .. info.Name)\n`;
+      lua += `    for _, item in ipairs(info.Items) do\n`;
+      lua += `      if item.Type == "Asset" then\n`;
+      lua += `        local successLoad, model = pcall(function()\n`;
+      lua += `          return InsertService:LoadAsset(item.Id)\n`;
+      lua += `        end)\n`;
+      lua += `        if successLoad and model then\n`;
+      lua += `          model.Name = item.Name\n`;
+      lua += `          model.Parent = folder\n`;
+      lua += `          print("  ✓ Loaded bundle item: " .. item.Name)\n`;
+      lua += `        end\n`;
+      lua += `      end\n`;
+      lua += `    end\n`;
+      lua += `  else\n`;
+      lua += `    warn("✕ Gagal mengambil info bundle: " .. bid)\n`;
+      lua += `  end\n`;
+      lua += `end\n\n`;
+    }
+
+    lua += `Selection:Set({ folder })\n`;
+    lua += `print("=== SPOOF SELESAI ===")\n`;
+    lua += `print("Folder 'SpoofedAnimations' telah dibuat di Workspace.")\n`;
+    lua += `print("Silakan klik kanan setiap KeyframeSequence di dalam folder tersebut, lalu klik 'Save to Roblox' untuk mem-publish ulang ke akun Anda.")\n`;
+
+    const resultBox = document.getElementById('spoof-result-box');
+    const outputArea = document.getElementById('spoof-output-code');
+    if (resultBox && outputArea) {
+      resultBox.style.display = 'block';
+      outputArea.value = lua;
+      resultBox.scrollIntoView({ behavior: 'smooth' });
     }
   }
 };
