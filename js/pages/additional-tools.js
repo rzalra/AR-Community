@@ -2697,68 +2697,520 @@ const ObjInspectorPage = {
 
 // 13. MESH DECIMATOR PAGE
 const MeshDecimatorPage = {
+  vertices: [],
+  faces: [],
+  decimatedVertices: [],
+  decimatedFaces: [],
+  objFileName: '',
+  targetType: 'meshpart', // meshpart, ugc, csg, custom
+  customTriangles: 10000,
+  rotationX: -0.5,
+  rotationY: 0.5,
+  isDragging: false,
+  lastMouseX: 0,
+  lastMouseY: 0,
+  isDecimated: false,
+
   render() {
     const app = document.getElementById('app');
+
+    const targetVal = this.getTargetTriangles();
+
     app.innerHTML = `
       <div class="page-transition-enter">
-        <section class="tool-page" style="padding: var(--space-10) 0;">
+        <section class="tool-page" style="padding: var(--space-8) 0;">
           <div class="container">
-            ${ToolHelper.renderBreadcrumbs('Mesh Decimator')}
-            ${ToolHelper.renderHeader('Mesh Decimator', 'Hitung dan optimalkan jumlah polygon (triangle count) mesh Roblox kamu agar performa game lancar.', '🎨 ASSET')}
             
-            <div style="max-width: 600px; margin: 0 auto;" class="tool-section">
-              <h3 style="margin-bottom:16px;">Kalkulator Budget Triangle Roblox</h3>
+            <!-- Breadcrumbs -->
+            <div class="tool-breadcrumbs">
+              <a href="#/tools">🔧 Tools</a> <span>&gt;</span> <span class="active">OBJ Mesh Decimator</span>
+            </div>
+
+            <!-- Page Header -->
+            <div class="tool-page-header" style="margin-bottom: var(--space-6);">
+              <div style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:rgba(0,240,255,0.06); border:1px solid rgba(0,240,255,0.15); border-radius:100px; margin-bottom:12px;">
+                <span style="font-size:0.65rem; color:var(--color-accent-cyan); font-weight:bold; letter-spacing:0.05em;">🎨 ASSET TOOL</span>
+              </div>
+              <h1 style="margin: 0 0 var(--space-2) 0; font-family: var(--font-heading); font-weight: var(--font-weight-black); font-size: 2.2rem; color:#fff;">
+                OBJ Mesh <span style="background:var(--gradient-accent); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Decimator</span>
+              </h1>
+              <p style="margin: 0; color: var(--color-text-secondary); font-size: var(--text-sm);">
+                Kurangi jumlah polygon/triangle mesh OBJ untuk Roblox Studio. 100% di browser.
+              </p>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 320px 1fr; gap:24px; align-items:start;">
               
-              <div style="display:flex; flex-direction:column; gap:16px;">
-                <div>
-                  <label style="font-size:0.62rem; display:block; margin-bottom:4px;">JUMLAH TRIANGLE AWAL</label>
-                  <input type="number" id="dec-triangles" class="form-input" placeholder="contoh: 15000" value="12000">
+              <!-- LEFT COLUMN -->
+              <div style="display:flex; flex-direction:column; gap:20px;">
+                
+                <!-- UPLOAD FILE OBJ -->
+                <div class="tool-section" style="padding:16px;">
+                  <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px;">UPLOAD FILE OBJ</h3>
+                  
+                  <div id="dec-drop-zone" style="border:2px dashed rgba(255,255,255,0.1); border-radius:8px; padding:24px; text-align:center; cursor:pointer; background:rgba(255,255,255,0.01); transition:all 0.2s;" onclick="document.getElementById('dec-file-input').click()">
+                    <input type="file" id="dec-file-input" style="display:none;" accept=".obj" onchange="MeshDecimatorPage.loadFile(this.files)">
+                    <div style="font-size:1.8rem; margin-bottom:6px;">☁️</div>
+                    <div style="font-size:0.72rem; font-weight:bold; color:#fff;">Drop file .obj di sini</div>
+                    <div style="font-size:0.58rem; color:var(--color-text-muted); margin-top:2px;">atau klik untuk pilih</div>
+                  </div>
+
+                  ${this.vertices.length > 0 ? `
+                    <div style="margin-top:12px; display:flex; align-items:center; justify-content:space-between; background:rgba(0,240,255,0.05); border:1px solid rgba(0,240,255,0.1); padding:8px; border-radius:6px;">
+                      <div style="display:flex; flex-direction:column; gap:2px; overflow:hidden; text-align:left;">
+                        <span style="font-size:0.65rem; color:#fff; font-family:monospace; font-weight:bold; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${this.objFileName}</span>
+                        <span style="font-size:0.55rem; color:var(--color-text-muted);">${this.vertices.length.toLocaleString()} Verts | ${this.faces.length.toLocaleString()} Tris</span>
+                      </div>
+                      <button onclick="MeshDecimatorPage.clearFile()" style="background:none; border:none; color:var(--color-accent-red); cursor:pointer; font-weight:bold; font-size:0.75rem;">✕</button>
+                    </div>
+                  ` : ''}
                 </div>
-                <div>
-                  <label style="font-size:0.62rem; display:block; margin-bottom:4px;">PERSENTASE REDUKSI (%)</label>
-                  <input type="range" class="range-slider-red" id="dec-percent" min="10" max="90" value="50" oninput="document.getElementById('dec-percent-val').innerText = this.value + '%'">
-                  <span id="dec-percent-val" style="font-size:0.75rem; font-weight:bold; color:var(--color-accent-red);">50%</span>
+
+                <!-- TARGET TRIANGLES -->
+                <div class="tool-section" style="padding:16px; display:flex; flex-direction:column; gap:10px;">
+                  <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:4px;">TARGET TRIANGLES</h3>
+                  
+                  <!-- MeshPart Max (20,000) -->
+                  <div onclick="MeshDecimatorPage.setTargetType('meshpart')" style="cursor:pointer; border:1px solid ${this.targetType==='meshpart'?'var(--color-accent-cyan)':'rgba(255,255,255,0.05)'}; background:${this.targetType==='meshpart'?'rgba(0,240,255,0.03)':'transparent'}; padding:12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; transition:all 0.2s;">
+                    <div style="text-align:left;">
+                      <div style="font-size:0.7rem; font-weight:bold; color:${this.targetType==='meshpart'?'var(--color-accent-cyan)':'#fff'};">MeshPart Max</div>
+                      <div style="font-size:0.55rem; color:var(--color-text-muted);">Batas umum MeshPart</div>
+                    </div>
+                    <span style="font-size:0.75rem; font-weight:bold; color:${this.targetType==='meshpart'?'var(--color-accent-cyan)':'var(--color-text-muted)'};">20.000</span>
+                  </div>
+
+                  <!-- UGC Accessory (4,000) -->
+                  <div onclick="MeshDecimatorPage.setTargetType('ugc')" style="cursor:pointer; border:1px solid ${this.targetType==='ugc'?'var(--color-accent-cyan)':'rgba(255,255,255,0.05)'}; background:${this.targetType==='ugc'?'rgba(0,240,255,0.03)':'transparent'}; padding:12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; transition:all 0.2s;">
+                    <div style="text-align:left;">
+                      <div style="font-size:0.7rem; font-weight:bold; color:${this.targetType==='ugc'?'var(--color-accent-cyan)':'#fff'};">UGC Accessory</div>
+                      <div style="font-size:0.55rem; color:var(--color-text-muted);">UGC/Avatar accessory</div>
+                    </div>
+                    <span style="font-size:0.75rem; font-weight:bold; color:${this.targetType==='ugc'?'var(--color-accent-cyan)':'var(--color-text-muted)'};">4.000</span>
+                  </div>
+
+                  <!-- CSG Union (5,000) -->
+                  <div onclick="MeshDecimatorPage.setTargetType('csg')" style="cursor:pointer; border:1px solid ${this.targetType==='csg'?'var(--color-accent-cyan)':'rgba(255,255,255,0.05)'}; background:${this.targetType==='csg'?'rgba(0,240,255,0.03)':'transparent'}; padding:12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; transition:all 0.2s;">
+                    <div style="text-align:left;">
+                      <div style="font-size:0.7rem; font-weight:bold; color:${this.targetType==='csg'?'var(--color-accent-cyan)':'#fff'};">CSG Union</div>
+                      <div style="font-size:0.55rem; color:var(--color-text-muted);">Batas auto-simplify CSG</div>
+                    </div>
+                    <span style="font-size:0.75rem; font-weight:bold; color:${this.targetType==='csg'?'var(--color-accent-cyan)':'var(--color-text-muted)'};">5.000</span>
+                  </div>
+
+                  <!-- Custom -->
+                  <div onclick="MeshDecimatorPage.setTargetType('custom')" style="cursor:pointer; border:1px solid ${this.targetType==='custom'?'var(--color-accent-cyan)':'rgba(255,255,255,0.05)'}; background:${this.targetType==='custom'?'rgba(0,240,255,0.03)':'transparent'}; padding:12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; transition:all 0.2s;">
+                    <div style="text-align:left;">
+                      <div style="font-size:0.7rem; font-weight:bold; color:${this.targetType==='custom'?'var(--color-accent-cyan)':'#fff'};">Custom</div>
+                      <div style="font-size:0.55rem; color:var(--color-text-muted);">Tentukan sendiri</div>
+                    </div>
+                    <span style="font-size:0.75rem; font-weight:bold; color:${this.targetType==='custom'?'var(--color-accent-cyan)':'var(--color-text-muted)'};">${this.customTriangles.toLocaleString()}</span>
+                  </div>
+
+                  ${this.targetType === 'custom' ? `
+                    <div style="margin-top:4px; display:flex; flex-direction:column; gap:4px;">
+                      <label style="font-size:0.58rem; color:var(--color-text-muted);">Jumlah Triangles Target</label>
+                      <input type="number" id="dec-custom-input" value="${this.customTriangles}" oninput="MeshDecimatorPage.updateCustomTriangles(this.value)" style="width:100%; box-sizing:border-box; padding:8px; font-size:0.7rem; border-radius:4px; border:1px solid rgba(255,255,255,0.08); background:#111; color:#fff;">
+                    </div>
+                  ` : ''}
+
                 </div>
-                <button onclick="MeshDecimatorPage.calculate()" class="btn btn-primary">📐 HITUNG OPTIMALISASI</button>
+
+                <!-- MAIN PROCESS BUTTON -->
+                <button onclick="${this.vertices.length > 0 ? 'MeshDecimatorPage.decimateMesh()' : ''}" class="btn" style="width:100%; padding:12px; font-weight:bold; font-size:0.8rem; background:${this.vertices.length > 0 ? 'var(--gradient-accent)' : 'rgba(255,255,255,0.02)'}; color:${this.vertices.length > 0 ? '#000' : 'rgba(255,255,255,0.2)'}; border:none; box-shadow:${this.vertices.length > 0 ? '0 0 12px rgba(0,240,255,0.15)' : 'none'}; cursor:${this.vertices.length > 0 ? 'pointer' : 'default'};" ${this.vertices.length === 0 ? 'disabled' : ''}>
+                  ${this.vertices.length > 0 ? 'Decimate Mesh' : 'Upload file dulu'}
+                </button>
+
               </div>
 
-              <div id="dec-result" style="margin-top:20px; display:none; background:rgba(0,0,0,0.2); border:1px solid var(--color-border); border-radius:8px; padding:16px; font-size:0.75rem; line-height:1.6;">
+              <!-- RIGHT COLUMN -->
+              <div style="display:flex; flex-direction:column; gap:20px;">
+                
+                <!-- PREVIEW WIREFRAME -->
+                <div class="tool-section" style="padding:24px; min-height:450px; display:flex; flex-direction:column; justify-content:space-between; position:relative;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin:0;">PREVIEW WIREFRAME</h3>
+                    <span style="font-size:0.58rem; color:var(--color-accent-cyan); font-weight:bold; letter-spacing:0.5px; text-transform:uppercase;">
+                      ${this.isDecimated ? 'DECIMATED' : 'ORIGINAL'}
+                    </span>
+                  </div>
+
+                  <div style="flex:1; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.05); border-radius:8px; background:rgba(0,0,0,0.2); overflow:hidden; position:relative; min-height:340px; cursor:grab;">
+                    <canvas id="dec-canvas" width="500" height="340" style="max-width:100%; max-height:100%; display:${this.vertices.length > 0 ? 'block' : 'none'};"></canvas>
+                    ${this.vertices.length === 0 ? `
+                      <span style="font-size:0.72rem; color:var(--color-text-muted);">Upload OBJ untuk preview</span>
+                    ` : `
+                      <div style="position:absolute; bottom:12px; left:12px; font-size:0.55rem; color:var(--color-text-muted); pointer-events:none;">
+                        🖱️ Seret mouse untuk memutar 3D
+                      </div>
+                    `}
+                  </div>
+
+                  ${this.isDecimated ? `
+                    <div style="display:flex; flex-direction:column; gap:12px; align-items:center; margin-top:20px;">
+                      <div style="display:flex; gap:20px; font-size:0.68rem; color:var(--color-text-secondary); background:rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.05); padding:8px 16px; border-radius:6px;">
+                        <span>Asli: <strong style="color:#fff;">${this.faces.length.toLocaleString()} Tris</strong></span>
+                        <span>Decimated: <strong style="color:var(--color-accent-cyan);">${this.decimatedFaces.length.toLocaleString()} Tris</strong></span>
+                        <span style="color:${this.decimatedFaces.length <= 10000 ? 'var(--color-accent-green)' : '#eab308'}; font-weight:bold;">
+                          ${this.decimatedFaces.length <= 10000 ? '✓ Aman untuk Roblox' : '⚠ Melebihi 10k batas ideal'}
+                        </span>
+                      </div>
+                      <button onclick="MeshDecimatorPage.downloadDecimated()" class="btn" style="background:var(--gradient-accent); color:#000; font-weight:bold; font-size:0.75rem; padding:10px 24px;">
+                        📥 Download Decimated OBJ
+                      </button>
+                    </div>
+                  ` : ''}
+
+                </div>
+
               </div>
+
             </div>
+
           </div>
         </section>
       </div>
     `;
+
+    // Dropzone listeners
+    setTimeout(() => {
+      const dropZone = document.getElementById('dec-drop-zone');
+      if (dropZone) {
+        dropZone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'var(--color-accent-cyan)';
+          dropZone.style.background = 'rgba(0,240,255,0.03)';
+        });
+        dropZone.addEventListener('dragleave', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'rgba(255,255,255,0.1)';
+          dropZone.style.background = 'rgba(255,255,255,0.01)';
+        });
+        dropZone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'rgba(255,255,255,0.1)';
+          dropZone.style.background = 'rgba(255,255,255,0.01)';
+          if (e.dataTransfer.files.length > 0) {
+            this.loadFile(e.dataTransfer.files);
+          }
+        });
+      }
+
+      this.initCanvasInteraction();
+      this.drawWireframe();
+    }, 150);
   },
 
-  calculate() {
-    const tris = parseInt(document.getElementById('dec-triangles')?.value) || 0;
-    const pct = parseInt(document.getElementById('dec-percent')?.value) || 50;
+  getTargetTriangles() {
+    if (this.targetType === 'meshpart') return 20000;
+    if (this.targetType === 'ugc') return 4000;
+    if (this.targetType === 'csg') return 5000;
+    return this.customTriangles;
+  },
 
-    if (tris <= 0) {
-      alert('Masukkan jumlah triangle yang valid.');
-      return;
+  setTargetType(type) {
+    this.targetType = type;
+    this.render();
+  },
+
+  updateCustomTriangles(val) {
+    this.customTriangles = parseInt(val) || 10000;
+  },
+
+  clearFile() {
+    this.vertices = [];
+    this.faces = [];
+    this.decimatedVertices = [];
+    this.decimatedFaces = [];
+    this.objFileName = '';
+    this.isDecimated = false;
+    this.render();
+  },
+
+  loadFile(files) {
+    if (files.length > 0) {
+      const file = files[0];
+      this.objFileName = file.name;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target.result;
+        const parsed = this.parseOBJ(text);
+        this.vertices = parsed.vertices;
+        this.faces = parsed.faces;
+        this.decimatedVertices = [];
+        this.decimatedFaces = [];
+        this.isDecimated = false;
+        this.render();
+      };
+      reader.readAsText(file);
+    }
+  },
+
+  parseOBJ(text) {
+    const vertices = [];
+    const faces = [];
+    const lines = text.split('\n');
+    lines.forEach(line => {
+      const parts = line.trim().split(/\s+/);
+      if (parts[0] === 'v') {
+        vertices.push({
+          x: parseFloat(parts[1]),
+          y: parseFloat(parts[2]),
+          z: parseFloat(parts[3])
+        });
+      } else if (parts[0] === 'f') {
+        const indices = parts.slice(1).map(p => {
+          let idx = parseInt(p.split('/')[0]);
+          if (idx < 0) {
+            idx = vertices.length + idx + 1;
+          }
+          return idx - 1; // 0-based
+        });
+        
+        // Triangulate polygons
+        for (let i = 1; i < indices.length - 1; i++) {
+          faces.push([indices[0], indices[i], indices[i+1]]);
+        }
+      }
+    });
+    return { vertices, faces };
+  },
+
+  drawWireframe() {
+    const canvas = document.getElementById('dec-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const verts = this.isDecimated ? this.decimatedVertices : this.vertices;
+    const fcs = this.isDecimated ? this.decimatedFaces : this.faces;
+
+    if (verts.length === 0) return;
+
+    // Center & scale calculation
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    let minZ = Infinity, maxZ = -Infinity;
+    verts.forEach(v => {
+      if (v.x < minX) minX = v.x; if (v.x > maxX) maxX = v.x;
+      if (v.y < minY) minY = v.y; if (v.y > maxY) maxY = v.y;
+      if (v.z < minZ) minZ = v.z; if (v.z > maxZ) maxZ = v.z;
+    });
+
+    const midX = (minX + maxX) / 2;
+    const midY = (minY + maxY) / 2;
+    const midZ = (minZ + maxZ) / 2;
+
+    const sizeX = maxX - minX;
+    const sizeY = maxY - minY;
+    const sizeZ = maxZ - minZ;
+    const maxDimension = Math.max(sizeX, sizeY, sizeZ) || 1;
+    
+    const scale = (Math.min(canvas.width, canvas.height) * 0.6) / maxDimension;
+
+    // Rotation matrices
+    const cosX = Math.cos(this.rotationX);
+    const sinX = Math.sin(this.rotationX);
+    const cosY = Math.cos(this.rotationY);
+    const sinY = Math.sin(this.rotationY);
+
+    const projected = verts.map(v => {
+      let x = v.x - midX;
+      let y = v.y - midY;
+      let z = v.z - midZ;
+
+      const x1 = x * cosY - z * sinY;
+      const z1 = x * sinY + z * cosY;
+
+      const y2 = y * cosX - z1 * sinX;
+
+      const screenX = canvas.width / 2 + x1 * scale;
+      const screenY = canvas.height / 2 - y2 * scale;
+
+      return { x: screenX, y: screenY };
+    });
+
+    // Draw faces
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    fcs.forEach(f => {
+      const p1 = projected[f[0]];
+      const p2 = projected[f[1]];
+      const p3 = projected[f[2]];
+      if (p1 && p2 && p3) {
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.lineTo(p3.x, p3.y);
+        ctx.closePath();
+      }
+    });
+    ctx.stroke();
+  },
+
+  initCanvasInteraction() {
+    const canvas = document.getElementById('dec-canvas');
+    if (!canvas) return;
+
+    const onMouseDown = (e) => {
+      this.isDragging = true;
+      this.lastMouseX = e.clientX;
+      this.lastMouseY = e.clientY;
+    };
+
+    const onMouseMove = (e) => {
+      if (!this.isDragging) return;
+      const deltaX = e.clientX - this.lastMouseX;
+      const deltaY = e.clientY - this.lastMouseY;
+      this.lastMouseX = e.clientX;
+      this.lastMouseY = e.clientY;
+
+      this.rotationY += deltaX * 0.01;
+      this.rotationX += deltaY * 0.01;
+      this.drawWireframe();
+    };
+
+    const onMouseUp = () => {
+      this.isDragging = false;
+    };
+
+    canvas.removeEventListener('mousedown', canvas._onMouseDown);
+    canvas.addEventListener('mousedown', onMouseDown);
+    canvas._onMouseDown = onMouseDown;
+
+    window.removeEventListener('mousemove', window._onMouseMove);
+    window.addEventListener('mousemove', onMouseMove);
+    window._onMouseMove = onMouseMove;
+
+    window.removeEventListener('mouseup', window._onMouseUp);
+    window.addEventListener('mouseup', onMouseUp);
+    window._onMouseUp = onMouseUp;
+  },
+
+  decimateMesh() {
+    if (this.vertices.length === 0) return;
+
+    const targetTris = this.getTargetTriangles();
+    
+    // Bounding Box
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    let minZ = Infinity, maxZ = -Infinity;
+    this.vertices.forEach(v => {
+      if (v.x < minX) minX = v.x; if (v.x > maxX) maxX = v.x;
+      if (v.y < minY) minY = v.y; if (v.y > maxY) maxY = v.y;
+      if (v.z < minZ) minZ = v.z; if (v.z > maxZ) maxZ = v.z;
+    });
+
+    const sizeX = maxX - minX;
+    const sizeY = maxY - minY;
+    const sizeZ = maxZ - minZ;
+    const maxDim = Math.max(sizeX, sizeY, sizeZ) || 1;
+
+    // Vertex Clustering simplification helper
+    const runClustering = (N) => {
+      const cellSize = maxDim / N;
+      const cellToNewIndex = {};
+      const newVerts = [];
+      const newFaces = [];
+
+      this.vertices.forEach((v, idx) => {
+        const ix = Math.floor((v.x - minX) / cellSize);
+        const iy = Math.floor((v.y - minY) / cellSize);
+        const iz = Math.floor((v.z - minZ) / cellSize);
+        const cellId = `${ix}_${iy}_${iz}`;
+
+        if (cellToNewIndex[cellId] === undefined) {
+          cellToNewIndex[cellId] = newVerts.length;
+          newVerts.push({
+            x: v.x,
+            y: v.y,
+            z: v.z,
+            sumX: v.x, sumY: v.y, sumZ: v.z, count: 1
+          });
+        } else {
+          const cell = newVerts[cellToNewIndex[cellId]];
+          cell.sumX += v.x;
+          cell.sumY += v.y;
+          cell.sumZ += v.z;
+          cell.count++;
+        }
+      });
+
+      newVerts.forEach(nv => {
+        nv.x = nv.sumX / nv.count;
+        nv.y = nv.sumY / nv.count;
+        nv.z = nv.sumZ / nv.count;
+      });
+
+      this.faces.forEach(f => {
+        const ix = Math.floor((this.vertices[f[0]].x - minX) / cellSize);
+        const iy = Math.floor((this.vertices[f[0]].y - minY) / cellSize);
+        const iz = Math.floor((this.vertices[f[0]].z - minZ) / cellSize);
+        const cellId0 = `${ix}_${iy}_${iz}`;
+
+        const jx = Math.floor((this.vertices[f[1]].x - minX) / cellSize);
+        const jy = Math.floor((this.vertices[f[1]].y - minY) / cellSize);
+        const jz = Math.floor((this.vertices[f[1]].z - minZ) / cellSize);
+        const cellId1 = `${jx}_${jy}_${jz}`;
+
+        const kx = Math.floor((this.vertices[f[2]].x - minX) / cellSize);
+        const ky = Math.floor((this.vertices[f[2]].y - minY) / cellSize);
+        const kz = Math.floor((this.vertices[f[2]].z - minZ) / cellSize);
+        const cellId2 = `${kx}_${ky}_${kz}`;
+
+        const n0 = cellToNewIndex[cellId0];
+        const n1 = cellToNewIndex[cellId1];
+        const n2 = cellToNewIndex[cellId2];
+
+        if (n0 !== n1 && n1 !== n2 && n2 !== n0) {
+          newFaces.push([n0, n1, n2]);
+        }
+      });
+
+      return { vertices: newVerts, faces: newFaces };
+    };
+
+    // Find grid resolution that matches target triangles best
+    let bestN = 30;
+    let closestDiff = Infinity;
+    let bestResult = null;
+
+    for (let n = 10; n <= 100; n += 2) {
+      const res = runClustering(n);
+      const diff = Math.abs(res.faces.length - targetTris);
+      if (diff < closestDiff) {
+        closestDiff = diff;
+        bestN = n;
+        bestResult = res;
+      }
     }
 
-    const reduced = Math.floor(tris * (1 - pct / 100));
-    const isRobloxSafe = reduced <= 10000;
-
-    const resultBox = document.getElementById('dec-result');
-    if (resultBox) {
-      resultBox.style.display = 'block';
-      resultBox.innerHTML = `
-        <h4 style="font-weight:bold; color:white; margin-bottom:8px;">Hasil Analisis Optimasi:</h4>
-        <div>Awal: <strong>${tris.toLocaleString()} Tris</strong></div>
-        <div>Setelah Decimate (${pct}%): <strong style="color:var(--color-accent-cyan);">${reduced.toLocaleString()} Tris</strong></div>
-        <div style="margin-top:8px;">Batas Maksimal Mesh Roblox: <strong>10,000 Tris</strong></div>
-        <div style="margin-top:12px; padding:8px; border-radius:6px; background:${isRobloxSafe ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'}; color:${isRobloxSafe ? 'var(--color-accent-green)' : 'var(--color-accent-red)'}; font-weight:bold; text-align:center;">
-          ${isRobloxSafe ? '✓ AMAN UNTUK ROBLOX (Mesh bisa di-upload)' : '❌ MELEBIHI BATAS (Perlu reduksi lebih tinggi)'}
-        </div>
-      `;
+    if (bestResult) {
+      this.decimatedVertices = bestResult.vertices;
+      this.decimatedFaces = bestResult.faces;
+      this.isDecimated = true;
+      this.render();
     }
+  },
+
+  downloadDecimated() {
+    if (this.decimatedVertices.length === 0) return;
+
+    let out = `# OBJ mesh decimated using AR Community Mesh Decimator\n`;
+    this.decimatedVertices.forEach(v => {
+      out += `v ${v.x.toFixed(6)} ${v.y.toFixed(6)} ${v.z.toFixed(6)}\n`;
+    });
+    this.decimatedFaces.forEach(f => {
+      out += `f ${f[0] + 1} ${f[1] + 1} ${f[2] + 1}\n`;
+    });
+
+    const blob = new Blob([out], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = this.objFileName.replace(/\.obj$/i, '') + '_decimated.obj';
+    a.click();
   }
 };
-
 // 14. ANIM CONVERTER PAGE
 // 14. ANIM CONVERTER PAGE
 const AnimConverterPage = {
