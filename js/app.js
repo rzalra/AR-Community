@@ -924,11 +924,12 @@ window.showToolGuide = function(key) {
       ]
     },
     'rbxl-analyzer': {
-      title: 'RBXL Analyzer',
+      title: 'RBXL Place Analyzer',
       category: '📊 ROBLOX',
       steps: [
-        { num: '01', title: 'UPLOAD FILE GAME .RBXL', desc: 'Pilih file game Roblox Studio kamu.' },
-        { num: '02', title: 'BACA LAPORAN INSTANCE', desc: 'Analisis performa game berdasarkan total part dan baris script.' }
+        { num: '01', title: 'UPLOAD FILE GAME .RBXLX', desc: 'Simpan map Roblox Studio Anda ke format XML (.rbxlx), lalu pilih file tersebut.' },
+        { num: '02', title: 'BACA AUTOMATED FINDINGS', desc: 'Temukan potensi backdoor, virus exploit, dan penyebab lag secara otomatis.' },
+        { num: '03', title: 'EKSPLORASI STRUKTUR MAP', desc: 'Jelajahi hierarki instance di Map Explorer dan baca script aman di Script Browser.' }
       ]
     },
     'script-sync': {

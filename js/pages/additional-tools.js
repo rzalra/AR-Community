@@ -2380,29 +2380,7 @@ const DsKeyGenPage = {
   }
 };
 
-// 29. RBXL ANALYZER PAGE
-const RbxlAnalyzerPage = {
-  render() {
-    const app = document.getElementById('app');
-    app.innerHTML = `
-      <div class="page-transition-enter">
-        <section class="tool-page" style="padding: var(--space-10) 0;">
-          <div class="container">
-            ${ToolHelper.renderBreadcrumbs('RBXL Analyzer')}
-            ${ToolHelper.renderHeader('RBXL Analyzer', 'Menganalisis file game .rbxl untuk melihat statistik ukuran, jumlah instance part, dan baris kode.', '📊 ROBLOX')}
-            
-            <div style="max-width: 600px; margin: 0 auto;" class="tool-section">
-              <h3>Unggah File Game .rbxl</h3>
-              <input type="file" accept=".rbxl" class="form-input" style="padding:10px; margin-bottom:12px;" onchange="alert('Analisis file selesai!')">
-            </div>
-          </div>
-        </section>
-      </div>
-    `;
-  }
-};
-
-// 30. SCRIPT SYNC PAGE
+// 29. SCRIPT SYNC PAGE
 const ScriptSyncPage = {
   render() {
     const app = document.getElementById('app');
