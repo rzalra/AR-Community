@@ -2043,21 +2043,21 @@ const FontPreviewPage = {
             </div>
 
             <!-- Grid View -->
-            <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:20px;">
+            <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:20px;">
               ${filteredFonts.map(f => {
                 const isSelectedBgTrans = this.bgColor === 'transparent';
                 return `
-                  <div class="tool-section" style="padding:0; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; height:200px; border:1px solid rgba(255,255,255,0.05);">
+                  <div class="tool-section" style="padding:0; display:flex; flex-direction:column; justify-content:space-between; min-height:220px; height:auto; border:1px solid rgba(255,255,255,0.05); overflow:hidden;">
                     
                     <!-- Font Preview Area -->
-                    <div style="flex:1; padding:20px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:${isSelectedBgTrans ? 'transparent' : this.bgColor};">
-                      <div style="font-family:'${f.googleFamily}', sans-serif; font-size:${this.fontSize}px; color:${this.textColor}; font-weight:${this.isBold ? 'bold' : 'normal'}; font-style:${this.isItalic ? 'italic' : 'normal'}; text-align:center; word-break:break-all; max-height:100%; overflow:hidden;">
+                    <div style="flex:1; padding:28px 20px; display:flex; align-items:center; justify-content:center; background:${isSelectedBgTrans ? 'transparent' : this.bgColor}; min-height:120px;">
+                      <div style="font-family:'${f.googleFamily}', sans-serif; font-size:${this.fontSize}px; color:${this.textColor}; font-weight:${this.isBold ? 'bold' : 'normal'}; font-style:${this.isItalic ? 'italic' : 'normal'}; text-align:center; word-break:break-word; line-height:1.2; width:100%;">
                         ${this.inputText || 'AR Community'}
                       </div>
                     </div>
 
                     <!-- Footer Details -->
-                    <div style="background:#090a0f; padding:12px 16px; border-top:1px solid rgba(255,255,255,0.04); display:flex; justify-content:space-between; align-items:center;">
+                    <div style="background:#090a0f; padding:12px 16px; border-top:1px solid rgba(255,255,255,0.04); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
                       <div style="text-align:left;">
                         <h4 style="font-size:0.75rem; font-weight:bold; color:#fff; margin:0 0 2px 0;">${f.name}</h4>
                         <span style="font-size:0.55rem; color:var(--color-text-muted); font-family:monospace; display:block;">${f.enum}</span>
