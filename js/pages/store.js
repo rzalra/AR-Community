@@ -174,7 +174,7 @@ const StorePage = {
     const slug = item.name.toLowerCase().replace(/\s+/g, '-');
     const app = document.getElementById('app');
 
-    const productIcons = { 1: '🎵', 2: '🏔️', 3: '💰', 4: '💃', 5: '📛' };
+    const productIcons = { 1: '🏷️', 2: '🏔️', 3: '💰', 4: '💃', 5: '📛' };
     const productIcon = productIcons[item.id] || '📦';
 
     app.innerHTML = `

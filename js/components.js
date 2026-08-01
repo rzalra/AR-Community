@@ -63,7 +63,7 @@ const Components = {
     return `
       <div class="card store-card" data-store-id="${item.id}">
         <div class="card-image" style="background: ${grad}; display:flex; align-items:center; justify-content:center;">
-          <span style="font-size: 3rem; opacity: 0.4">${item.tags[0] === '3D' ? '🏰' : item.tags[0] === 'Script' ? '💻' : item.tags[0] === 'Design' ? '🎨' : item.tags[0] === 'Template' ? '📱' : '🎵'}</span>
+          <span style="font-size: 3rem; opacity: 0.4">${item.tags[0] === '3D' ? '🏰' : item.tags[0] === 'Script' ? '💻' : item.tags[0] === 'Design' ? '🎨' : item.tags[0] === 'Template' ? '📱' : '🏷️'}</span>
           ${discount ? `<div style="position:absolute; top: 12px; left: 12px;"><span class="badge badge-red">-${discount}%</span></div>` : ''}
           <div class="card-image-overlay"></div>
         </div>
