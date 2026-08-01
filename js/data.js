@@ -557,6 +557,17 @@ const APP_DATA = {
       link: '#/tools/image-converter',
       docLink: '#',
       featured: true
+    },
+    {
+      id: 48,
+      name: 'Lua Defuscator & Beautifier',
+      description: 'Dekripsi string, sederhanakan nama variabel acak, dan rapikan formatting kode Lua/Roblox yang telah di-obfuscate.',
+      category: 'editor',
+      icon: '🔓',
+      tags: ['Editor', 'Lua', 'Deobfuscate'],
+      link: '#/tools/lua-defuscator',
+      docLink: '#',
+      featured: true
     }
   ],
 

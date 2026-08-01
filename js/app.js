@@ -60,6 +60,7 @@ const App = {
     '#/tools/script-sync': { page: 'ScriptSyncPage', title: 'Script Sync' },
     '#/tools/script-reference': { page: 'ScriptReferencePage', title: 'Script Reference' },
     '#/tools/image-converter': { page: 'ImageConverterPage', title: 'Image Converter' },
+    '#/tools/lua-defuscator': { page: 'LuaDefuscatorPage', title: 'Lua Defuscator & Beautifier' },
     '#/store': { page: 'StorePage', title: 'Store' },
     '#/maps': { page: 'MapsPage', title: 'Maps' },
     '#/more': { page: 'MorePage', title: 'More' },
@@ -120,6 +121,7 @@ const App = {
       'ScriptSyncPage': ScriptSyncPage,
       'ScriptReferencePage': ScriptReferencePage,
       'ImageConverterPage': ImageConverterPage,
+      'LuaDefuscatorPage': LuaDefuscatorPage,
       'StorePage': StorePage,
       'MapsPage': MapsPage,
       'MorePage': MorePage,
@@ -673,6 +675,16 @@ window.showToolGuide = function(key) {
         { num: '01', title: 'UNGHAH GAMBAR (BISA BANYAK)', desc: 'Klik atau seret satu atau beberapa file gambar (PNG, JPG, WEBP) ke area upload.' },
         { num: '02', title: 'ATUR FORMAT & KUALITAS', desc: 'Pilih format target (WEBP, PNG, JPEG) dan atur slider kualitas kompresinya.' },
         { num: '03', title: 'KONVERSI & UNDUH HASIL', desc: 'Klik Konversi Sekarang, lalu unduh file hasil konversi satu per satu atau secara massal.' }
+      ]
+    },
+    'lua-defuscator': {
+      title: 'Lua Defuscator & Beautifier',
+      category: '🔓 EDITOR',
+      steps: [
+        { num: '01', title: 'TEMPEL KODE OBFUSCATED', desc: 'Paste kode Lua yang sudah di-obfuscate ke area input di sebelah kiri.' },
+        { num: '02', title: 'PILIH OPSI DEKRIPSI', desc: 'Centang opsi: Decode String, Sederhanakan Variabel, Hapus Header, dan Beautify sesuai kebutuhan.' },
+        { num: '03', title: 'KLIK DEFUSCATE', desc: 'Tekan tombol Defuscate. Sistem akan mengembalikan kode ke bentuk yang bisa dibaca dan diedit.' },
+        { num: '04', title: 'SALIN ATAU DOWNLOAD', desc: 'Copy hasilnya ke clipboard atau unduh sebagai file .lua untuk langsung dipakai di Roblox Studio.' }
       ]
     },
     'lua-cleaner': {
