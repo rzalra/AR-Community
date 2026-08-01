@@ -2268,47 +2268,175 @@ const ColorPalettePage = {
 // 11. SEAMLESS MAKER PAGE
 const SeamlessMakerPage = {
   imgObj: null,
+  imgName: '',
+  outputRatio: '1:1', // 1:1, 2:1, 1:2, 4:3, 3:4, 16:9, Original
+  outputSize: 1024,   // 512, 1024, 2048
+  resultDataUrl: null,
+  isTiled: false,
 
   render() {
     const app = document.getElementById('app');
+    
+    const ratios = ['1:1', '2:1', '1:2', '4:3', '3:4', '16:9', 'Original'];
+    const sizes = [512, 1024, 2048];
+
     app.innerHTML = `
       <div class="page-transition-enter">
-        <section class="tool-page" style="padding: var(--space-10) 0;">
+        <section class="tool-page" style="padding: var(--space-8) 0;">
           <div class="container">
-            ${ToolHelper.renderBreadcrumbs('Seamless Maker')}
-            ${ToolHelper.renderHeader('Seamless Maker', 'Ubah gambar biasa menjadi texture tileable (seamless) yang dapat di-loop tanpa batas sambungan.', '🎨 ASSET')}
             
-            <div style="display:grid; grid-template-columns: 280px 1fr; gap:20px; align-items:start;">
-              <div class="tool-section">
-                <h3>Tekstur Masukan</h3>
-                <input type="file" id="seamless-input" style="display:none;" accept="image/*" onchange="SeamlessMakerPage.loadFile(this.files)">
-                <button onclick="document.getElementById('seamless-input').click()" class="btn btn-secondary" style="width:100%; font-weight:bold; margin-bottom:12px;">➕ DIFFUSE TEXTURE</button>
-                <button onclick="SeamlessMakerPage.process()" class="btn btn-primary" style="width:100%; font-weight:bold;" ${!this.imgObj ? 'disabled' : ''}>🔄 MAKE SEAMLESS</button>
+            <!-- Breadcrumbs -->
+            <div class="tool-breadcrumbs">
+              <a href="#/tools">🔧 Tools</a> <span>&gt;</span> <span class="active">Seamless Maker</span>
+            </div>
+
+            <!-- Page Header -->
+            <div class="tool-page-header" style="margin-bottom: var(--space-6);">
+              <h1 style="margin: 0 0 var(--space-2) 0; font-family: var(--font-heading); font-weight: var(--font-weight-black); font-size: 2.2rem; color:#fff;">
+                Seamless <span style="background:var(--gradient-accent); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Maker</span>
+              </h1>
+              <p style="margin: 0; color: var(--color-text-secondary); font-size: var(--text-sm);">
+                Ubah gambar biasa jadi texture seamless yang bisa di-tile tanpa sambungan.
+              </p>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 320px 1fr; gap:24px; align-items:start;">
+              
+              <!-- LEFT COLUMN: CONTROLS -->
+              <div style="display:flex; flex-direction:column; gap:20px;">
+                
+                <!-- INPUT GAMBAR -->
+                <div class="tool-section" style="padding:16px;">
+                  <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px;">INPUT GAMBAR</h3>
+                  
+                  <div id="seamless-drop-zone" style="border:2px dashed rgba(255,255,255,0.1); border-radius:8px; padding:24px; text-align:center; cursor:pointer; background:rgba(255,255,255,0.01); transition:all 0.2s;" onclick="document.getElementById('seamless-file-input').click()">
+                    <input type="file" id="seamless-file-input" style="display:none;" accept="image/*" onchange="SeamlessMakerPage.loadFile(this.files)">
+                    <div style="font-size:1.8rem; margin-bottom:6px;">☁️</div>
+                    <div style="font-size:0.72rem; font-weight:bold; color:#fff;">Drag & drop gambar di sini</div>
+                    <div style="font-size:0.58rem; color:var(--color-text-muted); margin-top:2px;">PNG, JPG, WebP</div>
+                  </div>
+
+                  ${this.imgObj ? `
+                    <div style="margin-top:12px; display:flex; align-items:center; justify-content:space-between; background:rgba(0,240,255,0.05); border:1px solid rgba(0,240,255,0.1); padding:8px; border-radius:6px;">
+                      <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
+                        <img src="${this.imgObj.src}" style="width:28px; height:28px; object-fit:cover; border-radius:4px;">
+                        <span style="font-size:0.62rem; color:#fff; font-family:monospace; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${this.imgName}</span>
+                      </div>
+                      <button onclick="SeamlessMakerPage.clearImage()" style="background:none; border:none; color:var(--color-accent-red); cursor:pointer; font-weight:bold; font-size:0.75rem;">✕</button>
+                    </div>
+                  ` : ''}
+                </div>
+
+                <!-- RASIO OUTPUT -->
+                <div class="tool-section" style="padding:16px;">
+                  <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px;">RASIO OUTPUT</h3>
+                  <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;">
+                    ${ratios.map(r => `
+                      <button onclick="SeamlessMakerPage.setRatio('${r}')" style="padding:8px 0; border-radius:4px; font-weight:bold; font-size:0.65rem; border:1px solid rgba(255,255,255,0.05); cursor:pointer; transition:all 0.2s; background:${this.outputRatio===r?'var(--gradient-accent)':'transparent'}; color:${this.outputRatio===r?'#000':'#fff'};">${r}</button>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- UKURAN OUTPUT -->
+                <div class="tool-section" style="padding:16px;">
+                  <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px;">UKURAN OUTPUT (SISI TERPANJANG)</h3>
+                  <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom:8px;">
+                    ${sizes.map(s => `
+                      <button onclick="SeamlessMakerPage.setSize(${s})" style="padding:8px 0; border-radius:4px; font-weight:bold; font-size:0.65rem; border:1px solid rgba(255,255,255,0.05); cursor:pointer; transition:all 0.2s; background:${this.outputSize===s?'var(--gradient-accent)':'transparent'}; color:${this.outputSize===s?'#000':'#fff'};">${s}</button>
+                    `).join('')}
+                  </div>
+                  <span style="font-size:0.58rem; color:var(--color-text-muted); display:block;">Output: ${this.outputSize}px</span>
+                </div>
+
+                <!-- ACTIONS -->
+                <button onclick="SeamlessMakerPage.process()" class="btn" style="width:100%; padding:12px; font-weight:bold; font-size:0.8rem; background:${this.imgObj?'var(--gradient-accent)':'rgba(255,255,255,0.02)'}; color:${this.imgObj?'#000':'rgba(255,255,255,0.2)'}; border:none; box-shadow:${this.imgObj?'0 0 12px rgba(0,240,255,0.15)':'none'};" ${!this.imgObj ? 'disabled' : ''}>
+                  Buat Seamless
+                </button>
+
               </div>
 
-              <div class="tool-section" style="text-align:center;">
-                <h3>Render View</h3>
-                <div style="background:rgba(0,0,0,0.2); border:1px solid var(--color-border); border-radius:8px; display:flex; align-items:center; justify-content:center; aspect-ratio:16/10; overflow:hidden; position:relative; margin-bottom:16px;">
-                  <canvas id="seamless-canvas" style="max-width:100%; max-height:100%; display:none; background:#111;"></canvas>
-                  <span id="seamless-placeholder" style="font-size:0.75rem; color:var(--color-text-muted);">Masukkan file tekstur lalu jalankan pemrosesan.</span>
+              <!-- RIGHT COLUMN: RESULTS & PREVIEW -->
+              <div style="display:flex; flex-direction:column; gap:20px;">
+                
+                <!-- HASIL PANEL -->
+                <div class="tool-section" style="padding:24px; min-height:360px; display:flex; flex-direction:column; justify-content:space-between; position:relative;">
+                  <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:16px;">HASIL</h3>
+                  
+                  <div style="flex:1; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.05); border-radius:8px; background:rgba(0,0,0,0.2); overflow:hidden; position:relative; min-height:260px;">
+                    ${this.resultDataUrl ? `
+                      <div id="seamless-preview-container" style="width:100%; height:100%; min-height:260px; background-image:url(${this.resultDataUrl}); background-size:${this.isTiled ? '33.33%' : 'contain'}; background-repeat:repeat; transition:background-size 300ms ease; display:flex; align-items:center; justify-content:center;">
+                        ${!this.isTiled ? `<img src="${this.resultDataUrl}" style="max-width:100%; max-height:260px; object-fit:contain; border:1px solid rgba(255,255,255,0.05); box-shadow:0 10px 20px rgba(0,0,0,0.5);">` : ''}
+                      </div>
+                    ` : `
+                      <span style="font-size:0.72rem; color:var(--color-text-muted);">Hasil akan muncul di sini</span>
+                    `}
+                  </div>
+
+                  ${this.resultDataUrl ? `
+                    <div style="display:flex; gap:12px; justify-content:center; margin-top:20px;">
+                      <button onclick="SeamlessMakerPage.download()" class="btn" style="background:var(--gradient-accent); color:#000; font-weight:bold; font-size:0.75rem; padding:10px 24px;">
+                        📥 Download Texture
+                      </button>
+                      <button onclick="SeamlessMakerPage.toggleTiling()" class="btn btn-ghost" style="font-size:0.75rem; padding:10px 20px; border:1px solid ${this.isTiled?'var(--color-accent-cyan)':'rgba(255,255,255,0.1)'}; color:${this.isTiled?'var(--color-accent-cyan)':'#fff'}; background:${this.isTiled?'rgba(0,240,255,0.05)':'transparent'};">
+                        🔲 Uji Tiling (${this.isTiled ? '3x3' : '1x1'})
+                      </button>
+                    </div>
+                  ` : ''}
                 </div>
-                <button id="seamless-dl-btn" style="display:none; max-width:200px; margin:0 auto;" class="btn btn-secondary btn-sm" onclick="SeamlessMakerPage.download()">📥 Unduh Seamless Texture</button>
+
+                <!-- CARA KERJA -->
+                <div class="tool-section" style="padding:16px; border:1px solid rgba(239,68,68,0.15); background:rgba(239,68,68,0.02);">
+                  <h4 style="font-size:0.7rem; font-weight:bold; color:var(--color-accent-red); margin:0 0 6px 0;">Cara kerja</h4>
+                  <p style="font-size:0.62rem; color:var(--color-text-secondary); margin:0; line-height:1.5;">
+                    Gambar di-offset 50% lalu tepinya di-blend pakai gradient mask. Hasilnya texture yang seamless — bisa di-tile ke segala arah tanpa terlihat sambungannya. Cocok untuk texture Roblox, background, dan material game.
+                  </p>
+                </div>
+
               </div>
+
             </div>
+
           </div>
         </section>
       </div>
     `;
+
+    // Dropzone listeners
+    setTimeout(() => {
+      const dropZone = document.getElementById('seamless-drop-zone');
+      if (dropZone) {
+        dropZone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'var(--color-accent-cyan)';
+          dropZone.style.background = 'rgba(0,240,255,0.03)';
+        });
+        dropZone.addEventListener('dragleave', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'rgba(255,255,255,0.1)';
+          dropZone.style.background = 'rgba(255,255,255,0.01)';
+        });
+        dropZone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'rgba(255,255,255,0.1)';
+          dropZone.style.background = 'rgba(255,255,255,0.01)';
+          if (e.dataTransfer.files.length > 0) {
+            this.loadFile(e.dataTransfer.files);
+          }
+        });
+      }
+    }, 150);
   },
 
   loadFile(files) {
     if (files.length > 0) {
       const file = files[0];
+      this.imgName = file.name;
       const reader = new FileReader();
       reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
           this.imgObj = img;
+          this.resultDataUrl = null; // Clear previous output
           this.render();
         };
         img.src = e.target.result;
@@ -2317,43 +2445,135 @@ const SeamlessMakerPage = {
     }
   },
 
+  clearImage() {
+    this.imgObj = null;
+    this.imgName = '';
+    this.resultDataUrl = null;
+    this.render();
+  },
+
+  setRatio(ratio) {
+    this.outputRatio = ratio;
+    this.render();
+  },
+
+  setSize(size) {
+    this.outputSize = size;
+    this.render();
+  },
+
+  toggleTiling() {
+    this.isTiled = !this.isTiled;
+    this.render();
+  },
+
   process() {
     if (!this.imgObj) return;
-    const canvas = document.getElementById('seamless-canvas');
-    const placeholder = document.getElementById('seamless-placeholder');
-    const dlBtn = document.getElementById('seamless-dl-btn');
 
-    const w = this.imgObj.width;
-    const h = this.imgObj.height;
+    const size = this.outputSize;
+    let w = size;
+    let h = size;
+
+    if (this.outputRatio === '2:1') h = Math.floor(size / 2);
+    else if (this.outputRatio === '1:2') w = Math.floor(size / 2);
+    else if (this.outputRatio === '4:3') h = Math.floor((size * 3) / 4);
+    else if (this.outputRatio === '3:4') w = Math.floor((size * 3) / 4);
+    else if (this.outputRatio === '16:9') h = Math.floor((size * 9) / 16);
+    else if (this.outputRatio === 'Original') {
+      const scale = size / Math.max(this.imgObj.width, this.imgObj.height);
+      w = Math.floor(this.imgObj.width * scale);
+      h = Math.floor(this.imgObj.height * scale);
+    }
+
+    const canvas = document.createElement('canvas');
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
 
-    // Make texture seamless by offset wrap (standard 50% offset technique)
+    // Draw scaled source to a temp canvas
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = w;
+    tempCanvas.height = h;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.drawImage(this.imgObj, 0, 0, w, h);
+
+    // Offset quadrants (50%)
     const halfW = Math.floor(w / 2);
     const halfH = Math.floor(h / 2);
 
-    // Draw shifted sections to blend edges
-    ctx.drawImage(this.imgObj, halfW, halfH, halfW, halfH, 0, 0, halfW, halfH);
-    ctx.drawImage(this.imgObj, 0, halfH, halfW, halfH, halfW, 0, halfW, halfH);
-    ctx.drawImage(this.imgObj, halfW, 0, halfW, halfH, 0, halfH, halfW, halfH);
-    ctx.drawImage(this.imgObj, 0, 0, halfW, halfH, halfW, halfH, halfW, halfH);
+    ctx.drawImage(tempCanvas, halfW, halfH, w - halfW, h - halfH, 0, 0, w - halfW, h - halfH);
+    ctx.drawImage(tempCanvas, 0, halfH, halfW, h - halfH, w - halfW, 0, halfW, h - halfH);
+    ctx.drawImage(tempCanvas, halfW, 0, w - halfW, halfH, 0, h - halfH, w - halfW, halfH);
+    ctx.drawImage(tempCanvas, 0, 0, halfW, halfH, w - halfW, h - halfH, halfW, halfH);
 
-    placeholder.style.display = 'none';
-    canvas.style.display = 'block';
-    dlBtn.style.display = 'block';
+    // Blending boundaries
+    const blendSize = Math.max(16, Math.floor(Math.min(w, h) * 0.15));
+
+    // Horizontal Blend
+    const hStrip = tempCtx.getImageData(0, halfH - blendSize / 2, w, blendSize);
+    const hBlendCanvas = document.createElement('canvas');
+    hBlendCanvas.width = w;
+    hBlendCanvas.height = blendSize;
+    const hBlendCtx = hBlendCanvas.getContext('2d');
+    hBlendCtx.putImageData(hStrip, 0, 0);
+
+    const hMaskCanvas = document.createElement('canvas');
+    hMaskCanvas.width = w;
+    hMaskCanvas.height = blendSize;
+    const hMaskCtx = hMaskCanvas.getContext('2d');
+    const hGrad = hMaskCtx.createLinearGradient(0, 0, 0, blendSize);
+    hGrad.addColorStop(0, 'rgba(255,255,255,0)');
+    hGrad.addColorStop(0.5, 'rgba(255,255,255,1)');
+    hGrad.addColorStop(1, 'rgba(255,255,255,0)');
+    hMaskCtx.fillStyle = hGrad;
+    hMaskCtx.fillRect(0, 0, w, blendSize);
+
+    hBlendCtx.globalCompositeOperation = 'destination-in';
+    hBlendCtx.drawImage(hMaskCanvas, 0, 0);
+
+    ctx.save();
+    ctx.drawImage(hBlendCanvas, 0, halfH - blendSize / 2);
+    ctx.restore();
+
+    // Vertical Blend
+    const vStrip = tempCtx.getImageData(halfW - blendSize / 2, 0, blendSize, h);
+    const vBlendCanvas = document.createElement('canvas');
+    vBlendCanvas.width = blendSize;
+    vBlendCanvas.height = h;
+    const vBlendCtx = vBlendCanvas.getContext('2d');
+    vBlendCtx.putImageData(vStrip, 0, 0);
+
+    const vMaskCanvas = document.createElement('canvas');
+    vMaskCanvas.width = blendSize;
+    vMaskCanvas.height = h;
+    const vMaskCtx = vMaskCanvas.getContext('2d');
+    const vGrad = vMaskCtx.createLinearGradient(0, 0, blendSize, 0);
+    vGrad.addColorStop(0, 'rgba(255,255,255,0)');
+    vGrad.addColorStop(0.5, 'rgba(255,255,255,1)');
+    vGrad.addColorStop(1, 'rgba(255,255,255,0)');
+    vMaskCtx.fillStyle = vGrad;
+    vMaskCtx.fillRect(0, 0, blendSize, h);
+
+    vBlendCtx.globalCompositeOperation = 'destination-in';
+    vBlendCtx.drawImage(vMaskCanvas, 0, 0);
+
+    ctx.save();
+    ctx.drawImage(vBlendCanvas, halfW - blendSize / 2, 0);
+    ctx.restore();
+
+    this.resultDataUrl = canvas.toDataURL('image/png');
+    this.isTiled = false;
+    this.render();
   },
 
   download() {
-    const canvas = document.getElementById('seamless-canvas');
-    if (!canvas) return;
+    if (!this.resultDataUrl) return;
     const a = document.createElement('a');
-    a.href = canvas.toDataURL('image/png');
-    a.download = 'seamless_texture.png';
+    a.href = this.resultDataUrl;
+    a.download = 'seamless_texture_' + (this.imgName ? this.imgName.replace(/\.[^/.]+$/, '') : 'texture') + '.png';
     a.click();
   }
 };
-
 // 12. OBJ INSPECTOR PAGE
 const ObjInspectorPage = {
   render() {
