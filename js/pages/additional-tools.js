@@ -853,6 +853,18 @@ const SpriteSheetPage = {
     placeholder.style.display = 'none';
     canvas.style.display = 'block';
     dlBtn.style.display = 'block';
+  },
+
+  download() {
+    const canvas = document.getElementById('sprite-canvas');
+    if (!canvas) return;
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = 'spritesheet_atlas.png';
+    a.click();
+  }
+};
+
 // 8. MATERIAL GENERATOR
 const MaterialGeneratorPage = {
   imgFile: null,
