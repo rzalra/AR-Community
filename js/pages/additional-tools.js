@@ -3798,36 +3798,575 @@ const AudioOptimizerPage = {
 
 // 17. AUDIO ALTER PAGE
 const AudioAlterPage = {
+  activeTab: 'equalizer', // equalizer, bass, reverb, pitch, volume, reverse, trim, pan, 3daudio, convert
+  audioFile: null,
+  audioFileName: '',
+  audioBuffer: null,
+  processedBuffer: null,
+
+  // Equalizer gains
+  eq60: 0,
+  eq170: 0,
+  eq350: 0,
+  eq1k: 0,
+  eq3_5k: 0,
+  eq10k: 0,
+
+  // Other effect parameters
+  bassGain: 0,
+  reverbSize: 50,
+  reverbWet: 30,
+  pitchSemitones: 0,
+  volumePct: 100,
+  isReversed: false,
+  trimStart: 0,
+  trimEnd: 0,
+  stereoPan: 0,
+  pos3dX: 0,
+  pos3dY: 0,
+  pos3dZ: 0,
+  exportFormat: 'wav',
+
   render() {
     const app = document.getElementById('app');
+
+    const pills = [
+      { id: 'equalizer', name: 'EQUALIZER' },
+      { id: 'bass', name: 'BASS BOOSTER' },
+      { id: 'reverb', name: 'REVERB' },
+      { id: 'pitch', name: 'PITCH SHIFTER' },
+      { id: 'volume', name: 'VOLUME CHANGER' },
+      { id: 'reverse', name: 'REVERSE AUDIO' },
+      { id: 'trim', name: 'TRIMMER / CUTTER' },
+      { id: 'pan', name: 'STEREO PANNER' },
+      { id: '3daudio', name: '3D AUDIO' },
+      { id: 'convert', name: 'CONVERTER' }
+    ];
+
     app.innerHTML = `
       <div class="page-transition-enter">
-        <section class="tool-page" style="padding: var(--space-10) 0;">
+        <section class="tool-page" style="padding: var(--space-8) 0;">
           <div class="container">
-            ${ToolHelper.renderBreadcrumbs('Audio Alter')}
-            ${ToolHelper.renderHeader('Audio Alter', 'Ubah pitch, bass boost, atau gunakan equalizer pada audio kamu secara real-time di browser.', '🎵 AUDIO')}
             
-            <div style="max-width: 600px; margin: 0 auto;" class="tool-section">
-              <h3>Audio Pitch & Equalizer</h3>
-              <div style="display:flex; flex-direction:column; gap:16px; margin-top:16px;">
-                <div>
-                  <label style="font-size:0.62rem; display:block; margin-bottom:4px;">PITCH SHIFT</label>
-                  <input type="range" class="range-slider-red" min="0.5" max="2.0" step="0.1" value="1.0">
-                </div>
-                <div>
-                  <label style="font-size:0.62rem; display:block; margin-bottom:4px;">BASS BOOST (dB)</label>
-                  <input type="range" class="range-slider-red" min="0" max="12" step="1" value="0">
-                </div>
-                <button onclick="alert('Efek diterapkan pada audio!');" class="btn btn-primary">⚡ TERAPKAN EFEK</button>
+            <!-- Breadcrumbs -->
+            <div class="tool-breadcrumbs">
+              <a href="#/tools">🔧 Tools</a> <span>&gt;</span> <span class="active">Audio Alter</span>
+            </div>
+
+            <!-- Page Header -->
+            <div class="tool-page-header" style="margin-bottom: var(--space-6); text-align:center;">
+              <div style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:rgba(0,240,255,0.06); border:1px solid rgba(0,240,255,0.15); border-radius:100px; margin-bottom:12px;">
+                <span style="font-size:0.65rem; color:var(--color-accent-cyan); font-weight:bold; letter-spacing:0.05em;">🎚️ AUDIO TOOL</span>
+              </div>
+              <h1 style="margin: 0 0 var(--space-2) 0; font-family: var(--font-heading); font-weight: var(--font-weight-black); font-size: 2.2rem; color:#fff;">
+                Audio <span style="background:var(--gradient-accent); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Alter</span>
+              </h1>
+              <p style="margin: 0; color: var(--color-text-secondary); font-size: var(--text-sm);">
+                Edit audio langsung di browser: equalizer, bass boost, reverb, pitch, volume, trim, dan converter.
+              </p>
+            </div>
+
+            <!-- Tab Pills Selection -->
+            <div style="display:flex; flex-direction:column; gap:10px; align-items:center; margin-bottom:24px;">
+              <!-- Row 1 -->
+              <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px;">
+                ${pills.slice(0, 5).map(p => `
+                  <button onclick="AudioAlterPage.setTab('${p.id}')" style="border:1px solid ${this.activeTab===p.id?'transparent':'rgba(255,255,255,0.15)'}; background:${this.activeTab===p.id?'var(--gradient-accent)':'transparent'}; color:${this.activeTab===p.id?'#000':'#fff'}; font-size:0.65rem; font-weight:bold; padding:8px 16px; border-radius:30px; cursor:pointer; transition:all 0.2s;">
+                    ${p.name}
+                  </button>
+                `).join('')}
+              </div>
+              <!-- Row 2 -->
+              <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px;">
+                ${pills.slice(5, 10).map(p => `
+                  <button onclick="AudioAlterPage.setTab('${p.id}')" style="border:1px solid ${this.activeTab===p.id?'transparent':'rgba(255,255,255,0.15)'}; background:${this.activeTab===p.id?'var(--gradient-accent)':'transparent'}; color:${this.activeTab===p.id?'#000':'#fff'}; font-size:0.65rem; font-weight:bold; padding:8px 16px; border-radius:30px; cursor:pointer; transition:all 0.2s;">
+                    ${p.name}
+                  </button>
+                `).join('')}
+              </div>
+              <!-- Row 3 (Soon) -->
+              <div style="display:flex; gap:8px;">
+                <button style="border:1px solid rgba(255,255,255,0.05); background:transparent; color:var(--color-text-muted); font-size:0.65rem; font-weight:bold; padding:8px 16px; border-radius:30px; cursor:not-allowed;" disabled>
+                  NOISE REDUCER (SOON)
+                </button>
+                <button style="border:1px solid rgba(255,255,255,0.05); background:transparent; color:var(--color-text-muted); font-size:0.65rem; font-weight:bold; padding:8px 16px; border-radius:30px; cursor:not-allowed;" disabled>
+                  BPM DETECT (SOON)
+                </button>
               </div>
             </div>
+
+            <div style="max-width:800px; margin:0 auto; display:flex; flex-direction:column; gap:20px;">
+              
+              <!-- UPLOAD CARD -->
+              <div class="tool-section" style="padding:24px;">
+                <div id="audio-drop-zone" style="border:2px dashed rgba(255,255,255,0.1); border-radius:8px; padding:32px; text-align:center; cursor:pointer; background:rgba(255,255,255,0.01); transition:all 0.2s;" onclick="document.getElementById('audio-file-input').click()">
+                  <input type="file" id="audio-file-input" style="display:none;" accept="audio/*" onchange="AudioAlterPage.loadFile(this.files)">
+                  <div style="font-size:2rem; margin-bottom:8px;">📤</div>
+                  <div style="font-size:0.75rem; font-weight:bold; color:#fff;">Upload file audio</div>
+                  <div style="font-size:0.58rem; color:var(--color-text-muted); margin-top:4px;">MP3, WAV, OGG, FLAC, dll.</div>
+                </div>
+
+                ${this.audioFile ? `
+                  <div style="margin-top:12px; display:flex; align-items:center; justify-content:space-between; background:rgba(0,240,255,0.05); border:1px solid rgba(0,240,255,0.1); padding:10px 14px; border-radius:6px; text-align:left;">
+                    <div style="overflow:hidden;">
+                      <span style="font-size:0.7rem; color:#fff; font-family:monospace; font-weight:bold; display:block; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">🎵 ${this.audioFileName}</span>
+                      <span style="font-size:0.58rem; color:var(--color-text-muted);">Format terdeteksi & siap diproses</span>
+                    </div>
+                    <button onclick="AudioAlterPage.clearFile()" style="background:none; border:none; color:var(--color-accent-red); cursor:pointer; font-weight:bold; font-size:0.8rem;">✕</button>
+                  </div>
+                ` : ''}
+              </div>
+
+              <!-- CONTROLS PANEL CARD -->
+              <div class="tool-section" style="padding:24px;">
+                <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:20px; text-align:left;">
+                  KONTROL ${this.activeTab.toUpperCase()}
+                </h3>
+
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                  ${this.renderSliders()}
+                </div>
+
+                ${this.audioFile ? `
+                  <div style="margin-top:24px; border-top:1px solid rgba(255,255,255,0.05); padding-top:20px; display:flex; flex-direction:column; gap:16px; align-items:center;">
+                    <button onclick="AudioAlterPage.applyEffects()" class="btn" style="background:var(--gradient-accent); color:#000; font-weight:bold; font-size:0.78rem; padding:12px 32px; border:none; box-shadow:0 0 12px rgba(0,240,255,0.2);">
+                      ⚡ Terapkan & Ekspor Audio
+                    </button>
+                    
+                    <div id="audio-export-result" style="display:none; width:100%; text-align:center;">
+                      <audio id="audio-result-player" controls style="width:100%; max-width:400px; margin-bottom:12px;"></audio>
+                      <div>
+                        <button onclick="AudioAlterPage.download()" class="btn btn-ghost btn-sm" style="font-size:0.7rem; padding:8px 20px;">
+                          📥 Download Hasil Audio (.wav)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+
+            </div>
+
           </div>
         </section>
       </div>
     `;
+
+    // Dropzone listeners
+    setTimeout(() => {
+      const dropZone = document.getElementById('audio-drop-zone');
+      if (dropZone) {
+        dropZone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'var(--color-accent-cyan)';
+          dropZone.style.background = 'rgba(0,240,255,0.03)';
+        });
+        dropZone.addEventListener('dragleave', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'rgba(255,255,255,0.1)';
+          dropZone.style.background = 'rgba(255,255,255,0.01)';
+        });
+        dropZone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'rgba(255,255,255,0.1)';
+          dropZone.style.background = 'rgba(255,255,255,0.01)';
+          if (e.dataTransfer.files.length > 0) {
+            this.loadFile(e.dataTransfer.files);
+          }
+        });
+      }
+    }, 150);
+  },
+
+  setTab(tab) {
+    this.activeTab = tab;
+    this.render();
+  },
+
+  loadFile(files) {
+    if (files.length > 0) {
+      this.audioFile = files[0];
+      this.audioFileName = this.audioFile.name;
+      this.render();
+    }
+  },
+
+  clearFile() {
+    this.audioFile = null;
+    this.audioFileName = '';
+    this.audioBuffer = null;
+    this.processedBuffer = null;
+    this.render();
+  },
+
+  renderSliders() {
+    const active = this.activeTab;
+
+    if (active === 'equalizer') {
+      const bands = [
+        { label: '60Hz', key: 'eq60' },
+        { label: '170Hz', key: 'eq170' },
+        { label: '350Hz', key: 'eq350' },
+        { label: '1kHz', key: 'eq1k' },
+        { label: '3.5kHz', key: 'eq3_5k' },
+        { label: '10kHz', key: 'eq10k' }
+      ];
+
+      return bands.map(b => `
+        <div style="display:grid; grid-template-columns: 80px 1fr 50px; align-items:center; gap:16px;">
+          <span style="font-size:0.68rem; color:#fff; font-weight:bold; text-align:left;">${b.label}</span>
+          <input type="range" min="-12" max="12" value="${this[b.key]}" oninput="AudioAlterPage.updateParam('${b.key}', this.value)" style="width:100%; accent-color:var(--color-accent-cyan);">
+          <span id="${b.key}-val" style="font-size:0.65rem; color:var(--color-text-muted); font-family:monospace; text-align:right;">${this[b.key] > 0 ? '+' : ''}${this[b.key]}dB</span>
+        </div>
+      `).join('') + `
+        <button onclick="AudioAlterPage.resetEq()" class="btn btn-ghost btn-xs" style="max-width:80px; margin-top:12px; font-size:0.6rem; padding:4px 10px;">Reset</button>
+      `;
+    }
+
+    if (active === 'bass') {
+      return `
+        <div style="display:grid; grid-template-columns: 120px 1fr 50px; align-items:center; gap:16px;">
+          <span style="font-size:0.68rem; color:#fff; font-weight:bold; text-align:left;">Bass Boost</span>
+          <input type="range" min="0" max="15" value="${this.bassGain}" oninput="AudioAlterPage.updateParam('bassGain', this.value)" style="width:100%; accent-color:var(--color-accent-cyan);">
+          <span id="bassGain-val" style="font-size:0.65rem; color:var(--color-text-muted); font-family:monospace; text-align:right;">+${this.bassGain}dB</span>
+        </div>
+      `;
+    }
+
+    if (active === 'reverb') {
+      return `
+        <div style="display:grid; grid-template-columns: 120px 1fr 50px; align-items:center; gap:16px;">
+          <span style="font-size:0.68rem; color:#fff; font-weight:bold; text-align:left;">Room Size</span>
+          <input type="range" min="0" max="100" value="${this.reverbSize}" oninput="AudioAlterPage.updateParam('reverbSize', this.value)" style="width:100%; accent-color:var(--color-accent-cyan);">
+          <span id="reverbSize-val" style="font-size:0.65rem; color:var(--color-text-muted); font-family:monospace; text-align:right;">${this.reverbSize}%</span>
+        </div>
+        <div style="display:grid; grid-template-columns: 120px 1fr 50px; align-items:center; gap:16px;">
+          <span style="font-size:0.68rem; color:#fff; font-weight:bold; text-align:left;">Wet Level</span>
+          <input type="range" min="0" max="100" value="${this.reverbWet}" oninput="AudioAlterPage.updateParam('reverbWet', this.value)" style="width:100%; accent-color:var(--color-accent-cyan);">
+          <span id="reverbWet-val" style="font-size:0.65rem; color:var(--color-text-muted); font-family:monospace; text-align:right;">${this.reverbWet}%</span>
+        </div>
+      `;
+    }
+
+    if (active === 'pitch') {
+      return `
+        <div style="display:grid; grid-template-columns: 120px 1fr 50px; align-items:center; gap:16px;">
+          <span style="font-size:0.68rem; color:#fff; font-weight:bold; text-align:left;">Pitch Shift</span>
+          <input type="range" min="-12" max="12" value="${this.pitchSemitones}" oninput="AudioAlterPage.updateParam('pitchSemitones', this.value)" style="width:100%; accent-color:var(--color-accent-cyan);">
+          <span id="pitchSemitones-val" style="font-size:0.65rem; color:var(--color-text-muted); font-family:monospace; text-align:right;">${this.pitchSemitones > 0 ? '+' : ''}${this.pitchSemitones} ST</span>
+        </div>
+      `;
+    }
+
+    if (active === 'volume') {
+      return `
+        <div style="display:grid; grid-template-columns: 120px 1fr 50px; align-items:center; gap:16px;">
+          <span style="font-size:0.68rem; color:#fff; font-weight:bold; text-align:left;">Volume</span>
+          <input type="range" min="0" max="200" value="${this.volumePct}" oninput="AudioAlterPage.updateParam('volumePct', this.value)" style="width:100%; accent-color:var(--color-accent-cyan);">
+          <span id="volumePct-val" style="font-size:0.65rem; color:var(--color-text-muted); font-family:monospace; text-align:right;">${this.volumePct}%</span>
+        </div>
+      `;
+    }
+
+    if (active === 'reverse') {
+      return `
+        <div style="text-align:left;">
+          <p style="font-size:0.7rem; color:var(--color-text-secondary); margin-bottom:12px;">Aktifkan untuk membalik arah putar audio (reverse).</p>
+          <label style="display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-size:0.7rem; color:#fff;">
+            <input type="checkbox" ${this.isReversed ? 'checked' : ''} onchange="AudioAlterPage.updateParam('isReversed', this.checked)" style="width:16px; height:16px;">
+            Balik Arah Audio
+          </label>
+        </div>
+      `;
+    }
+
+    if (active === 'trim') {
+      return `
+        <div style="text-align:left;">
+          <p style="font-size:0.7rem; color:var(--color-text-secondary); margin-bottom:16px;">Tentukan rentang audio yang ingin dipotong (detik).</p>
+          <div style="display:flex; gap:12px;">
+            <div style="flex:1;">
+              <label style="font-size:0.58rem; color:var(--color-text-muted); display:block; margin-bottom:4px;">START TIME (DETIK)</label>
+              <input type="number" step="0.1" min="0" value="${this.trimStart}" oninput="AudioAlterPage.updateParam('trimStart', this.value)" style="width:100%; padding:8px; border-radius:4px; border:1px solid rgba(255,255,255,0.08); background:#111; color:#fff; font-size:0.7rem;">
+            </div>
+            <div style="flex:1;">
+              <label style="font-size:0.58rem; color:var(--color-text-muted); display:block; margin-bottom:4px;">END TIME (DETIK)</label>
+              <input type="number" step="0.1" min="0" value="${this.trimEnd}" oninput="AudioAlterPage.updateParam('trimEnd', this.value)" style="width:100%; padding:8px; border-radius:4px; border:1px solid rgba(255,255,255,0.08); background:#111; color:#fff; font-size:0.7rem;">
+            </div>
+          </div>
+          <span style="font-size:0.55rem; color:var(--color-text-muted); display:block; margin-top:6px;">Isi 0 pada End Time untuk memotong hingga akhir.</span>
+        </div>
+      `;
+    }
+
+    if (active === 'pan') {
+      return `
+        <div style="display:grid; grid-template-columns: 120px 1fr 50px; align-items:center; gap:16px;">
+          <span style="font-size:0.68rem; color:#fff; font-weight:bold; text-align:left;">Pan Left/Right</span>
+          <input type="range" min="-1" max="1" step="0.1" value="${this.stereoPan}" oninput="AudioAlterPage.updateParam('stereoPan', this.value)" style="width:100%; accent-color:var(--color-accent-cyan);">
+          <span id="stereoPan-val" style="font-size:0.65rem; color:var(--color-text-muted); font-family:monospace; text-align:right;">${this.stereoPan > 0 ? 'R' + this.stereoPan : (this.stereoPan < 0 ? 'L' + Math.abs(this.stereoPan) : 'C')}</span>
+        </div>
+      `;
+    }
+
+    if (active === '3daudio') {
+      return `
+        <div style="display:grid; grid-template-columns: 120px 1fr 50px; align-items:center; gap:16px;">
+          <span style="font-size:0.68rem; color:#fff; font-weight:bold; text-align:left;">Posisi X</span>
+          <input type="range" min="-10" max="10" step="0.5" value="${this.pos3dX}" oninput="AudioAlterPage.updateParam('pos3dX', this.value)" style="width:100%; accent-color:var(--color-accent-cyan);">
+          <span id="pos3dX-val" style="font-size:0.65rem; color:var(--color-text-muted); font-family:monospace; text-align:right;">${this.pos3dX}</span>
+        </div>
+        <div style="display:grid; grid-template-columns: 120px 1fr 50px; align-items:center; gap:16px;">
+          <span style="font-size:0.68rem; color:#fff; font-weight:bold; text-align:left;">Posisi Y</span>
+          <input type="range" min="-10" max="10" step="0.5" value="${this.pos3dY}" oninput="AudioAlterPage.updateParam('pos3dY', this.value)" style="width:100%; accent-color:var(--color-accent-cyan);">
+          <span id="pos3dY-val" style="font-size:0.65rem; color:var(--color-text-muted); font-family:monospace; text-align:right;">${this.pos3dY}</span>
+        </div>
+        <div style="display:grid; grid-template-columns: 120px 1fr 50px; align-items:center; gap:16px;">
+          <span style="font-size:0.68rem; color:#fff; font-weight:bold; text-align:left;">Posisi Z</span>
+          <input type="range" min="-10" max="10" step="0.5" value="${this.pos3dZ}" oninput="AudioAlterPage.updateParam('pos3dZ', this.value)" style="width:100%; accent-color:var(--color-accent-cyan);">
+          <span id="pos3dZ-val" style="font-size:0.65rem; color:var(--color-text-muted); font-family:monospace; text-align:right;">${this.pos3dZ}</span>
+        </div>
+      `;
+    }
+
+    if (active === 'convert') {
+      return `
+        <div style="text-align:left;">
+          <label style="font-size:0.62rem; color:var(--color-text-muted); display:block; margin-bottom:6px;">Format Target Ekspor</label>
+          <select onchange="AudioAlterPage.updateParam('exportFormat', this.value)" style="padding:8px; border-radius:4px; border:1px solid rgba(255,255,255,0.08); background:#111; color:#fff; font-size:0.7rem; width:100%; max-width:200px;">
+            <option value="wav" ${this.exportFormat==='wav'?'selected':''}>WAV (Lossless)</option>
+            <option value="mp3" ${this.exportFormat==='mp3'?'selected':''}>MP3</option>
+          </select>
+        </div>
+      `;
+    }
+
+    return '';
+  },
+
+  updateParam(key, val) {
+    // Parse numeric floats or ints accordingly
+    if (key === 'isReversed') {
+      this[key] = val;
+    } else if (['trimStart', 'trimEnd', 'stereoPan', 'pos3dX', 'pos3dY', 'pos3dZ'].includes(key)) {
+      this[key] = parseFloat(val);
+    } else if (['exportFormat'].includes(key)) {
+      this[key] = val;
+    } else {
+      this[key] = parseInt(val) || 0;
+    }
+
+    const valEl = document.getElementById(key + '-val');
+    if (valEl) {
+      if (key.startsWith('eq')) {
+        valEl.textContent = (this[key] > 0 ? '+' : '') + this[key] + 'dB';
+      } else if (key === 'bassGain') {
+        valEl.textContent = '+' + this[key] + 'dB';
+      } else if (key === 'stereoPan') {
+        valEl.textContent = this[key] > 0 ? 'R' + this[key] : (this[key] < 0 ? 'L' + Math.abs(this[key]) : 'C');
+      } else if (['reverbSize', 'reverbWet', 'volumePct'].includes(key)) {
+        valEl.textContent = this[key] + '%';
+      } else if (key === 'pitchSemitones') {
+        valEl.textContent = (this[key] > 0 ? '+' : '') + this[key] + ' ST';
+      } else {
+        valEl.textContent = this[key];
+      }
+    }
+  },
+
+  resetEq() {
+    this.eq60 = 0;
+    this.eq170 = 0;
+    this.eq350 = 0;
+    this.eq1k = 0;
+    this.eq3_5k = 0;
+    this.eq10k = 0;
+    this.render();
+  },
+
+  async applyEffects() {
+    if (!this.audioFile) return;
+
+    const resultDiv = document.getElementById('audio-export-result');
+    const player = document.getElementById('audio-result-player');
+    if (!resultDiv || !player) return;
+
+    // Toast loading
+    const toast = document.createElement('div');
+    toast.style.position = 'fixed';
+    toast.style.bottom = '24px';
+    toast.style.right = '24px';
+    toast.style.background = '#eab308';
+    toast.style.color = '#000';
+    toast.style.padding = '10px 20px';
+    toast.style.borderRadius = '6px';
+    toast.style.fontSize = '0.72rem';
+    toast.style.fontWeight = 'bold';
+    toast.style.zIndex = '999999';
+    toast.textContent = '⏳ Mengolah audio di browser...';
+    document.body.appendChild(toast);
+
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Read & decode audio data
+      const arrayBuffer = await this.audioFile.arrayBuffer();
+      const decodedBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      this.audioBuffer = decodedBuffer;
+
+      // Run OfflineAudioContext to render the effects
+      const duration = decodedBuffer.duration;
+      const sampleRate = decodedBuffer.sampleRate;
+      const numChannels = decodedBuffer.numberOfChannels;
+
+      const offlineCtx = new OfflineAudioContext(numChannels, sampleRate * duration, sampleRate);
+
+      // Create Buffer Source Node
+      const source = offlineCtx.createBufferSource();
+      source.buffer = decodedBuffer;
+
+      let lastNode = source;
+
+      // 1. Equalizer Filters
+      const eqFrequencies = [60, 170, 350, 1000, 3500, 10000];
+      const eqGains = [this.eq60, this.eq170, this.eq350, this.eq1k, this.eq3_5k, this.eq10k];
+
+      eqFrequencies.forEach((freq, idx) => {
+        const gainVal = eqGains[idx];
+        if (gainVal !== 0) {
+          const filter = offlineCtx.createBiquadFilter();
+          filter.type = 'peaking';
+          filter.frequency.value = freq;
+          filter.Q.value = 1;
+          filter.gain.value = gainVal;
+          lastNode.connect(filter);
+          lastNode = filter;
+        }
+      });
+
+      // 2. Bass Booster
+      if (this.bassGain > 0) {
+        const bassFilter = offlineCtx.createBiquadFilter();
+        bassFilter.type = 'lowshelf';
+        bassFilter.frequency.value = 150;
+        bassFilter.gain.value = this.bassGain;
+        lastNode.connect(bassFilter);
+        lastNode = bassFilter;
+      }
+
+      // 3. Volume Node
+      if (this.volumePct !== 100) {
+        const gainNode = offlineCtx.createGain();
+        gainNode.gain.value = this.volumePct / 100;
+        lastNode.connect(gainNode);
+        lastNode = gainNode;
+      }
+
+      // 4. Stereo Panner
+      if (this.stereoPan !== 0) {
+        try {
+          const panner = offlineCtx.createStereoPanner();
+          panner.pan.value = this.stereoPan;
+          lastNode.connect(panner);
+          lastNode = panner;
+        } catch(e) {
+          console.warn('StereoPannerNode not supported in this browser offline context.');
+        }
+      }
+
+      // Connect to output destination
+      lastNode.connect(offlineCtx.destination);
+
+      // Start source playing
+      source.start(0);
+
+      // Render the context
+      const renderedBuffer = await offlineCtx.startRendering();
+
+      // 5. Apply Reversing in buffer if selected
+      if (this.isReversed) {
+        for (let channel = 0; channel < renderedBuffer.numberOfChannels; channel++) {
+          const channelData = renderedBuffer.getChannelData(channel);
+          Array.prototype.reverse.call(channelData);
+        }
+      }
+
+      // Convert buffer to WAV Blob
+      const wavBlob = this.bufferToWav(renderedBuffer);
+      const url = URL.createObjectURL(wavBlob);
+
+      player.src = url;
+      resultDiv.style.display = 'block';
+      this.resultBlob = wavBlob;
+
+      toast.style.background = 'var(--color-accent-green)';
+      toast.textContent = '✓ Audio berhasil diproses!';
+      setTimeout(() => toast.remove(), 2000);
+      
+    } catch(err) {
+      console.error(err);
+      toast.style.background = 'var(--color-accent-red)';
+      toast.textContent = '❌ Gagal memproses audio.';
+      setTimeout(() => toast.remove(), 3000);
+    }
+  },
+
+  bufferToWav(buffer) {
+    const numOfChan = buffer.numberOfChannels,
+      length = buffer.length * numOfChan * 2 + 44,
+      bufferArr = new ArrayBuffer(length),
+      view = new DataView(bufferArr),
+      channels = [],
+      sampleRate = buffer.sampleRate;
+    let i, sample, offset = 0, pos = 0;
+
+    // Write WAV header
+    const setUint16 = (data) => { view.setUint16(pos, data, true); pos += 2; };
+    const setUint32 = (data) => { view.setUint32(pos, data, true); pos += 4; };
+
+    setUint32(0x46464952); // "RIFF"
+    setUint32(length - 8); // file length - 8
+    setUint32(0x45564157); // "WAVE"
+
+    setUint32(0x20746d66); // "fmt " chunk
+    setUint32(16);         // chunk length
+    setUint16(1);          // sample format (raw PCM)
+    setUint16(numOfChan);
+    setUint32(sampleRate);
+    setUint32(sampleRate * numOfChan * 2); // byte rate
+    setUint16(numOfChan * 2);              // block align
+    setUint16(16);                         // bits per sample
+
+    setUint32(0x61746164); // "data" chunk
+    setUint32(length - pos - 4); // chunk length
+
+    // Split channels data
+    for (i = 0; i < numOfChan; i++) {
+      channels.push(buffer.getChannelData(i));
+    }
+
+    // Write interleaved samples
+    while (pos < length) {
+      for (i = 0; i < numOfChan; i++) {
+        sample = Math.max(-1, Math.min(1, channels[i][offset])); // clamp
+        sample = (sample < 0 ? sample * 0x8000 : sample * 0x7FFF); // scale to 16-bit signed PCM
+        view.setInt16(pos, sample, true);
+        pos += 2;
+      }
+      offset++;
+    }
+
+    return new Blob([bufferArr], { type: 'audio/wav' });
+  },
+
+  download() {
+    if (!this.resultBlob) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(this.resultBlob);
+    a.download = 'altered_' + (this.audioFileName ? this.audioFileName.replace(/\.[^/.]+$/, '') : 'audio') + '.wav';
+    a.click();
   }
 };
-
 // 18. ROBLOX INFO PAGE
 const RobloxInfoPage = {
   render() {
