@@ -869,42 +869,281 @@ const SpriteSheetPage = {
 const MaterialGeneratorPage = {
   imgFile: null,
   imgObj: null,
+  outputSize: 1024,
+  normalStrength: 4,
+  roughnessBias: 0,
+  metalThreshold: 0.15,
+  emissiveThreshold: 200,
 
   render() {
     const app = document.getElementById('app');
     app.innerHTML = `
       <div class="page-transition-enter">
-        <section class="tool-page" style="padding: var(--space-10) 0;">
+        <section class="tool-page" style="padding: var(--space-8) 0;">
           <div class="container">
-            ${ToolHelper.renderBreadcrumbs('Material Generator')}
-            ${ToolHelper.renderHeader('Material Generator', 'Buat material PBR (Normal Map, Roughness, Height) dari satu file gambar diffuse secara instan.', '🧱 ASSET')}
-            
-            <div style="display:grid; grid-template-columns: 280px 1fr; gap:20px; align-items:start;">
-              <div class="tool-section">
-                <h3>Difusi Gambar</h3>
-                <input type="file" id="material-input" style="display:none;" accept="image/*" onchange="MaterialGeneratorPage.loadFile(this.files)">
-                <button onclick="document.getElementById('material-input').click()" class="btn btn-secondary" style="width:100%; font-weight:bold; margin-bottom:12px;">➕ PILIH DIFFUSE IMAGE</button>
+            <div class="tool-breadcrumbs">
+              <a href="#/tools">🔧 Tools</a> <span>&gt;</span> <span class="active">PBR Material Generator</span>
+            </div>
+            <div class="tool-page-header" style="margin-bottom: var(--space-6);">
+              <h1 style="margin: 0 0 var(--space-2) 0; font-family: var(--font-heading); font-weight: var(--font-weight-black); font-size: 2.2rem; background: linear-gradient(135deg, #00f0ff 0%, #ff007f 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">PBR Material Generator</h1>
+              <p style="margin: 0; color: var(--color-text-secondary); font-size: var(--text-sm);">Upload tekstur, dapatkan 5 map PBR (Color, Normal, Roughness, Metalness, Emissive) siap pakai di MaterialVariant Roblox.</p>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 320px 1fr; gap:24px; align-items:start;">
+              <!-- Left Side Controls -->
+              <div style="display:flex; flex-direction:column; gap:20px;">
                 
-                <h3 style="margin-top:20px; margin-bottom:12px;">Format PBR</h3>
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                  <button onclick="MaterialGeneratorPage.generate('normal')" class="btn btn-primary btn-sm" ${!this.imgObj ? 'disabled' : ''}>🧱 Generate Normal Map</button>
-                  <button onclick="MaterialGeneratorPage.generate('roughness')" class="btn btn-secondary btn-sm" ${!this.imgObj ? 'disabled' : ''}>🧱 Generate Roughness</button>
+                <!-- INPUT TEKSTUR -->
+                <div class="tool-section" style="padding:16px;">
+                  <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px;">INPUT TEKSTUR</h3>
+                  <div id="material-drop-zone" style="border: 2px dashed rgba(255,255,255,0.15); border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('material-input').click()">
+                    <input type="file" id="material-input" style="display:none;" accept="image/*" onchange="MaterialGeneratorPage.loadFile(this.files)">
+                    <div style="font-size:2rem; color:var(--color-text-muted); margin-bottom:8px;">☁️</div>
+                    <div style="font-size:0.75rem; font-weight:bold; color:var(--color-text-primary);">Drop tekstur di sini</div>
+                    <div style="font-size:0.6rem; color:var(--color-text-muted); margin-top:4px;">atau klik untuk pilih file · PNG, JPG, WebP</div>
+                  </div>
+                  <!-- Image preview thumbnail if uploaded -->
+                  <div id="material-preview-thumb-container" style="display:none; margin-top:12px; align-items:center; gap:8px;">
+                    <img id="material-preview-thumb" style="width:40px; height:40px; border-radius:4px; object-fit:cover; border:1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size:0.68rem; color:var(--color-text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px;" id="material-preview-filename"></div>
+                  </div>
                 </div>
+
+                <!-- UKURAN OUTPUT -->
+                <div class="tool-section" style="padding:16px;">
+                  <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px;">UKURAN OUTPUT</h3>
+                  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px;">
+                    <button class="btn btn-sm btn-size" onclick="MaterialGeneratorPage.setSize(512)" style="padding:6px 0; border-radius:6px; font-weight:bold; font-size:0.7rem; border:1px solid rgba(255,255,255,0.1); background:${this.outputSize===512?'#ff0055':'transparent'}; color:#fff;">512</button>
+                    <button class="btn btn-sm btn-size" onclick="MaterialGeneratorPage.setSize(1024)" style="padding:6px 0; border-radius:6px; font-weight:bold; font-size:0.7rem; border:1px solid rgba(255,255,255,0.1); background:${this.outputSize===1024?'#ff0055':'transparent'}; color:#fff;">1024</button>
+                    <button class="btn btn-sm btn-size" onclick="MaterialGeneratorPage.setSize(2048)" style="padding:6px 0; border-radius:6px; font-weight:bold; font-size:0.7rem; border:1px solid rgba(255,255,255,0.1); background:${this.outputSize===2048?'#ff0055':'transparent'}; color:#fff;">2048</button>
+                    <button class="btn btn-sm btn-size" onclick="MaterialGeneratorPage.setSize(4096)" style="padding:6px 0; border-radius:6px; font-weight:bold; font-size:0.7rem; border:1px solid rgba(255,255,255,0.1); background:${this.outputSize===4096?'#ff0055':'transparent'}; color:#fff;">4096</button>
+                  </div>
+                  <div style="font-size:0.6rem; color:var(--color-text-muted); margin-top:8px;" id="output-size-desc">Output: 5 file PNG masing-masing ${this.outputSize}×${this.outputSize}px</div>
+                </div>
+
+                <!-- PENGATURAN MAP -->
+                <div class="tool-section" style="padding:16px;">
+                  <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px;">PENGATURAN MAP</h3>
+                  
+                  <div style="margin-bottom:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                      <span style="font-size:0.7rem; font-weight:bold;">Normal Strength</span>
+                      <span style="font-size:0.7rem; font-weight:bold; color:#ff0055;" id="val-normal-strength">${this.normalStrength}</span>
+                    </div>
+                    <input type="range" min="0" max="10" step="0.1" value="${this.normalStrength}" oninput="MaterialGeneratorPage.updateParam('normalStrength', parseFloat(this.value))" style="width:100%; accent-color:#ff0055;">
+                    <div style="font-size:0.58rem; color:var(--color-text-muted); margin-top:2px;">Makin tinggi, permukaan terasa makin 3D/bergelombang</div>
+                  </div>
+
+                  <div style="margin-bottom:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                      <span style="font-size:0.7rem; font-weight:bold;">Roughness Bias</span>
+                      <span style="font-size:0.7rem; font-weight:bold; color:#ff0055;" id="val-roughness-bias">${this.roughnessBias}</span>
+                    </div>
+                    <input type="range" min="-128" max="128" step="1" value="${this.roughnessBias}" oninput="MaterialGeneratorPage.updateParam('roughnessBias', parseInt(this.value))" style="width:100%; accent-color:#ff0055;">
+                    <div style="font-size:0.58rem; color:var(--color-text-muted); margin-top:2px;">Negatif = lebih glossy, positif = lebih kasar</div>
+                  </div>
+
+                  <div style="margin-bottom:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                      <span style="font-size:0.7rem; font-weight:bold;">Metal Threshold</span>
+                      <span style="font-size:0.7rem; font-weight:bold; color:#ff0055;" id="val-metal-threshold">${this.metalThreshold}</span>
+                    </div>
+                    <input type="range" min="0.0" max="1.0" step="0.01" value="${this.metalThreshold}" oninput="MaterialGeneratorPage.updateParam('metalThreshold', parseFloat(this.value))" style="width:100%; accent-color:#ff0055;">
+                    <div style="font-size:0.58rem; color:var(--color-text-muted); margin-top:2px;">Saturasi di bawah threshold dianggap metal (abu-abu/perak)</div>
+                  </div>
+
+                  <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                      <span style="font-size:0.7rem; font-weight:bold;">Emissive Threshold</span>
+                      <span style="font-size:0.7rem; font-weight:bold; color:#ff0055;" id="val-emissive-threshold">${this.emissiveThreshold}</span>
+                    </div>
+                    <input type="range" min="0" max="255" step="1" value="${this.emissiveThreshold}" oninput="MaterialGeneratorPage.updateParam('emissiveThreshold', parseInt(this.value))" style="width:100%; accent-color:#ff0055;">
+                    <div style="font-size:0.58rem; color:var(--color-text-muted); margin-top:2px;">Pixel dengan luminance di atas nilai ini dianggap glowing/emissive</div>
+                  </div>
+                </div>
+
+                <!-- GENERATE BUTTON -->
+                <button class="btn btn-primary" onclick="MaterialGeneratorPage.generateAll()" style="width:100%; padding:12px; font-weight:bold; font-size:0.8rem; background:#ff0055; border:none; display:flex; justify-content:center; align-items:center; gap:8px;">
+                  🔄 Generate PBR Maps
+                </button>
+
+                <!-- NAMA FILE OUTPUT -->
+                <div class="tool-section" style="padding:16px;">
+                  <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px;">NAMA FILE OUTPUT</h3>
+                  
+                  <div style="margin-bottom:10px;">
+                    <label style="font-size:0.6rem; color:var(--color-text-muted); display:block; margin-bottom:2px;">ColorMapContent</label>
+                    <input type="text" class="form-input" id="filename-color" value="colormap.png" style="font-size:0.68rem; background:rgba(0,0,0,0.2); padding:6px; border:1px solid rgba(255,255,255,0.05); color:#fff; font-family:monospace; width:100%;">
+                  </div>
+
+                  <div style="margin-bottom:10px;">
+                    <label style="font-size:0.6rem; color:var(--color-text-muted); display:block; margin-bottom:2px;">NormalMapContent</label>
+                    <input type="text" class="form-input" id="filename-normal" value="normalmap.png" style="font-size:0.68rem; background:rgba(0,0,0,0.2); padding:6px; border:1px solid rgba(255,255,255,0.05); color:#fff; font-family:monospace; width:100%;">
+                  </div>
+
+                  <div style="margin-bottom:10px;">
+                    <label style="font-size:0.6rem; color:var(--color-text-muted); display:block; margin-bottom:2px;">RoughnessMapContent</label>
+                    <input type="text" class="form-input" id="filename-roughness" value="roughnessmap.png" style="font-size:0.68rem; background:rgba(0,0,0,0.2); padding:6px; border:1px solid rgba(255,255,255,0.05); color:#fff; font-family:monospace; width:100%;">
+                  </div>
+
+                  <div style="margin-bottom:10px;">
+                    <label style="font-size:0.6rem; color:var(--color-text-muted); display:block; margin-bottom:2px;">MetalnessMapContent</label>
+                    <input type="text" class="form-input" id="filename-metalness" value="metalnessmap.png" style="font-size:0.68rem; background:rgba(0,0,0,0.2); padding:6px; border:1px solid rgba(255,255,255,0.05); color:#fff; font-family:monospace; width:100%;">
+                  </div>
+
+                  <div>
+                    <label style="font-size:0.6rem; color:var(--color-text-muted); display:block; margin-bottom:2px;">EmissiveMaskContent</label>
+                    <input type="text" class="form-input" id="filename-emissive" value="emissivemask.png" style="font-size:0.68rem; background:rgba(0,0,0,0.2); padding:6px; border:1px solid rgba(255,255,255,0.05); color:#fff; font-family:monospace; width:100%;">
+                  </div>
+                </div>
+
               </div>
 
-              <div class="tool-section" style="text-align:center;">
-                <h3>Material View</h3>
-                <div style="background:rgba(0,0,0,0.2); border:1px solid var(--color-border); border-radius:8px; display:flex; align-items:center; justify-content:center; aspect-ratio:16/10; overflow:hidden; position:relative; margin-bottom:16px;">
-                  <canvas id="material-canvas" style="max-width:100%; max-height:100%; display:none; background:#111;"></canvas>
-                  <span id="material-placeholder" style="font-size:0.75rem; color:var(--color-text-muted);">Pilih file diffuse, lalu klik jenis PBR untuk mengunduh.</span>
+              <!-- Right Side Results / Placeholder -->
+              <div class="tool-section" id="material-right-panel" style="min-height:550px; display:flex; align-items:center; justify-content:center; padding:24px;">
+                <!-- Default Placeholder -->
+                <div id="material-placeholder" style="text-align:center; max-width:500px; display:flex; flex-direction:column; align-items:center;">
+                  
+                  <div style="display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:24px;">
+                    <!-- Left grid icon -->
+                    <div style="background:#2a1b15; border: 1px solid #ff4400; border-radius: 8px; width: 48px; height: 48px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:#fff;">🧱</div>
+                    <div style="font-size:1.2rem; color:var(--color-text-muted);">→</div>
+                    <!-- Right badges -->
+                    <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+                      <span style="background:rgba(255,0,0,0.15); color:#ff5555; border:1px solid rgba(255,0,0,0.3); padding:2px 8px; border-radius:4px; font-size:0.55rem; font-weight:bold; font-family:monospace; line-height:1;">Color</span>
+                      <span style="background:rgba(0,100,255,0.15); color:#5599ff; border:1px solid rgba(0,100,255,0.3); padding:2px 8px; border-radius:4px; font-size:0.55rem; font-weight:bold; font-family:monospace; line-height:1;">Normal</span>
+                      <span style="background:rgba(255,255,255,0.05); color:#aaa; border:1px solid rgba(255,255,255,0.15); padding:2px 8px; border-radius:4px; font-size:0.55rem; font-weight:bold; font-family:monospace; line-height:1;">Rough</span>
+                      <span style="background:rgba(255,0,100,0.15); color:#ff55aa; border:1px solid rgba(255,0,100,0.3); padding:2px 8px; border-radius:4px; font-size:0.55rem; font-weight:bold; font-family:monospace; line-height:1;">Metal</span>
+                    </div>
+                  </div>
+
+                  <h2 style="font-size:1.1rem; font-weight:bold; margin-bottom:8px; color:#fff;">5 Map dari 1 Gambar</h2>
+                  <p style="font-size:0.75rem; color:var(--color-text-secondary); line-height:1.6; margin-bottom:24px;">
+                    Upload tekstur apa saja (batu, kayu, tanah, metal), tool ini generate semua map PBR yang dibutuhkan MaterialVariant Roblox secara otomatis di browser.
+                  </p>
+
+                  <!-- Bottom Badges -->
+                  <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center;">
+                    <span style="border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.02); padding:4px 10px; border-radius:6px; font-size:0.62rem; font-family:monospace; color:#ccc;">ColorMap</span>
+                    <span style="border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.02); padding:4px 10px; border-radius:6px; font-size:0.62rem; font-family:monospace; color:#ccc;">NormalMap</span>
+                    <span style="border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.02); padding:4px 10px; border-radius:6px; font-size:0.62rem; font-family:monospace; color:#ccc;">RoughnessMap</span>
+                    <span style="border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.02); padding:4px 10px; border-radius:6px; font-size:0.62rem; font-family:monospace; color:#ccc;">MetalnessMap</span>
+                    <span style="border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.02); padding:4px 10px; border-radius:6px; font-size:0.62rem; font-family:monospace; color:#ccc;">EmissiveMask</span>
+                  </div>
+
                 </div>
-                <button id="material-dl-btn" style="display:none; max-width:200px; margin:0 auto;" class="btn btn-secondary btn-sm" onclick="MaterialGeneratorPage.download()">📥 Unduh Map</button>
+
+                <!-- Dynamic Output Preview (Hidden by default) -->
+                <div id="material-result" style="display:none; width:100%;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px;">
+                    <h3 style="font-size:0.85rem; font-weight:bold; color:#fff; margin:0;">✨ Hasil PBR Maps</h3>
+                    <button class="btn btn-primary btn-sm" onclick="MaterialGeneratorPage.downloadAll()" style="background:#ff0055; border:none; font-size:0.7rem; font-weight:bold;">📥 Download Semua Map</button>
+                  </div>
+
+                  <!-- Grid of 5 output maps -->
+                  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:16px;">
+                    
+                    <!-- Color Map -->
+                    <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.05); padding:10px; border-radius:8px; text-align:center;">
+                      <div style="font-size:0.62rem; color:var(--color-text-muted); font-weight:bold; margin-bottom:6px; text-transform:uppercase;">Color Map</div>
+                      <div style="aspect-ratio:1; background:#111; border-radius:4px; overflow:hidden; display:flex; align-items:center; justify-content:center; margin-bottom:8px; border:1px solid rgba(255,255,255,0.05);">
+                        <canvas id="canvas-color" style="width:100%; height:100%; object-fit:contain;"></canvas>
+                      </div>
+                      <button class="btn btn-ghost btn-xs" onclick="MaterialGeneratorPage.downloadMap('color')" style="font-size:0.6rem; padding:4px 8px; width:100%;">Unduh</button>
+                    </div>
+
+                    <!-- Normal Map -->
+                    <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.05); padding:10px; border-radius:8px; text-align:center;">
+                      <div style="font-size:0.62rem; color:var(--color-text-muted); font-weight:bold; margin-bottom:6px; text-transform:uppercase;">Normal Map</div>
+                      <div style="aspect-ratio:1; background:#111; border-radius:4px; overflow:hidden; display:flex; align-items:center; justify-content:center; margin-bottom:8px; border:1px solid rgba(255,255,255,0.05);">
+                        <canvas id="canvas-normal" style="width:100%; height:100%; object-fit:contain;"></canvas>
+                      </div>
+                      <button class="btn btn-ghost btn-xs" onclick="MaterialGeneratorPage.downloadMap('normal')" style="font-size:0.6rem; padding:4px 8px; width:100%;">Unduh</button>
+                    </div>
+
+                    <!-- Roughness Map -->
+                    <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.05); padding:10px; border-radius:8px; text-align:center;">
+                      <div style="font-size:0.62rem; color:var(--color-text-muted); font-weight:bold; margin-bottom:6px; text-transform:uppercase;">Roughness Map</div>
+                      <div style="aspect-ratio:1; background:#111; border-radius:4px; overflow:hidden; display:flex; align-items:center; justify-content:center; margin-bottom:8px; border:1px solid rgba(255,255,255,0.05);">
+                        <canvas id="canvas-roughness" style="width:100%; height:100%; object-fit:contain;"></canvas>
+                      </div>
+                      <button class="btn btn-ghost btn-xs" onclick="MaterialGeneratorPage.downloadMap('roughness')" style="font-size:0.6rem; padding:4px 8px; width:100%;">Unduh</button>
+                    </div>
+
+                    <!-- Metalness Map -->
+                    <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.05); padding:10px; border-radius:8px; text-align:center;">
+                      <div style="font-size:0.62rem; color:var(--color-text-muted); font-weight:bold; margin-bottom:6px; text-transform:uppercase;">Metalness Map</div>
+                      <div style="aspect-ratio:1; background:#111; border-radius:4px; overflow:hidden; display:flex; align-items:center; justify-content:center; margin-bottom:8px; border:1px solid rgba(255,255,255,0.05);">
+                        <canvas id="canvas-metalness" style="width:100%; height:100%; object-fit:contain;"></canvas>
+                      </div>
+                      <button class="btn btn-ghost btn-xs" onclick="MaterialGeneratorPage.downloadMap('metalness')" style="font-size:0.6rem; padding:4px 8px; width:100%;">Unduh</button>
+                    </div>
+
+                    <!-- Emissive Mask -->
+                    <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.05); padding:10px; border-radius:8px; text-align:center;">
+                      <div style="font-size:0.62rem; color:var(--color-text-muted); font-weight:bold; margin-bottom:6px; text-transform:uppercase;">Emissive Mask</div>
+                      <div style="aspect-ratio:1; background:#111; border-radius:4px; overflow:hidden; display:flex; align-items:center; justify-content:center; margin-bottom:8px; border:1px solid rgba(255,255,255,0.05);">
+                        <canvas id="canvas-emissive" style="width:100%; height:100%; object-fit:contain;"></canvas>
+                      </div>
+                      <button class="btn btn-ghost btn-xs" onclick="MaterialGeneratorPage.downloadMap('emissive')" style="font-size:0.6rem; padding:4px 8px; width:100%;">Unduh</button>
+                    </div>
+
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </section>
       </div>
     `;
+
+    // Add drag & drop event listeners to the drop zone
+    setTimeout(() => {
+      const dropZone = document.getElementById('material-drop-zone');
+      if (dropZone) {
+        dropZone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = '#ff0055';
+          dropZone.style.background = 'rgba(255,0,85,0.05)';
+        });
+        dropZone.addEventListener('dragleave', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'rgba(255,255,255,0.15)';
+          dropZone.style.background = 'transparent';
+        });
+        dropZone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'rgba(255,255,255,0.15)';
+          dropZone.style.background = 'transparent';
+          if (e.dataTransfer.files.length > 0) {
+            this.loadFile(e.dataTransfer.files);
+          }
+        });
+      }
+    }, 150);
+  },
+
+  setSize(size) {
+    this.outputSize = size;
+    const desc = document.getElementById('output-size-desc');
+    if (desc) desc.textContent = `Output: 5 file PNG masing-masing ${size}×${size}px`;
+    
+    // Update active button classes & styles
+    document.querySelectorAll('.btn-size').forEach(btn => {
+      if (parseInt(btn.textContent, 10) === size) {
+        btn.style.background = '#ff0055';
+      } else {
+        btn.style.background = 'transparent';
+      }
+    });
+  },
+
+  updateParam(name, val) {
+    this[name] = val;
+    // Format name to match UI element IDs: normalStrength -> normal-strength
+    const kebabName = name.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
+    const valEl = document.getElementById(`val-${kebabName}`);
+    if (valEl) valEl.textContent = val;
   },
 
   loadFile(files) {
@@ -915,7 +1154,16 @@ const MaterialGeneratorPage = {
         const img = new Image();
         img.onload = () => {
           this.imgObj = img;
-          this.render();
+          
+          // Show preview thumbnail and file name
+          const thumbCont = document.getElementById('material-preview-thumb-container');
+          const thumb = document.getElementById('material-preview-thumb');
+          const filename = document.getElementById('material-preview-filename');
+          if (thumbCont && thumb && filename) {
+            thumbCont.style.display = 'flex';
+            thumb.src = e.target.result;
+            filename.textContent = this.imgFile.name;
+          }
         };
         img.src = e.target.result;
       };
@@ -923,92 +1171,191 @@ const MaterialGeneratorPage = {
     }
   },
 
-  generate(type) {
-    if (!this.imgObj) return;
-    const canvas = document.getElementById('material-canvas');
-    const placeholder = document.getElementById('material-placeholder');
-    const dlBtn = document.getElementById('material-dl-btn');
-
-    canvas.width = this.imgObj.width;
-    canvas.height = this.imgObj.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(this.imgObj, 0, 0);
-
-    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imgData.data;
-
-    if (type === 'roughness') {
-      // Invert color grayscale for roughness approximation
-      for (let i = 0; i < data.length; i += 4) {
-        const gray = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
-        const inv = 255 - gray;
-        data[i] = inv;
-        data[i + 1] = inv;
-        data[i + 2] = inv;
-      }
-      ctx.putImageData(imgData, 0, 0);
-    } else if (type === 'normal') {
-      // Sobel Edge Filter to Normal Map converter
-      const w = canvas.width;
-      const h = canvas.height;
-      const grayData = new Uint8Array(w * h);
-
-      for (let i = 0; i < data.length; i += 4) {
-        grayData[i / 4] = 0.3 * data[i] + 0.59 * data[i+1] + 0.11 * data[i+2];
-      }
-
-      const outImgData = ctx.createImageData(w, h);
-      const outData = outImgData.data;
-
-      for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-          const idx = y * w + x;
-          const val00 = grayData[idx - w - 1];
-          const val10 = grayData[idx - w];
-          const val20 = grayData[idx - w + 1];
-          const val01 = grayData[idx - 1];
-          const val21 = grayData[idx + 1];
-          const val02 = grayData[idx + w - 1];
-          const val12 = grayData[idx + w];
-          const val22 = grayData[idx + w + 1];
-
-          // Sobel Kernels
-          const dx = (val20 + 2 * val21 + val22) - (val00 + 2 * val01 + val02);
-          const dy = (val02 + 2 * val12 + val22) - (val00 + 2 * val10 + val20);
-
-          const scale = 0.125;
-          const nx = -dx * scale;
-          const ny = -dy * scale;
-          const nz = 1.0;
-
-          // Normalize normal vector
-          const len = Math.sqrt(nx*nx + ny*ny + nz*nz);
-          const r = Math.floor((nx / len * 0.5 + 0.5) * 255);
-          const g = Math.floor((ny / len * 0.5 + 0.5) * 255);
-          const b = Math.floor((nz / len * 0.5 + 0.5) * 255);
-
-          const outIdx = idx * 4;
-          outData[outIdx] = r;
-          outData[outIdx + 1] = g;
-          outData[outIdx + 2] = b;
-          outData[outIdx + 3] = 255;
-        }
-      }
-      ctx.putImageData(outImgData, 0, 0);
+  generateAll() {
+    if (!this.imgObj) {
+      alert('Silakan upload atau drop gambar diffuse terlebih dahulu.');
+      return;
     }
 
-    placeholder.style.display = 'none';
-    canvas.style.display = 'block';
-    dlBtn.style.display = 'block';
+    const placeholder = document.getElementById('material-placeholder');
+    const resultDiv = document.getElementById('material-result');
+    if (placeholder && resultDiv) {
+      placeholder.style.display = 'none';
+      resultDiv.style.display = 'block';
+    }
+
+    // Process maps in client-side canvases
+    this.generateColorMap();
+    this.generateNormalMap();
+    this.generateRoughnessMap();
+    this.generateMetalnessMap();
+    this.generateEmissiveMask();
   },
 
-  download() {
-    const canvas = document.getElementById('material-canvas');
-    if (!canvas) return;
+  generateColorMap() {
+    const canvas = document.getElementById('canvas-color');
+    canvas.width = this.outputSize;
+    canvas.height = this.outputSize;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(this.imgObj, 0, 0, this.outputSize, this.outputSize);
+  },
+
+  generateNormalMap() {
+    const canvas = document.getElementById('canvas-normal');
+    canvas.width = this.outputSize;
+    canvas.height = this.outputSize;
+    const ctx = canvas.getContext('2d');
+    
+    ctx.drawImage(this.imgObj, 0, 0, this.outputSize, this.outputSize);
+    const imgData = ctx.getImageData(0, 0, this.outputSize, this.outputSize);
+    const data = imgData.data;
+    const w = this.outputSize;
+    const h = this.outputSize;
+    
+    const grayData = new Uint8Array(w * h);
+    for (let i = 0; i < data.length; i += 4) {
+      grayData[i / 4] = 0.3 * data[i] + 0.59 * data[i+1] + 0.11 * data[i+2];
+    }
+
+    const outImgData = ctx.createImageData(w, h);
+    const outData = outImgData.data;
+
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const idx = y * w + x;
+        const val00 = grayData[idx - w - 1];
+        const val10 = grayData[idx - w];
+        const val20 = grayData[idx - w + 1];
+        const val01 = grayData[idx - 1];
+        const val21 = grayData[idx + 1];
+        const val02 = grayData[idx + w - 1];
+        const val12 = grayData[idx + w];
+        const val22 = grayData[idx + w + 1];
+
+        const dx = (val20 + 2 * val21 + val22) - (val00 + 2 * val01 + val02);
+        const dy = (val02 + 2 * val12 + val22) - (val00 + 2 * val10 + val20);
+
+        const scale = this.normalStrength * 0.05;
+        const nx = -dx * scale;
+        const ny = -dy * scale;
+        const nz = 1.0;
+
+        const len = Math.sqrt(nx*nx + ny*ny + nz*nz);
+        const r = Math.floor((nx / len * 0.5 + 0.5) * 255);
+        const g = Math.floor((ny / len * 0.5 + 0.5) * 255);
+        const b = Math.floor((nz / len * 0.5 + 0.5) * 255);
+
+        const outIdx = idx * 4;
+        outData[outIdx] = r;
+        outData[outIdx + 1] = g;
+        outData[outIdx + 2] = b;
+        outData[outIdx + 3] = 255;
+      }
+    }
+    ctx.putImageData(outImgData, 0, 0);
+  },
+
+  generateRoughnessMap() {
+    const canvas = document.getElementById('canvas-roughness');
+    canvas.width = this.outputSize;
+    canvas.height = this.outputSize;
+    const ctx = canvas.getContext('2d');
+    
+    ctx.drawImage(this.imgObj, 0, 0, this.outputSize, this.outputSize);
+    const imgData = ctx.getImageData(0, 0, this.outputSize, this.outputSize);
+    const data = imgData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const gray = 0.3 * data[i] + 0.59 * data[i+1] + 0.11 * data[i+2];
+      let val = 255 - gray + this.roughnessBias;
+      val = Math.max(0, Math.min(255, val));
+      
+      data[i] = val;
+      data[i+1] = val;
+      data[i+2] = val;
+    }
+    ctx.putImageData(imgData, 0, 0);
+  },
+
+  generateMetalnessMap() {
+    const canvas = document.getElementById('canvas-metalness');
+    canvas.width = this.outputSize;
+    canvas.height = this.outputSize;
+    const ctx = canvas.getContext('2d');
+    
+    ctx.drawImage(this.imgObj, 0, 0, this.outputSize, this.outputSize);
+    const imgData = ctx.getImageData(0, 0, this.outputSize, this.outputSize);
+    const data = imgData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i+1];
+      const b = data[i+2];
+      
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const delta = max - min;
+      const saturation = max === 0 ? 0 : delta / max;
+
+      let val = 0;
+      if (saturation < this.metalThreshold) {
+        val = 255 - Math.round(saturation * (255 / this.metalThreshold));
+      }
+      
+      data[i] = val;
+      data[i+1] = val;
+      data[i+2] = val;
+    }
+    ctx.putImageData(imgData, 0, 0);
+  },
+
+  generateEmissiveMask() {
+    const canvas = document.getElementById('canvas-emissive');
+    canvas.width = this.outputSize;
+    canvas.height = this.outputSize;
+    const ctx = canvas.getContext('2d');
+    
+    ctx.drawImage(this.imgObj, 0, 0, this.outputSize, this.outputSize);
+    const imgData = ctx.getImageData(0, 0, this.outputSize, this.outputSize);
+    const data = imgData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i+1];
+      const b = data[i+2];
+      
+      const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      
+      let val = 0;
+      if (luminance >= this.emissiveThreshold) {
+        val = 255;
+      }
+      
+      data[i] = val;
+      data[i+1] = val;
+      data[i+2] = val;
+    }
+    ctx.putImageData(imgData, 0, 0);
+  },
+
+  downloadMap(type) {
+    const canvas = document.getElementById(`canvas-${type}`);
+    const filenameInput = document.getElementById(`filename-${type}`);
+    if (!canvas || !filenameInput) return;
+    
     const a = document.createElement('a');
     a.href = canvas.toDataURL('image/png');
-    a.download = 'pbr_material_map.png';
+    a.download = filenameInput.value || `${type}map.png`;
     a.click();
+  },
+
+  downloadAll() {
+    const types = ['color', 'normal', 'roughness', 'metalness', 'emissive'];
+    types.forEach((type, idx) => {
+      setTimeout(() => {
+        this.downloadMap(type);
+      }, idx * 300);
+    });
   }
 };
 
