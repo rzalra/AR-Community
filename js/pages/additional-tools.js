@@ -1894,7 +1894,7 @@ const MaterialGeneratorPage = {
 
 // 9. FONT PREVIEW PAGE
 const FontPreviewPage = {
-  inputText: 'Terakhir Community',
+  inputText: 'AR Community',
   fontSize: 48,
   textColor: '#ffffff',
   bgColor: '#3a0f14', // Default dark red background
@@ -2052,7 +2052,7 @@ const FontPreviewPage = {
                     <!-- Font Preview Area -->
                     <div style="flex:1; padding:20px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:${isSelectedBgTrans ? 'transparent' : this.bgColor};">
                       <div style="font-family:'${f.googleFamily}', sans-serif; font-size:${this.fontSize}px; color:${this.textColor}; font-weight:${this.isBold ? 'bold' : 'normal'}; font-style:${this.isItalic ? 'italic' : 'normal'}; text-align:center; word-break:break-all; max-height:100%; overflow:hidden;">
-                        ${this.inputText || 'Terakhir Community'}
+                        ${this.inputText || 'AR Community'}
                       </div>
                     </div>
 
@@ -2159,7 +2159,7 @@ const FontPreviewPage = {
   downloadPng(fontName, googleFontFamily) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const text = this.inputText || 'Terakhir Community';
+    const text = this.inputText || 'AR Community';
     
     // Text metrics calculation on temp canvas
     ctx.font = `${this.isBold ? 'bold ' : ''}${this.isItalic ? 'italic ' : ''}${this.fontSize}px "${googleFontFamily}", sans-serif`;
