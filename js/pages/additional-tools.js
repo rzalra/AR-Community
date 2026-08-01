@@ -501,10 +501,26 @@ const BioLinkPage = {
 const DiscordStylerPage = {
   inputText: 'tulis apa aja',
   activeTab: 'fonts', // fonts, antistrip, symbols
-  symbols: [
-    '💬','📢','📌','🤖','🛡️','🎮','🎁','🎫','🔒','🔑','📁','📎','🔔','💎','🌟','⚡','🎨','🎵','🔊','🎬',
-    '│','┃','｜','丨','•','○','★','☆','╭','╰','┌','└','╔','╚','──','━━','┄┄','┊┊','✦','✧','✿','⚓','✈','☁','☘','☠','☣','☢','☮','☯','🎯','🧿','🔮','🧸','🍭','🍩','🪐','🛸'
-  ],
+  symbolCategories: {
+    'Aksen & Pembatas (Borders)': [
+      '│','┃','｜','丨','•','○','╭','╰','╮','╯','┌','┐','└','┘','╔','╚','╗','╝','──','━━','┄┄','┊┊','═','║','╠','╣','╦','╩','╬','╱','╲','╳'
+    ],
+    'Bintang & Kilauan (Stars & Sparkles)': [
+      '★','☆','✦','✧','✨','🌟','⭐','💫','⚡','💥','🔥','☄','🪐','☀️','🌤️','⛅','🌧️','❄️','🌪️','🌙','🌕','🌌'
+    ],
+    'Kurung & Bingkai (Brackets)': [
+      '【','】','『','』','「','」','《','》','〈','〉','〔','〕','〖','〗','❲','❳','⟦','⟧'
+    ],
+    'Ikon Obrolan & Media (Chat & Media)': [
+      '💬','💭','📢','📣','🔔','🔕','🎵','🎶','🎧','🎤','🎙️','📻','📺','🎬','🎥','🎭','🎨','🎼','🎹','🥁'
+    ],
+    'Alat, Game & Keamanan (Utility & Gaming)': [
+      '🎮','🕹️','👾','🎯','🎲','🎳','🛡️','⚔️','🏹','🗡️','🔒','🔓','🔏','🔑','🗝️','📌','📍','📎','✉️','📦','💼'
+    ],
+    'Alam, Bunga & Kaomoji (Nature & Weather)': [
+      '🌸','💮','🏵️','🌹','🌺','🌻','🌼','🌷','🌱','🌿','🍀','🍃','🍂','🍁','🌾','🌵','🌴','🌳','🌲','☠','☣','☢','☮','☯','⚓','✈'
+    ]
+  },
 
   render() {
     const app = document.getElementById('app');
@@ -577,17 +593,25 @@ const DiscordStylerPage = {
   renderTabContent() {
     if (this.activeTab === 'symbols') {
       return `
-        <div class="tool-section" style="padding:24px;">
-          <p style="font-size:0.68rem; color:var(--color-text-secondary); margin-bottom:16px; text-align:center;">
+        <div class="tool-section" style="padding:24px; display:flex; flex-direction:column; gap:24px;">
+          <p style="font-size:0.68rem; color:var(--color-text-secondary); margin:0; text-align:center;">
             Koleksi simbol dekoratif populer untuk menghias nama channel Discord Anda. Klik simbol untuk menyalin secara instan.
           </p>
-          <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap:10px; justify-items:center;">
-            ${this.symbols.map(sym => `
-              <button onclick="DiscordStylerPage.copyText('${sym}')" style="width:48px; height:48px; border:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.02); border-radius:8px; font-size:1.1rem; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-accent-cyan)'; this.style.background='rgba(0,240,255,0.03)';" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'; this.style.background='rgba(255,255,255,0.02)';">
-                ${sym}
-              </button>
-            `).join('')}
-          </div>
+          
+          ${Object.entries(this.symbolCategories).map(([catName, symList]) => `
+            <div>
+              <h4 style="font-size:0.68rem; font-weight:bold; color:var(--color-accent-cyan); margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:6px; letter-spacing:0.5px;">
+                ${catName}
+              </h4>
+              <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap:8px;">
+                ${symList.map(sym => `
+                  <button onclick="DiscordStylerPage.copyText('${sym}')" style="height:40px; border:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.02); border-radius:6px; font-size:1rem; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" onmouseover="this.style.borderColor='var(--color-accent-cyan)'; this.style.background='rgba(0,240,255,0.03)';" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'; this.style.background='rgba(255,255,255,0.02)';">
+                    ${sym}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
         </div>
       `;
     }
@@ -617,16 +641,28 @@ const DiscordStylerPage = {
         { name: 'ITALIC SANS', key: 'italicSans' },
         { name: 'BOLD ITALIC', key: 'boldItalic' },
         { name: 'SCRIPT', key: 'script' },
-        { name: 'BOLD SCRIPT', key: 'boldScript' }
+        { name: 'BOLD SCRIPT', key: 'boldScript' },
+        { name: 'BLACKLETTER (FRAKTUR)', key: 'fraktur' },
+        { name: 'BOLD BLACKLETTER (FRAKTUR)', key: 'boldFraktur' },
+        { name: 'DOUBLE STRUCK (OUTLINE)', key: 'doubleStruck' },
+        { name: 'MONOSPACE (TYPEWRITER)', key: 'monospace' },
+        { name: 'SANS SERIF', key: 'sansSerif' },
+        { name: 'CIRCLED TEXT (BUBBLE)', key: 'circled' },
+        { name: 'CIRCLED INVERTED (DARK BUBBLE)', key: 'circledInverted' },
+        { name: 'SMALL CAPS', key: 'smallCaps' },
+        { name: 'STRIKE THROUGH', key: 'strike' },
+        { name: 'UNDERLINE', key: 'underline' },
+        { name: 'SLASH THROUGH', key: 'slash' },
+        { name: 'REVERSED (UPSIDE DOWN)', key: 'reversed' }
       ];
 
       return fontStyles.map(f => {
         const val = this.convertToUnicode(rawText, f.key);
         return `
           <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.04); border-radius:6px; padding:12px 16px;">
-            <div style="display:flex; flex-direction:column; gap:4px; text-align:left;">
+            <div style="display:flex; flex-direction:column; gap:4px; text-align:left; max-width:80%;">
               <span style="font-size:0.58rem; color:var(--color-text-muted); font-weight:bold; letter-spacing:0.5px;">${f.name}</span>
-              <span style="font-size:0.8rem; color:#fff; font-weight:500;">${val}</span>
+              <span style="font-size:0.8rem; color:#fff; font-weight:500; word-break:break-all;">${val}</span>
             </div>
             <button onclick="DiscordStylerPage.copyText('${val.replace(/'/g, "\'")}')" style="background:none; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:4px; padding:6px 12px; font-size:0.65rem; cursor:pointer; font-weight:bold; transition:all 0.2s;" onmouseover="this.style.background='var(--gradient-accent)'; this.style.color='#000'; this.style.borderColor='transparent';" onmouseout="this.style.background='none'; this.style.color='#fff'; this.style.borderColor='rgba(255,255,255,0.1)';">
               Copy
@@ -655,9 +691,9 @@ const DiscordStylerPage = {
 
     return antistripOptions.map(o => `
       <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.04); border-radius:6px; padding:12px 16px;">
-        <div style="display:flex; flex-direction:column; gap:4px; text-align:left;">
+        <div style="display:flex; flex-direction:column; gap:4px; text-align:left; max-width:80%;">
           <span style="font-size:0.58rem; color:var(--color-text-muted); font-weight:bold; letter-spacing:0.5px;">${o.name}</span>
-          <span style="font-size:0.8rem; color:#fff; font-weight:500;">${o.val}</span>
+          <span style="font-size:0.8rem; color:#fff; font-weight:500; word-break:break-all;">${o.val}</span>
         </div>
         <button onclick="DiscordStylerPage.copyText('${o.val.replace(/'/g, "\'")}')" style="background:none; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:4px; padding:6px 12px; font-size:0.65rem; cursor:pointer; font-weight:bold; transition:all 0.2s;" onmouseover="this.style.background='var(--gradient-accent)'; this.style.color='#000'; this.style.borderColor='transparent';" onmouseout="this.style.background='none'; this.style.color='#fff'; this.style.borderColor='rgba(255,255,255,0.1)';">
           Copy
@@ -674,19 +710,86 @@ const DiscordStylerPage = {
       italicSans: { A: 0x1D608, a: 0x1D622, '0': null },
       boldItalic: { A: 0x1D63C, a: 0x1D656, '0': null },
       script: { A: 0x1D49C, a: 0x1D4B6, '0': null },
-      boldScript: { A: 0x1D4D0, a: 0x1D4EA, '0': null }
+      boldScript: { A: 0x1D4D0, a: 0x1D4EA, '0': null },
+      fraktur: { A: 0x1D504, a: 0x1D51E, '0': null },
+      boldFraktur: { A: 0x1D56C, a: 0x1D586, '0': null },
+      doubleStruck: { A: 0x1D538, a: 0x1D552, '0': 0x1D7D8 },
+      monospace: { A: 0x1D670, a: 0x1D68A, '0': 0x1D7F6 },
+      sansSerif: { A: 0x1D5A0, a: 0x1D5BA, '0': 0x1D7E2 }
     }[style];
+
+    if (style === 'strike') {
+      return str.split('').map(c => c + '\u0336').join('');
+    }
+    if (style === 'underline') {
+      return str.split('').map(c => c + '\u0332').join('');
+    }
+    if (style === 'slash') {
+      return str.split('').map(c => c + '\u0337').join('');
+    }
+    if (style === 'circled') {
+      return str.split('').map(char => {
+        const code = char.charCodeAt(0);
+        if (code >= 65 && code <= 90) return String.fromCodePoint(0x24B6 + (code - 65));
+        if (code >= 97 && code <= 122) return String.fromCodePoint(0x24D0 + (code - 97));
+        if (code === 48) return '⓪';
+        if (code >= 49 && code <= 57) return String.fromCodePoint(0x2460 + (code - 49));
+        return char;
+      }).join('');
+    }
+    if (style === 'circledInverted') {
+      return str.split('').map(char => {
+        const code = char.charCodeAt(0);
+        if (code >= 65 && code <= 90) return String.fromCodePoint(0x1F150 + (code - 65));
+        if (code >= 97 && code <= 122) return String.fromCodePoint(0x1F150 + (code - 97));
+        if (code === 48) return '⓿';
+        if (code >= 49 && code <= 57) return String.fromCodePoint(0x2776 + (code - 49));
+        return char;
+      }).join('');
+    }
+    if (style === 'smallCaps') {
+      const smallCapsMap = {
+        "a":"ᴀ","b":"ʙ","c":"ᴄ","d":"ᴅ","e":"ᴇ","f":"ғ","g":"ɢ","h":"ʜ","i":"ɪ","j":"ᴊ","k":"ᴋ","l":"ʟ","m":"ᴍ","n":"ɴ","o":"ᴏ","p":"ᴘ","q":"ǫ","r":"ʀ","s":"s","t":"ᴛ","u":"ᴜ","v":"ᴠ","w":"ᴡ","x":"x","y":"ʏ","z":"ᴢ",
+        "A":"ᴀ","B":"ʙ","C":"ᴄ","D":"ᴅ","E":"ᴇ","F":"ғ","G":"ɢ","H":"ʜ","I":"ɪ","J":"ᴊ","K":"ᴋ","L":"ʟ","M":"ᴍ","N":"ɴ","O":"ᴏ","P":"ᴘ","Q":"ǫ","R":"ʀ","S":"s","T":"ᴛ","U":"ᴜ","V":"ᴠ","W":"ᴡ","X":"x","Y":"ʏ","Z":"ᴢ"
+      };
+      return str.split('').map(c => smallCapsMap[c] || c).join('');
+    }
+    if (style === 'reversed') {
+      const reversedMap = {
+        "a":"ɐ","b":"q","c":"ɔ","d":"p","e":"ǝ","f":"ɟ","g":"ƃ","h":"ɥ","i":"ᴉ","j":"ɾ","k":"ʞ","l":"l","m":"ɯ","n":"u","o":"o","p":"d","q":"b","r":"ɹ","s":"s","t":"ʇ","u":"n","v":"ʌ","w":"ʍ","x":"x","y":"ʎ","z":"z",
+        "A":"∀","B":"𐐒","C":"Ɔ","D":"◖","E":"Ǝ","F":"Ⅎ","G":"⅁","H":"H","I":"I","J":"ſ","K":"ʞ","L":"˥","M":"W","N":"N","O":"O","P":"Ԁ","Q":"Ό","R":"ᴚ","S":"S","T":"┴","U":"∩","V":"Λ","W":"M","X":"X","Y":"⅄","Z":"Z",
+        "1":"Ɩ","2":"ᄅ","3":"Ɛ","4":"ㄣ","5":"ϛ","6":"9","7":"ㄥ","8":"8","9":"6","0":"0",
+        ".":"˙",",":"'","'":",","\"":"„","?":"¿","!":"¡","[":"]","]":"[","(":")",")":"(","_":"‾"
+      };
+      return str.split('').reverse().map(c => reversedMap[c] || c).join('');
+    }
 
     if (!map) return str;
 
     const scriptExemptions = {
-      'B': 0x212C, 'E': 0x2130, 'F': 0x2131, 'H': 0x210B, 'I': 0x2110, 'L': 0x2112, 'M': 0x2133, 'R': 0x211B,
-      'g': 0x210A, 'o': 0x2134,
-      'h': style === 'italicSerif' ? 0x210E : null
+      'B': style === 'script' ? 0x212C : null,
+      'E': style === 'script' ? 0x2130 : null,
+      'F': style === 'script' ? 0x2131 : null,
+      'H': style === 'script' ? 0x210B : null,
+      'I': style === 'script' ? 0x2110 : null,
+      'L': style === 'script' ? 0x2112 : null,
+      'M': style === 'script' ? 0x2133 : null,
+      'R': style === 'script' ? 0x211B : null,
+      'g': style === 'script' ? 0x210A : null,
+      'o': style === 'script' ? 0x2134 : null,
+      'h': style === 'italicSerif' ? 0x210E : null,
+      'C': style === 'fraktur' ? 0x212D : (style === 'doubleStruck' ? 0x2102 : null),
+      'H': style === 'fraktur' ? 0x210C : (style === 'doubleStruck' ? 0x210D : null),
+      'I': style === 'fraktur' ? 0x2111 : (style === 'doubleStruck' ? 0x2110 : null),
+      'R': style === 'fraktur' ? 0x211C : (style === 'doubleStruck' ? 0x211B : null),
+      'Z': style === 'fraktur' ? 0x2124 : (style === 'doubleStruck' ? 0x2124 : null),
+      'N': style === 'doubleStruck' ? 0x2115 : null,
+      'P': style === 'doubleStruck' ? 0x2119 : null,
+      'Q': style === 'doubleStruck' ? 0x211A : null
     };
 
     return str.split('').map(char => {
-      if (scriptExemptions[char] && (style === 'script' || (style === 'italicSerif' && char === 'h'))) {
+      if (scriptExemptions[char] !== undefined && scriptExemptions[char] !== null) {
         return String.fromCodePoint(scriptExemptions[char]);
       }
       
@@ -707,7 +810,6 @@ const DiscordStylerPage = {
   copyText(txt) {
     navigator.clipboard.writeText(txt);
     
-    // Custom non-blocking visual toast feedback
     const toast = document.createElement('div');
     toast.style.position = 'fixed';
     toast.style.bottom = '24px';
@@ -729,9 +831,7 @@ const DiscordStylerPage = {
       setTimeout(() => toast.remove(), 200);
     }, 2000);
   }
-};
-
-// 5. SKYBOX ASSEMBLER PAGE
+};// 5. SKYBOX ASSEMBLER PAGE
 const SkyboxAssemblerPage = {
   faces: { front: null, back: null, up: null, down: null, left: null, right: null },
 
