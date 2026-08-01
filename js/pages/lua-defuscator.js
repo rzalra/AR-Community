@@ -132,6 +132,11 @@ const LuaDefuscatorPage = {
     let expansions = 0;
     let numbersFixed = 0;
 
+    // ── Step 0: AR Community Unwrapper (Automatic detection and reversal) ──
+    const arUnwrapped = this.reverseARCommunityObfuscator(code);
+    code = arUnwrapped.code;
+    const arStats = arUnwrapped.stats;
+
     // ══════════════════════════════════════════
     // Step 1: Clean obfuscator headers & junk
     // ══════════════════════════════════════════
@@ -308,6 +313,13 @@ const LuaDefuscatorPage = {
     const newSize = new Blob([code]).size;
     const newLines = code.split('\n').length;
     const statParts = [];
+    
+    // Add AR Community Restoration details if detected
+    if (arStats.xorDecrypted) statParts.push('🔓 Decrypted XOR Layer');
+    if (arStats.vmUnwrapped) statParts.push('📦 Unwrapped VM');
+    if (arStats.stringTableRestored) statParts.push('🔤 Restored String Table');
+    if (arStats.controlFlowUnflattened) statParts.push('📐 Unflattened Control Flow');
+
     if (numbersFixed > 0) statParts.push(`🔢 ${numbersFixed} angka dibersihkan`);
     if (stringsDecoded > 0) statParts.push(`🔤 ${stringsDecoded} string decoded`);
     if (expansions > 0) statParts.push(`📐 ${expansions} baris`);
@@ -582,5 +594,162 @@ const LuaDefuscatorPage = {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(a.href);
+  },
+
+  reverseARCommunityObfuscator(code) {
+    let stats = {
+      xorDecrypted: false,
+      vmUnwrapped: false,
+      stringTableRestored: false,
+      controlFlowUnflattened: false
+    };
+
+    // 1. Reversing XOR encryption wrapper (Extreme level)
+    const keyMatch = code.match(/local\s+([a-zA-Z0-9_1]+)\s*=\s*(0[xX][0-9a-fA-F_]+|0[bB][01_]+|[0-9_]+)/);
+    const payloadMatch = code.match(/local\s+[a-zA-Z0-9_1]+\s*=\s*[a-zA-Z0-9_1]+\s*\(\s*"((?:\\[0-9]+)+)"\s*\)/);
+    
+    if (keyMatch && payloadMatch) {
+      let keyValStr = keyMatch[2].replace(/_/g, '');
+      let key = 0;
+      if (keyValStr.toUpperCase().startsWith('0X')) {
+        key = parseInt(keyValStr, 16);
+      } else if (keyValStr.toUpperCase().startsWith('0B')) {
+        key = parseInt(keyValStr.slice(2), 2);
+      } else {
+        key = parseInt(keyValStr, 10);
+      }
+      
+      const payloadEscaped = payloadMatch[1];
+      const bytes = [];
+      const byteRegex = /\\(\d{1,3})/g;
+      let m;
+      while ((m = byteRegex.exec(payloadEscaped)) !== null) {
+        bytes.push(parseInt(m[1], 10));
+      }
+      
+      if (bytes.length > 0 && !isNaN(key)) {
+        const decryptedChars = bytes.map(b => String.fromCharCode(b ^ key));
+        const decryptedCode = decryptedChars.join('');
+        if (decryptedCode.includes('function') || decryptedCode.includes('local') || decryptedCode.includes('return') || decryptedCode.includes('while')) {
+          code = decryptedCode;
+          stats.xorDecrypted = true;
+        }
+      }
+    }
+
+    // 2. VM unwrapping (Heavy & Extreme levels)
+    const vmMatch = code.match(/return\s+\(\s*function\s*\(\s*\.\.\.\s*\)([\s\S]+?)end\s*\)\s*\(\s*\.\.\.\s*\)/);
+    if (vmMatch) {
+      code = vmMatch[1].trim();
+      stats.vmUnwrapped = true;
+    }
+
+    // 3. String Table Restoration (Heavy & Extreme levels)
+    const stringTableMatch = code.match(/local\s+([a-zA-Z0-9_1]+)\s*=\s*\{([\s\S]*?)\}/);
+    if (stringTableMatch) {
+      const tableVar = stringTableMatch[1];
+      const tableContent = stringTableMatch[2];
+      
+      const rawElements = tableContent.split(',');
+      const stringTable = [];
+      
+      rawElements.forEach(elem => {
+        let clean = elem.trim();
+        if (clean.startsWith('(') && clean.endsWith(')')) {
+          clean = clean.slice(1, -1).trim();
+        }
+        if ((clean.startsWith('"') && clean.endsWith('"')) || (clean.startsWith("'") && clean.endsWith("'"))) {
+          let strVal = clean.slice(1, -1);
+          strVal = strVal.replace(/\\(\d{1,3})/g, (match, dec) => String.fromCharCode(parseInt(dec, 10)));
+          strVal = strVal.replace(/\\x([0-9a-fA-F]{2})/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)));
+          stringTable.push(strVal);
+        } else {
+          stringTable.push('');
+        }
+      });
+      
+      if (stringTable.length > 0) {
+        let tempCode = code;
+        let replacedAny = false;
+        
+        stringTable.forEach((val, idx) => {
+          const indexNum = idx + 1;
+          const tableAccessRegex = new RegExp('\\b' + tableVar + '\\s*\\[\\s*' + indexNum + '\\s*\\]', 'g');
+          const escapedVal = '"' + val.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+          const newTemp = tempCode.replace(tableAccessRegex, escapedVal);
+          if (newTemp !== tempCode) {
+            tempCode = newTemp;
+            replacedAny = true;
+          }
+        });
+        
+        if (replacedAny) {
+          code = tempCode.replace(/local\s+[a-zA-Z0-9_1]+\s*=\s*\{[\s\S]*?\}\s*;?\n?/, '');
+          stats.stringTableRestored = true;
+        }
+      }
+    }
+
+    // 4. Control Flow Unflattening (Heavy & Extreme levels)
+    const stateVarMatch = code.match(/local\s+([a-zA-Z0-9_1]+)\s*=\s*(\d+)/);
+    if (stateVarMatch) {
+      const stateVar = stateVarMatch[1];
+      const initialState = parseInt(stateVarMatch[2], 10);
+      
+      const loopMatch = code.match(/while\s+true\s+do\s+([\s\S]+?)\s*end\s*$/) || code.match(/while\s+true\s+do\s+([\s\S]+?)\s*end\s*;?\s*$/);
+      if (loopMatch) {
+        const loopBody = loopMatch[1];
+        
+        const branches = {};
+        const branchRegex = /(?:if|elseif)\s+([a-zA-Z0-9_1]+)\s*==\s*(\d+)\s+then\s*([\s\S]+?)(?=\s*elseif\b|\s*else\b|\s*end\b)/g;
+        let bMatch;
+        while ((bMatch = branchRegex.exec(loopBody)) !== null) {
+          if (bMatch[1] === stateVar) {
+            const stateNum = parseInt(bMatch[2], 10);
+            const branchBody = bMatch[3].trim();
+            branches[stateNum] = branchBody;
+          }
+        }
+        
+        if (Object.keys(branches).length > 0 && branches[initialState]) {
+          let currentState = initialState;
+          const sequence = [];
+          const visited = new Set();
+          
+          while (currentState && !visited.has(currentState)) {
+            visited.add(currentState);
+            let branchCode = branches[currentState];
+            if (!branchCode) break;
+            
+            let nextState = null;
+            let isBreak = false;
+            
+            const nextStateMatch = branchCode.match(new RegExp('\\b' + stateVar + '\\s*=\\s*(\\d+)'));
+            if (nextStateMatch) {
+              nextState = parseInt(nextStateMatch[1], 10);
+              branchCode = branchCode.replace(new RegExp('\\b' + stateVar + '\\s*=\\s*\\d+\\s*;?\\n?'), '').trim();
+            } else if (/\bbreak\b/.test(branchCode)) {
+              isBreak = true;
+              branchCode = branchCode.replace(/\bbreak\b\s*;?\n?/, '').trim();
+            }
+            
+            sequence.push(branchCode);
+            
+            if (isBreak) break;
+            currentState = nextState;
+          }
+          
+          if (sequence.length > 0) {
+            const reconstructed = sequence.join('\n');
+            let newCode = code.replace(/local\s+[a-zA-Z0-9_1]+\s*=\s*\d+\s*;?\n?/, '');
+            newCode = newCode.replace(/while\s+true\s+do[\s\S]+?end\s*$/, reconstructed);
+            code = newCode;
+            stats.controlFlowUnflattened = true;
+          }
+        }
+      }
+    }
+
+    return { code, stats };
   }
 };
