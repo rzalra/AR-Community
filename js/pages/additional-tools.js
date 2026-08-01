@@ -764,56 +764,246 @@ const ImageUploaderPage = {
 
 // 7. SPRITE SHEET GENERATOR
 const SpriteSheetPage = {
-  frames: [],
+  frames: [], // { name, img, id }
+  gridLayout: '4x4',
+  frameSize: 256,
+  customCols: 4,
+  customRows: 4,
+  draggedIndex: null,
+
+  getGridDimensions() {
+    if (this.gridLayout === '2x2') return { cols: 2, rows: 2 };
+    if (this.gridLayout === '4x4') return { cols: 4, rows: 4 };
+    if (this.gridLayout === '8x8') return { cols: 8, rows: 8 };
+    return { cols: this.customCols, rows: this.customRows };
+  },
 
   render() {
     const app = document.getElementById('app');
+    const { cols, rows } = this.getGridDimensions();
+    const totalFramesCount = cols * rows;
+    const totalW = cols * this.frameSize;
+    const totalH = rows * this.frameSize;
+
     app.innerHTML = `
       <div class="page-transition-enter">
-        <section class="tool-page" style="padding: var(--space-10) 0;">
+        <section class="tool-page" style="padding: var(--space-8) 0;">
           <div class="container">
-            ${ToolHelper.renderBreadcrumbs('Sprite Sheet Generator')}
-            ${ToolHelper.renderHeader('Sprite Sheet Generator', 'Satukan sekumpulan gambar frame terpisah menjadi satu file sprite sheet koordinat atlas.', '🎨 ASSET')}
+            <div class="tool-breadcrumbs">
+              <a href="#/tools">🔧 Tools</a> <span>&gt;</span> <span class="active">Sprite Sheet Generator</span>
+            </div>
             
-            <div style="display:grid; grid-template-columns: 280px 1fr; gap:20px; align-items:start;">
-              <div class="tool-section">
-                <h3>Frame Masukan</h3>
-                <input type="file" id="sprite-input" style="display:none;" multiple accept="image/*" onchange="SpriteSheetPage.loadFiles(this.files)">
-                <button onclick="document.getElementById('sprite-input').click()" class="btn btn-secondary" style="width:100%; font-weight:bold; margin-bottom:12px;">➕ PILIH FRAME IMAGES</button>
-                <button onclick="SpriteSheetPage.generate()" class="btn btn-primary" style="width:100%; font-weight:bold;" ${this.frames.length === 0 ? 'disabled' : ''}>🎞️ SATUKAN SPRITE SHEET</button>
+            <div class="tool-page-header" style="margin-bottom: var(--space-6);">
+              <h1 style="margin: 0 0 var(--space-2) 0; font-family: var(--font-heading); font-weight: var(--font-weight-black); font-size: 2.2rem; background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Sprite Sheet Generator</h1>
+              <p style="margin: 0; color: var(--color-text-secondary); font-size: var(--text-sm);">Buat sprite sheet dan particle flipbook untuk Roblox dari gambar frame.</p>
+            </div>
 
-                <div style="margin-top:16px; max-height:160px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;">
-                  ${this.frames.map((f, i) => `
-                    <div style="background:rgba(255,255,255,0.01); border:1px solid var(--color-border); padding:6px; border-radius:4px; display:flex; align-items:center; justify-content:space-between; font-size:0.6rem;">
-                      <span>Frame #${i+1} : ${f.name}</span>
-                      <button onclick="SpriteSheetPage.removeFrame(${i})" style="color:var(--color-accent-red); background:none; border:none; cursor:pointer;">Hapus</button>
-                    </div>
-                  `).join('')}
+            <div style="display:grid; grid-template-columns: 320px 1fr; gap:24px; align-items:start;">
+              <!-- Left Controls -->
+              <div style="display:flex; flex-direction:column; gap:20px;">
+                
+                <!-- GRID LAYOUT -->
+                <div class="tool-section" style="padding:16px;">
+                  <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px;">GRID LAYOUT</h3>
+                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                    <button class="btn btn-sm btn-layout" onclick="SpriteSheetPage.setLayout('2x2')" style="padding:10px 0; border-radius:6px; font-weight:bold; font-size:0.65rem; border:1px solid rgba(255,255,255,0.05); background:${this.gridLayout==='2x2'?'var(--color-accent-cyan)':'transparent'}; color:${this.gridLayout==='2x2'?'#000':'#fff'};">
+                      2×2<br><span style="font-size:0.5rem; opacity:0.8;">4 frames</span>
+                    </button>
+                    <button class="btn btn-sm btn-layout" onclick="SpriteSheetPage.setLayout('4x4')" style="padding:10px 0; border-radius:6px; font-weight:bold; font-size:0.65rem; border:1px solid rgba(255,255,255,0.05); background:${this.gridLayout==='4x4'?'var(--color-accent-cyan)':'transparent'}; color:${this.gridLayout==='4x4'?'#000':'#fff'};">
+                      4×4<br><span style="font-size:0.5rem; opacity:0.8;">16 frames</span>
+                    </button>
+                    <button class="btn btn-sm btn-layout" onclick="SpriteSheetPage.setLayout('8x8')" style="padding:10px 0; border-radius:6px; font-weight:bold; font-size:0.65rem; border:1px solid rgba(255,255,255,0.05); background:${this.gridLayout==='8x8'?'var(--color-accent-cyan)':'transparent'}; color:${this.gridLayout==='8x8'?'#000':'#fff'};">
+                      8×8<br><span style="font-size:0.5rem; opacity:0.8;">64 frames</span>
+                    </button>
+                    <button class="btn btn-sm btn-layout" onclick="SpriteSheetPage.setLayout('custom')" style="padding:10px 0; border-radius:6px; font-weight:bold; font-size:0.65rem; border:1px solid rgba(255,255,255,0.05); background:${this.gridLayout==='custom'?'var(--color-accent-cyan)':'transparent'}; color:${this.gridLayout==='custom'?'#000':'#fff'};">
+                      Custom
+                    </button>
+                  </div>
+                  
+                  ${this.renderCustomInputs()}
+
+                  <div style="font-size:0.58rem; color:var(--color-text-muted); margin-top:8px;">
+                    Output: ${cols}×${rows} = ${totalFramesCount} frame slot. Roblox Particle Flipbook butuh grid persegi (2×2, 4×4, 8×8).
+                  </div>
                 </div>
+
+                <!-- UKURAN PER FRAME -->
+                <div class="tool-section" style="padding:16px;">
+                  <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px;">UKURAN PER FRAME</h3>
+                  <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                    ${[64, 128, 256, 512, 1024].map(sz => `
+                      <button class="btn btn-sm btn-size" onclick="SpriteSheetPage.setFrameSize(${sz})" style="flex:1; min-width:48px; padding:6px 0; border-radius:6px; font-weight:bold; font-size:0.65rem; border:1px solid rgba(255,255,255,0.05); background:${this.frameSize===sz?'var(--color-accent-cyan)':'transparent'}; color:${this.frameSize===sz?'#000':'#fff'};">${sz}px</button>
+                    `).join('')}
+                  </div>
+                  <div style="font-size:0.58rem; color:var(--color-text-muted); margin-top:8px;">
+                    Output total: ${totalW}×${totalH}px
+                  </div>
+                </div>
+
+                <!-- UPLOAD FRAME -->
+                <div class="tool-section" style="padding:16px;">
+                  <h3 style="font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px;">
+                    UPLOAD FRAME (${this.frames.length}/${totalFramesCount})
+                  </h3>
+                  
+                  <div id="sprite-drop-zone" style="border: 2px dashed rgba(255,255,255,0.15); border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('sprite-file-input').click()">
+                    <input type="file" id="sprite-file-input" style="display:none;" multiple accept="image/*" onchange="SpriteSheetPage.loadFiles(this.files)">
+                    <div style="font-size:1.8rem; color:var(--color-text-muted); margin-bottom:6px;">☁️</div>
+                    <div style="font-size:0.7rem; font-weight:bold; color:var(--color-text-primary);">Drop frame di sini</div>
+                    <div style="font-size:0.58rem; color:var(--color-text-muted); margin-top:2px;">atau klik · PNG, JPG, WebP</div>
+                  </div>
+
+                  <button class="btn btn-ghost" onclick="document.getElementById('sprite-file-input').click()" style="width:100%; margin-top:10px; font-size:0.68rem; padding:8px;">
+                    ➕ Tambah Frame
+                  </button>
+                </div>
+
+                <!-- GENERATE BUTTON -->
+                <button onclick="SpriteSheetPage.generate()" class="btn" style="width:100%; padding:12px; font-weight:bold; font-size:0.8rem; background:${this.frames.length > 0 ? 'var(--gradient-accent)' : 'rgba(255,255,255,0.02)'}; color:${this.frames.length > 0 ? '#000' : 'rgba(255,255,255,0.2)'}; border:none; transition:all 0.2s;" ${this.frames.length === 0 ? 'disabled' : ''}>
+                  Generate Sprite Sheet
+                </button>
               </div>
 
-              <div class="tool-section" style="text-align:center;">
-                <h3>Atlas Preview</h3>
-                <div style="background:rgba(0,0,0,0.2); border:1px solid var(--color-border); border-radius:8px; display:flex; align-items:center; justify-content:center; aspect-ratio:16/9; overflow:hidden; position:relative; margin-bottom:16px;">
-                  <canvas id="sprite-canvas" style="max-width:100%; max-height:100%; display:none; background:#111;"></canvas>
-                  <span id="sprite-placeholder" style="font-size:0.75rem; color:var(--color-text-muted);">Masukkan beberapa frame dan gabungkan.</span>
+              <!-- Right Panel: Grid View -->
+              <div class="tool-section" style="padding:20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:10px;">
+                  <h3 style="font-size:0.8rem; font-weight:bold; color:#fff; margin:0;">
+                    FRAME ORDER (DRAG UNTUK URUTKAN)
+                  </h3>
+                  ${this.frames.length > 0 ? `
+                    <button class="btn btn-ghost btn-xs" onclick="SpriteSheetPage.clearFrames()" style="font-size:0.62rem; color:var(--color-accent-red); border-color:rgba(239,68,68,0.2); padding:2px 8px;">
+                      Reset Semua
+                    </button>
+                  ` : ''}
                 </div>
-                <button id="sprite-dl-btn" style="display:none; max-width:200px; margin:0 auto;" class="btn btn-secondary btn-sm" onclick="SpriteSheetPage.download()">📥 Unduh Sprite Sheet</button>
+
+                <div style="display:grid; grid-template-columns: repeat(${cols}, 1fr); gap:12px;" id="frame-grid-container">
+                  ${Array.from({ length: totalFramesCount }).map((_, i) => {
+                    const frame = this.frames[i];
+                    if (frame) {
+                      return `
+                        <div draggable="true" 
+                             ondragstart="SpriteSheetPage.handleDragStart(event, ${i})" 
+                             ondragover="SpriteSheetPage.handleDragOver(event)" 
+                             ondragend="SpriteSheetPage.handleDragEnd(event)"
+                             ondrop="SpriteSheetPage.handleDrop(event, ${i})"
+                             style="aspect-ratio:1; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.1); border-radius:8px; overflow:hidden; position:relative; cursor:grab; transition:all 0.2s; display:flex; align-items:center; justify-content:center;"
+                             class="sprite-frame-slot">
+                          <img src="${frame.imgUrl}" style="width:100%; height:100%; object-fit:cover;">
+                          <div style="position:absolute; bottom:4px; left:4px; background:rgba(0,0,0,0.6); color:#fff; font-size:0.5rem; font-family:monospace; padding:2px 4px; border-radius:3px;">
+                            ${i+1}
+                          </div>
+                          <button onclick="event.stopPropagation(); SpriteSheetPage.removeFrame(${i})" style="position:absolute; top:4px; right:4px; width:16px; height:16px; border-radius:50%; background:rgba(239,68,68,0.8); border:none; color:#fff; font-size:0.5rem; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s;" class="sprite-frame-delete-btn">
+                            ✕
+                          </button>
+                        </div>
+                      `;
+                    } else {
+                      return `
+                        <div style="aspect-ratio:1; border:1px dashed rgba(255,255,255,0.05); background:rgba(255,255,255,0.01); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:0.9rem; font-weight:bold; color:var(--color-text-muted); font-family:monospace;" 
+                             ondragover="SpriteSheetPage.handleDragOver(event)"
+                             ondrop="SpriteSheetPage.handleDrop(event, ${i})">
+                          ${i+1}
+                        </div>
+                      `;
+                    }
+                  }).join('')}
+                </div>
               </div>
             </div>
+
           </div>
         </section>
+      </div>
+
+      <style>
+        .sprite-frame-slot:hover .sprite-frame-delete-btn {
+          opacity: 1 !important;
+        }
+        .sprite-frame-slot:hover {
+          border-color: var(--color-accent-cyan) !important;
+          box-shadow: 0 0 8px rgba(0,240,255,0.1);
+        }
+      </style>
+    `;
+
+    // Add Drag & Drop files listeners to drop zone
+    setTimeout(() => {
+      const dropZone = document.getElementById('sprite-drop-zone');
+      if (dropZone) {
+        dropZone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'var(--color-accent-cyan)';
+          dropZone.style.background = 'rgba(0,240,255,0.03)';
+        });
+        dropZone.addEventListener('dragleave', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'rgba(255,255,255,0.15)';
+          dropZone.style.background = 'transparent';
+        });
+        dropZone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = 'rgba(255,255,255,0.15)';
+          dropZone.style.background = 'transparent';
+          if (e.dataTransfer.files.length > 0) {
+            this.loadFiles(e.dataTransfer.files);
+          }
+        });
+      }
+    }, 150);
+  },
+
+  renderCustomInputs() {
+    if (this.gridLayout !== 'custom') return '';
+    return `
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:8px;">
+        <div>
+          <label style="font-size:0.6rem; color:var(--color-text-muted); display:block; margin-bottom:2px;">Kolom</label>
+          <input type="number" class="form-input" min="1" max="16" value="${this.customCols}" onchange="SpriteSheetPage.setCustomDim('cols', parseInt(this.value))" style="font-size:0.68rem; padding:6px; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.05); color:#fff; width:100%;">
+        </div>
+        <div>
+          <label style="font-size:0.6rem; color:var(--color-text-muted); display:block; margin-bottom:2px;">Baris</label>
+          <input type="number" class="form-input" min="1" max="16" value="${this.customRows}" onchange="SpriteSheetPage.setCustomDim('rows', parseInt(this.value))" style="font-size:0.68rem; padding:6px; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.05); color:#fff; width:100%;">
+        </div>
       </div>
     `;
   },
 
+  setLayout(layout) {
+    this.gridLayout = layout;
+    this.render();
+  },
+
+  setFrameSize(size) {
+    this.frameSize = size;
+    this.render();
+  },
+
+  setCustomDim(type, val) {
+    if (isNaN(val) || val < 1) val = 1;
+    if (val > 16) val = 16;
+    if (type === 'cols') this.customCols = val;
+    else this.customRows = val;
+    this.render();
+  },
+
   loadFiles(files) {
+    const { cols, rows } = this.getGridDimensions();
+    const totalFramesCount = cols * rows;
+
     Array.from(files).forEach(file => {
+      if (this.frames.length >= totalFramesCount) return;
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
-          this.frames.push({ name: file.name, img });
+          this.frames.push({
+            id: Math.random() + Date.now(),
+            name: file.name,
+            imgUrl: e.target.result,
+            img
+          });
           this.render();
         };
         img.src = e.target.result;
@@ -827,39 +1017,104 @@ const SpriteSheetPage = {
     this.render();
   },
 
+  clearFrames() {
+    this.frames = [];
+    this.render();
+  },
+
+  handleDragStart(e, index) {
+    this.draggedIndex = index;
+    e.dataTransfer.effectAllowed = 'move';
+  },
+
+  handleDragOver(e) {
+    e.preventDefault();
+  },
+
+  handleDragEnd(e) {
+    this.draggedIndex = null;
+  },
+
+  handleDrop(e, targetIndex) {
+    e.preventDefault();
+    if (this.draggedIndex === null || this.draggedIndex === targetIndex) return;
+    
+    // Swap frames if target index is in range
+    if (targetIndex < this.frames.length) {
+      const draggedFrame = this.frames[this.draggedIndex];
+      this.frames.splice(this.draggedIndex, 1);
+      this.frames.splice(targetIndex, 0, draggedFrame);
+    }
+    this.render();
+  },
+
   generate() {
     if (this.frames.length === 0) return;
-    const canvas = document.getElementById('sprite-canvas');
-    const placeholder = document.getElementById('sprite-placeholder');
-    const dlBtn = document.getElementById('sprite-dl-btn');
+    const { cols, rows } = this.getGridDimensions();
 
-    // Layout as a horizontal grid
-    const cols = Math.ceil(Math.sqrt(this.frames.length));
-    const rows = Math.ceil(this.frames.length / cols);
-    const sizeW = this.frames[0].img.width;
-    const sizeH = this.frames[0].img.height;
-
-    canvas.width = sizeW * cols;
-    canvas.height = sizeH * rows;
+    const canvas = document.createElement('canvas');
+    canvas.width = cols * this.frameSize;
+    canvas.height = rows * this.frameSize;
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     this.frames.forEach((f, i) => {
       const r = Math.floor(i / cols);
       const c = i % cols;
-      ctx.drawImage(f.img, c * sizeW, r * sizeH, sizeW, sizeH);
+      ctx.drawImage(f.img, c * this.frameSize, r * this.frameSize, this.frameSize, this.frameSize);
     });
 
-    placeholder.style.display = 'none';
-    canvas.style.display = 'block';
-    dlBtn.style.display = 'block';
+    // Create Modal Overlay for final download & preview
+    const old = document.getElementById('spritesheet-export-modal');
+    if (old) old.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'spritesheet-export-modal';
+    overlay.style.position = 'fixed';
+    overlay.style.inset = '0';
+    overlay.style.background = 'rgba(0, 0, 0, 0.85)';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.zIndex = '99999';
+    overlay.style.backdropFilter = 'blur(8px)';
+
+    overlay.innerHTML = `
+      <div style="background:#0f1015; border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:28px; width:100%; max-width:560px; position:relative; box-sizing:border-box; margin: 20px; text-align:center; animation: fadeInUp 300ms ease;">
+        <button onclick="document.getElementById('spritesheet-export-modal').remove()" style="position:absolute; top:16px; right:16px; background:none; border:none; color:var(--color-text-muted); font-size:1.2rem; cursor:pointer;">✕</button>
+        
+        <h2 style="font-size:1.1rem; font-family:var(--font-heading); font-weight:var(--font-weight-black); margin-bottom:8px; color:white;">✨ SPRITE SHEET GENERATED</h2>
+        <p style="font-size:0.68rem; color:var(--color-text-secondary); margin-bottom:20px;">
+          Sprite sheet beresolusi ${canvas.width}×${canvas.height}px siap untuk diunduh.
+        </p>
+
+        <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.05); padding:16px; border-radius:8px; display:flex; align-items:center; justify-content:center; max-height:280px; overflow-y:auto; margin-bottom:20px;">
+          <img id="spritesheet-preview-img" style="max-width:100%; max-height:260px; object-fit:contain; border:1px solid rgba(255,255,255,0.1); border-radius:4px; background:#111;">
+        </div>
+
+        <div style="display:flex; gap:12px; justify-content:center;">
+          <button onclick="SpriteSheetPage.downloadCanvas('${canvas.toDataURL('image/png')}')" class="btn" style="background:var(--gradient-accent); color:#000; font-weight:bold; font-size:0.75rem; padding:10px 24px;">
+            📥 Download Sprite Sheet
+          </button>
+          <button onclick="document.getElementById('spritesheet-export-modal').remove()" class="btn btn-ghost" style="font-size:0.75rem; padding:10px 20px;">
+            Tutup
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    setTimeout(() => {
+      const previewImg = document.getElementById('spritesheet-preview-img');
+      if (previewImg) {
+        previewImg.src = canvas.toDataURL('image/png');
+      }
+    }, 100);
   },
 
-  download() {
-    const canvas = document.getElementById('sprite-canvas');
-    if (!canvas) return;
+  downloadCanvas(dataUrl) {
     const a = document.createElement('a');
-    a.href = canvas.toDataURL('image/png');
+    a.href = dataUrl;
     a.download = 'spritesheet_atlas.png';
     a.click();
   }
