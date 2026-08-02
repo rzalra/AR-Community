@@ -5,8 +5,6 @@
 const LoginPage = {
   step: 1, // 1: Email entry, 2: Code Verification
   email: '',
-  verificationCode: '',
-  enteredCode: '',
   errorMessage: '',
   isSending: false,
   turnstileState: 'idle', // 'idle', 'checking', 'checked'
@@ -141,7 +139,7 @@ const LoginPage = {
     if (!this.showActivationNotice) return '';
     return `
       <div style="background: rgba(250, 204, 21, 0.05); border: 1px dashed var(--color-accent-yellow); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); color: var(--color-accent-yellow); font-size: 0.68rem; line-height: 1.4; text-align: left; animation: fadeIn 300ms ease;">
-        ⚠️ <strong>PERTAMA KALI?</strong> Jika Anda baru pertama kali menggunakan FormSubmit dengan email ini, silakan periksa inbox/spam email Anda untuk mengeklik tombol <strong>"Activate"</strong> dari FormSubmit. Setelah diaktifkan, silakan kembali ke halaman login dan klik kirim kode lagi untuk mendapatkan kode verifikasi Anda!
+        💡 <strong>CEK EMAIL</strong> Kode verifikasi telah dikirim dari Supabase Auth. Silakan periksa folder <strong>inbox</strong> atau <strong>spam</strong> email Anda. Kode berlaku selama beberapa menit.
       </div>
     `;
   },
@@ -172,7 +170,7 @@ const LoginPage = {
     if (this.step === 1) {
       const emailForm = document.getElementById('email-login-form');
       if (emailForm) {
-        emailForm.addEventListener('submit', (e) => {
+        emailForm.addEventListener('submit', async (e) => {
           e.preventDefault();
           if (!this.isButtonActive()) return;
 
@@ -180,41 +178,24 @@ const LoginPage = {
           this.errorMessage = '';
           this.render();
 
-          // Generate 6-digit random code
-          this.verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+          try {
+            // Send OTP via Supabase Auth
+            await DB.sendOtp(this.email);
 
-          // Construct payload for FormSubmit API
-          const payload = {
-            "_subject": "🔒 Kode Verifikasi Login AR Community",
-            "Kode Verifikasi": this.verificationCode,
-            "Pemberitahuan": "Gunakan kode di atas pada halaman verifikasi login AR Community. Kode ini berlaku selama 10 menit."
-          };
-
-          // Post to FormSubmit AJAX endpoint
-          fetch(`https://formsubmit.co/ajax/${encodeURIComponent(this.email)}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify(payload)
-          })
-            .then(res => {
-              if (!res.ok) throw new Error('FormSubmit returned error status');
-              return res.json();
-            })
-            .then(data => {
-              this.isSending = false;
-              this.showActivationNotice = true; // show warning block about activating FormSubmit
-              this.step = 2;
-              this.render();
-            })
-            .catch(err => {
-              console.error('Error sending email:', err);
-              this.isSending = false;
-              this.errorMessage = 'Gagal mengirim email. Silakan coba lagi atau cek koneksi.';
-              this.render();
-            });
+            this.isSending = false;
+            this.showActivationNotice = false;
+            this.step = 2;
+            this.render();
+          } catch (err) {
+            console.error('Error sending OTP:', err);
+            this.isSending = false;
+            if (err.message && err.message.includes('rate')) {
+              this.errorMessage = 'Terlalu banyak percobaan. Silakan tunggu beberapa saat.';
+            } else {
+              this.errorMessage = 'Gagal mengirim kode verifikasi. Silakan coba lagi.';
+            }
+            this.render();
+          }
         });
       }
     }
@@ -222,13 +203,30 @@ const LoginPage = {
     if (this.step === 2) {
       const verifyForm = document.getElementById('code-verify-form');
       if (verifyForm) {
-        verifyForm.addEventListener('submit', (e) => {
+        verifyForm.addEventListener('submit', async (e) => {
           e.preventDefault();
           const codeInput = document.getElementById('verify-code-input');
           if (!codeInput) return;
 
           const entered = codeInput.value.trim();
-          if (entered === this.verificationCode) {
+          if (!entered || entered.length < 6) {
+            this.errorMessage = 'Masukkan kode 6 digit yang dikirim ke email Anda.';
+            this.render();
+            return;
+          }
+
+          // Show loading state
+          this.errorMessage = '';
+          const submitBtn = verifyForm.querySelector('button[type="submit"]');
+          if (submitBtn) {
+            submitBtn.textContent = '⏳ Memverifikasi...';
+            submitBtn.disabled = true;
+          }
+
+          try {
+            // Verify OTP via Supabase Auth
+            await DB.verifyOtp(this.email, entered);
+
             // Login Success!
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('userEmail', this.email);
@@ -242,40 +240,49 @@ const LoginPage = {
             localStorage.setItem('user_plugin_id', pluginId);
 
             // Fetch cloud data and sync
-            DB.fetchUserData(this.email).then(existingData => {
-              if (!existingData) {
-                // First-time signup, save default profile to Supabase
-                DB.saveUserData();
-              }
+            const existingData = await DB.fetchUserData(this.email);
+            if (!existingData) {
+              // First-time signup, save default profile to Supabase
+              DB.saveUserData();
+            }
 
-              const displayName = localStorage.getItem('userName') || name;
+            const displayName = localStorage.getItem('userName') || name;
 
-              // Success screen overlay
-              const container = document.getElementById('login-step-container');
-              container.innerHTML = `
-                <div style="text-align: center; animation: scaleIn 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both; padding: 20px 0;">
-                  <div style="font-size: 3rem; margin-bottom: 16px;">✨</div>
-                  <h3 style="font-size: var(--text-md); font-weight: var(--font-weight-black); color: var(--color-accent-green); margin-bottom: 8px; font-family: var(--font-heading);">VERIFIKASI SUKSES</h3>
-                  <p style="font-size: 0.72rem; color: var(--color-text-secondary); margin-bottom: 20px;">Selamat datang di AR Community, ${displayName}.</p>
-                  <div style="width: 20px; height: 20px; border: 2px solid var(--color-border); border-top-color: var(--color-accent-cyan); border-radius: 50%; animation: rotate 1s linear infinite; margin: 0 auto;"></div>
-                </div>
-              `;
+            // Success screen overlay
+            const container = document.getElementById('login-step-container');
+            container.innerHTML = `
+              <div style="text-align: center; animation: scaleIn 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both; padding: 20px 0;">
+                <div style="font-size: 3rem; margin-bottom: 16px;">✨</div>
+                <h3 style="font-size: var(--text-md); font-weight: var(--font-weight-black); color: var(--color-accent-green); margin-bottom: 8px; font-family: var(--font-heading);">VERIFIKASI SUKSES</h3>
+                <p style="font-size: 0.72rem; color: var(--color-text-secondary); margin-bottom: 20px;">Selamat datang di AR Community, ${displayName}.</p>
+                <div style="width: 20px; height: 20px; border: 2px solid var(--color-border); border-top-color: var(--color-accent-cyan); border-radius: 50%; animation: rotate 1s linear infinite; margin: 0 auto;"></div>
+              </div>
+            `;
 
-              setTimeout(() => {
-                // Restore header and footer
-                const header = document.getElementById('header');
-                const footer = document.querySelector('.footer');
-                const scrollingBanner = document.querySelector('.scrolling-banner');
-                if (header) header.style.display = '';
-                if (footer) footer.style.display = '';
-                if (scrollingBanner) scrollingBanner.style.display = '';
+            setTimeout(() => {
+              // Restore header and footer
+              const header = document.getElementById('header');
+              const footer = document.querySelector('.footer');
+              const scrollingBanner = document.querySelector('.scrolling-banner');
+              if (header) header.style.display = '';
+              if (footer) footer.style.display = '';
+              if (scrollingBanner) scrollingBanner.style.display = '';
 
-                // Redirect to home
-                window.location.hash = '#/home';
-              }, 1500);
-            });
-          } else {
-            this.errorMessage = 'Kode verifikasi salah. Harap masukkan kode yang dikirim ke email Anda.';
+              // Redirect to home
+              window.location.hash = '#/home';
+            }, 1500);
+
+          } catch (err) {
+            console.error('Error verifying OTP:', err);
+            if (submitBtn) {
+              submitBtn.textContent = 'VERIFIKASI & MASUK';
+              submitBtn.disabled = false;
+            }
+            if (err.message && err.message.includes('expired')) {
+              this.errorMessage = 'Kode sudah kedaluwarsa. Silakan kembali dan kirim kode baru.';
+            } else {
+              this.errorMessage = 'Kode verifikasi salah. Harap masukkan kode yang dikirim ke email Anda.';
+            }
             this.render();
           }
         });

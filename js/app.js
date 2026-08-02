@@ -483,7 +483,10 @@ const App = {
     }
   },
 
-  handleLogout() {
+  async handleLogout() {
+    // Sign out from Supabase Auth
+    await DB.signOut();
+
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userName');

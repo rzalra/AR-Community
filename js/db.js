@@ -15,6 +15,43 @@ if (typeof supabase !== 'undefined') {
 
 const DB = {
   /**
+   * Send OTP code to user's email via Supabase Auth
+   */
+  async sendOtp(email) {
+    if (!db) throw new Error('Supabase not initialized');
+    const { data, error } = await db.auth.signInWithOtp({
+      email: email.trim().toLowerCase(),
+      options: {
+        shouldCreateUser: true
+      }
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Verify OTP code entered by user
+   */
+  async verifyOtp(email, token) {
+    if (!db) throw new Error('Supabase not initialized');
+    const { data, error } = await db.auth.verifyOtp({
+      email: email.trim().toLowerCase(),
+      token: token,
+      type: 'email'
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Sign out from Supabase Auth
+   */
+  async signOut() {
+    if (!db) return;
+    await db.auth.signOut();
+  },
+
+  /**
    * Fetch user data from Supabase and save to localStorage
    */
   async fetchUserData(email) {
