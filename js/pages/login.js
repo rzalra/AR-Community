@@ -110,7 +110,7 @@ const LoginPage = {
           <form id="code-verify-form" style="display:flex; flex-direction:column; gap: var(--space-4);">
             <div class="form-group" style="text-align: left;">
               <label class="form-label" style="font-size: 0.62rem; color: var(--color-text-secondary); font-weight: bold; letter-spacing: var(--letter-spacing-wider); margin-bottom: 6px; display: block; text-align: center;">KODE VERIFIKASI</label>
-              <input type="text" id="verify-code-input" class="login-input-red" placeholder="------" maxlength="6" pattern="\\d{6}" required style="font-size:var(--text-lg); text-align:center; letter-spacing: 0.25em; font-family:var(--font-heading);" autofocus>
+              <input type="text" id="verify-code-input" class="login-input-red" placeholder="--------" maxlength="8" pattern="\\d{6,8}" required style="font-size:var(--text-lg); text-align:center; letter-spacing: 0.25em; font-family:var(--font-heading);" autofocus>
             </div>
             
             ${this.errorMessage ? `<p style="color:var(--color-accent-red); font-size:0.7rem; margin: 0; text-align: center;">⚠️ ${this.errorMessage}</p>` : ''}
@@ -209,8 +209,8 @@ const LoginPage = {
           if (!codeInput) return;
 
           const entered = codeInput.value.trim();
-          if (!entered || entered.length < 6) {
-            this.errorMessage = 'Masukkan kode 6 digit yang dikirim ke email Anda.';
+          if (!entered || entered.length < 6 || entered.length > 8) {
+            this.errorMessage = 'Masukkan kode verifikasi (6 atau 8 digit) yang dikirim ke email Anda.';
             this.render();
             return;
           }
