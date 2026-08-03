@@ -362,7 +362,7 @@ const HomePage = {
         </div>
 
         <!-- Testimonial Submission Modal -->
-        <div class="modal-overlay" id="testimonial-modal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(8px);">
+        <div class="modal-overlay" id="testimonial-modal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(8px);">
           <div class="modal-content" style="background: #111; border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 12px; padding: 24px; width: 420px; max-width: 90%; position: relative; box-shadow: 0 0 30px rgba(0,240,255,0.15); text-align: left;">
             <h3 style="font-family: var(--font-heading); margin-top: 0; color: #fff; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
               <span>✍️ TULIS TESTIMONI</span>
@@ -478,7 +478,7 @@ const HomePage = {
     
     if (openModalBtn && modalOverlay) {
       openModalBtn.addEventListener('click', () => {
-        modalOverlay.style.display = 'flex';
+        modalOverlay.classList.add('active');
         // Autofill name if user is logged in
         const authorInput = document.getElementById('testimonial-author-name');
         if (authorInput) {
@@ -489,11 +489,11 @@ const HomePage = {
 
     if (closeModalBtn && modalOverlay) {
       closeModalBtn.addEventListener('click', () => {
-        modalOverlay.style.display = 'none';
+        modalOverlay.classList.remove('active');
       });
       modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) {
-          modalOverlay.style.display = 'none';
+          modalOverlay.classList.remove('active');
         }
       });
     }
@@ -546,7 +546,7 @@ const HomePage = {
           document.getElementById('testimonial-comment-text').value = '';
           
           // Hide modal
-          if (modalOverlay) modalOverlay.style.display = 'none';
+          if (modalOverlay) modalOverlay.classList.remove('active');
           
           // Reload real-time testimonials list
           this.loadRealTimeTestimonials();
