@@ -472,6 +472,7 @@ const HomePage = {
             } else {
               viewAllLink.textContent = '';
             }
+          }
         });
       });
     }
