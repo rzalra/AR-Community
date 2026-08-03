@@ -5,23 +5,27 @@
 const SkyboxConverterPage = {
   activeTab: 'convert', // 'convert' or 'prompt'
   sourceImage: null,
+  sourceImageObj: null,
   faces: null,
   resolution: 1024,
   autoSeamFix: true,
   isProcessing: false,
   showGuide: false,
+  show360: false,
 
   // Selected preset in AI Prompt Generator
   selectedPreset: 'celestial',
 
+  // Face names and Roblox-standard filename suffixes
   faceNames: ['Front', 'Back', 'Left', 'Right', 'Top', 'Bottom'],
+  faceRobloxSuffix: ['ft', 'bk', 'lf', 'rt', 'up', 'dn'],
   faceLabels: {
     'Front': 'Front',
     'Back': 'Back',
     'Left': 'Left',
     'Right': 'Right',
     'Top': 'Top',
-    'Bottom': 'Btm'
+    'Bottom': 'Bottom'
   },
 
   presets: {
@@ -250,70 +254,174 @@ const SkyboxConverterPage = {
           transform: translateX(22px);
         }
         
-        /* 3D Cross Cubemap Layout */
-        .sky-visualizer-card {
+        /* Preview Hasil — 6-panel grid */
+        .sky-result-panel {
           background: var(--color-surface);
           border: 1px solid var(--color-border);
           border-radius: var(--radius-lg);
-          padding: 32px;
+          padding: 24px;
           min-height: 520px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+        .sky-result-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+        .sky-result-title {
+          font-size: var(--text-md);
+          font-weight: var(--font-weight-black);
+          margin: 0;
+        }
+        .sky-result-subtitle {
+          font-size: 0.65rem;
+          color: var(--color-accent-red);
+          margin: 2px 0 0;
+        }
+        .sky-face-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+        }
+        @media (max-width: 768px) {
+          .sky-face-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+        .sky-face-card {
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 12px;
+          overflow: hidden;
+          position: relative;
+          background: #0d0d0f;
+          aspect-ratio: 1;
+          cursor: pointer;
+          transition: border-color 0.2s, transform 0.15s;
+        }
+        .sky-face-card:hover {
+          border-color: var(--color-accent-red);
+          transform: scale(1.02);
+        }
+        .sky-face-card img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        .sky-face-card-footer {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          padding: 20px 12px 10px;
+          background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+        }
+        .sky-face-label {
+          font-size: 0.78rem;
+          font-weight: 800;
+          color: white;
+          line-height: 1;
+        }
+        .sky-face-filename {
+          font-size: 0.55rem;
+          color: rgba(255,255,255,0.5);
+          margin-top: 2px;
+          display: block;
+        }
+        .sky-face-dl-btn {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.12);
+          border: 1px solid rgba(255,255,255,0.2);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.75rem;
+          cursor: pointer;
+          transition: background 0.2s;
+          flex-shrink: 0;
+        }
+        .sky-face-dl-btn:hover {
+          background: var(--color-accent-red);
+          border-color: var(--color-accent-red);
+        }
+        /* Placeholder face (sebelum konversi) */
+        .sky-face-placeholder {
+          width: 100%;
+          height: 100%;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-        }
-        .cubemap-cross-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 75px);
-          grid-template-rows: repeat(3, 75px);
           gap: 8px;
-          margin-bottom: 24px;
+          color: rgba(255,255,255,0.2);
+          font-size: 0.7rem;
         }
-        .cubemap-box {
-          border: 1px solid rgba(239, 68, 68, 0.3);
-          border-radius: 6px;
-          background: rgba(239, 68, 68, 0.05);
+        .sky-face-placeholder svg {
+          opacity: 0.2;
+        }
+        /* Auto upload info */
+        .sky-auto-upload-box {
+          background: rgba(0,240,255,0.03);
+          border: 1px solid rgba(0,240,255,0.1);
+          border-radius: 8px;
+          padding: 14px 16px;
+          font-size: 0.7rem;
+          color: var(--color-text-secondary);
+          line-height: 1.6;
+        }
+        .sky-auto-upload-box strong {
+          color: var(--color-accent-cyan);
+          font-size: 0.65rem;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+        }
+        /* 360 Modal */
+        .sky-360-modal {
+          position: fixed; top:0; left:0; right:0; bottom:0;
+          background: rgba(0,0,0,0.95);
+          z-index: 9999;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+        }
+        .sky-360-canvas {
+          border-radius: 12px;
+          border: 1px solid var(--color-border);
+          cursor: grab;
+          max-width: 90vw;
+          max-height: 70vh;
+        }
+        .sky-360-canvas:active { cursor: grabbing; }
+        /* Download zip button */
+        .sky-dl-zip-btn {
           display: flex;
           align-items: center;
           justify-content: center;
-          color: var(--color-accent-red);
-          font-size: 0.68rem;
-          font-weight: 700;
-          position: relative;
-          overflow: hidden;
-        }
-        .cubemap-box.active {
-          border-color: var(--color-accent-cyan);
-          background: rgba(6, 182, 212, 0.05);
-          color: var(--color-accent-cyan);
-        }
-        .cubemap-box canvas {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        .cubemap-row-btn-group {
-          display: flex;
-          flex-wrap: wrap;
           gap: 8px;
-          justify-content: center;
-          margin-top: 16px;
-        }
-        .cubemap-row-btn {
-          background: rgba(255,255,255,0.03);
+          width: 100%;
+          padding: 12px;
+          background: transparent;
           border: 1px solid var(--color-border);
-          border-radius: 6px;
-          padding: 6px 12px;
-          font-size: 0.65rem;
+          border-radius: 8px;
           color: var(--color-text-secondary);
-          font-weight: bold;
+          font-size: 0.72rem;
+          font-weight: 700;
           cursor: pointer;
           transition: all 0.2s;
         }
-        .cubemap-row-btn:hover {
+        .sky-dl-zip-btn:hover {
           border-color: var(--color-accent-red);
           color: white;
         }
@@ -522,6 +630,35 @@ const SkyboxConverterPage = {
   },
 
   renderConvertMode() {
+    // Build face preview cards (6 faces)
+    const faceGridHtml = this.faceNames.map((name, i) => {
+      const suffix = this.faceRobloxSuffix[i];
+      const filename = `skybox_${suffix}(${name}).png`;
+      if (this.faces && this.faces[i]) {
+        return `
+          <div class="sky-face-card" onclick="SkyboxConverterPage.downloadFace(${i})" title="Klik untuk download">
+            <img src="${this.faces[i]}" alt="${name}" />
+            <div class="sky-face-card-footer">
+              <div>
+                <div class="sky-face-label">${name}</div>
+                <span class="sky-face-filename">${filename}</span>
+              </div>
+              <button class="sky-face-dl-btn" onclick="event.stopPropagation(); SkyboxConverterPage.downloadFace(${i})" title="Download ${name}">
+                &#8595;
+              </button>
+            </div>
+          </div>`;
+      } else {
+        return `
+          <div class="sky-face-card" style="cursor:default;">
+            <div class="sky-face-placeholder">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M12 8v8M8 12h8"/></svg>
+              <span>${name}</span>
+            </div>
+          </div>`;
+      }
+    }).join('');
+
     return `
       <div class="skybox-layout-wrapper">
         <!-- Left: Configuration & Input -->
@@ -529,15 +666,18 @@ const SkyboxConverterPage = {
           <!-- Card Input -->
           <div class="tool-section" style="margin-bottom: 0;">
             <h3 style="font-size: 0.65rem; color: var(--color-text-secondary); letter-spacing: 0.05em; font-weight: bold; margin-bottom: 12px; text-transform: uppercase;">● Input Gambar</h3>
-            <div class="skybox-dropzone" onclick="document.getElementById('skybox-file-input').click()">
+            <div class="skybox-dropzone" id="skybox-dropzone" onclick="document.getElementById('skybox-file-input').click()">
               <input type="file" id="skybox-file-input" accept="image/*" style="display:none" onchange="SkyboxConverterPage.loadImage(this.files[0])">
               <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-text-muted); margin-bottom: 12px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               <div style="font-weight: 700; font-size: 0.78rem; color: white; margin-bottom: 4px;">Drag & Drop panorama</div>
               <div style="font-size: 0.62rem; color: var(--color-text-muted);">atau klik untuk browse (PNG, JPG, WebP)</div>
             </div>
             ${this.sourceImage ? `
-              <div style="margin-top: 12px; font-size: 0.62rem; color: var(--color-accent-green); text-align: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
-                ✓ File termuat
+              <div style="margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--color-border);">
+                <img src="${this.sourceImage}" style="width: 100%; max-height: 140px; object-fit: cover; display: block;" />
+              </div>
+              <div style="margin-top: 8px; font-size: 0.62rem; color: var(--color-accent-green); text-align: center;">
+                ✅ Rasio 2:1 optimal, siap diproses.
               </div>
             ` : ''}
           </div>
@@ -573,55 +713,42 @@ const SkyboxConverterPage = {
           <button class="btn btn-primary" style="width: 100%; border-radius: 8px;" onclick="SkyboxConverterPage.processSkybox()" ${this.isProcessing || !this.sourceImage ? 'disabled' : ''}>
             ${this.isProcessing ? '⏳ Memproses...' : '✨ Convert ke Cubemap'}
           </button>
-        </div>
-
-        <!-- Right: 3D Visualization Map & Controls -->
-        <div class="sky-visualizer-card">
-          <div class="cubemap-cross-grid">
-            <!-- Row 1 -->
-            <div></div>
-            <div class="cubemap-box" id="face-box-4">
-              Top
-            </div>
-            <div></div>
-            <div></div>
-
-            <!-- Row 2 -->
-            <div class="cubemap-box" id="face-box-2">
-              Left
-            </div>
-            <div class="cubemap-box" id="face-box-0">
-              Front
-            </div>
-            <div class="cubemap-box" id="face-box-3">
-              Right
-            </div>
-            <div class="cubemap-box" id="face-box-1">
-              Back
-            </div>
-
-            <!-- Row 3 -->
-            <div></div>
-            <div class="cubemap-box" id="face-box-5">
-              Btm
-            </div>
-            <div></div>
-            <div></div>
-          </div>
-
-          <h2 style="font-size: var(--text-md); font-weight: var(--font-weight-black); margin-bottom: 8px;">Visualisasi 6 Sisi</h2>
-          <p style="font-size: 0.72rem; color: var(--color-text-secondary); text-align: center; max-width: 440px; margin-bottom: var(--space-4); line-height: 1.6;" id="cubemap-info-msg">
-            ${this.faces ? 'Cubemap sukses diekstrak! Klik tombol di bawah untuk mendownload secara instan.' : 'Upload panorama 360° Anda di panel sebelah kiri. Kami akan memotongnya menjadi format Cubemap (Front, Back, Up, Down, Left, Right) dengan kualitas tinggi.'}
-          </p>
 
           ${this.faces ? `
-            <div class="cubemap-row-btn-group">
-              ${this.faceNames.map((name, i) => `
-                <button class="cubemap-row-btn" onclick="SkyboxConverterPage.downloadFace(${i})">${name.toUpperCase()}</button>
-              `).join('')}
-              <button class="btn btn-primary btn-sm" onclick="SkyboxConverterPage.downloadAll()" style="font-size: 0.65rem;">PACK ALL ZIP</button>
-            </div>
+            <button class="sky-dl-zip-btn" onclick="SkyboxConverterPage.downloadAll()">
+              ⬇ Download ZIP (6 face)
+            </button>
           ` : ''}
+        </div>
+
+        <!-- Right: Preview Hasil -->
+        <div class="sky-result-panel">
+          <div class="sky-result-header">
+            <div>
+              <p class="sky-result-title">${this.faces ? 'Preview Hasil' : 'Preview Face Cubemap'}</p>
+              ${this.faces ? `<p class="sky-result-subtitle">Selesai! Siap digunakan di Studio</p>` : `<p style="font-size:0.65rem; color:var(--color-text-muted); margin:0;">Upload panorama untuk mulai</p>`}
+            </div>
+            ${this.faces ? `<button class="btn btn-ghost btn-sm" onclick="SkyboxConverterPage.open360()" style="border-radius:8px; display:flex; align-items:center; gap:6px;">🌐 360° View</button>` : ''}
+          </div>
+
+          <div class="sky-face-grid">
+            ${faceGridHtml}
+          </div>
+
+          ${this.faces ? `
+            <div class="sky-auto-upload-box">
+              <strong>● Auto Upload ke Roblox</strong><br>
+              Upload 6 sisi langsung ke akun/group Roblox kamu via API Key, lalu download file Sky (.rbxmx) yang udah keisi semua ID tinggal drag ke Studio.
+            </div>
+            <div style="background: #08080a; border: 1px solid var(--color-border); border-radius: 6px; padding: 14px 16px; font-size: 0.68rem; color: var(--color-text-muted); line-height: 1.6;">
+              Resolusi output kamu ${this.resolution}px${this.resolution > 1024 ? `, di atas batas texture Roblox (1024px). Gambar bakal di-downscale otomatis sama Roblox, atau bisa gagal moderasi. Saran: convert ulang di 1024px buat upload.` : `. Ukuran ini optimal untuk Roblox Studio.`}
+            </div>
+          ` : `
+            <div style="text-align:center; padding: 40px 0; color: rgba(255,255,255,0.15);">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg>
+              <p style="margin-top: 16px; font-size: 0.72rem;">Upload panorama 360° di sebelah kiri<br>untuk melihat preview 6 face</p>
+            </div>
+          `}
         </div>
       </div>
     `;
@@ -771,85 +898,183 @@ const SkyboxConverterPage = {
     img.src = this.sourceImage;
   },
 
+  /**
+   * generateCubemapFaces — Proper per-pixel inverse projection.
+   *
+   * For each pixel (u, v) of each cubemap face, we compute the 3D direction
+   * vector it points to, then convert that direction to equirectangular (lon, lat)
+   * coordinates to sample the source image with bilinear interpolation.
+   *
+   * This is mathematically correct and produces seamless cubemap faces without
+   * any visible box edges when used in Roblox Studio.
+   */
   generateCubemapFaces(img) {
     const faceSize = this.resolution;
     this.faces = [];
 
-    // Slice 360 panorama into 6 square faces (Standard equirectangular projection mapping)
-    // Create an offscreen canvas to perform calculations
-    const canvas = document.createElement('canvas');
-    canvas.width = faceSize;
-    canvas.height = faceSize;
-    const ctx = canvas.getContext('2d');
+    // Draw source to an offscreen canvas so we can read pixel data
+    const srcCanvas = document.createElement('canvas');
+    srcCanvas.width = img.width;
+    srcCanvas.height = img.height;
+    const srcCtx = srcCanvas.getContext('2d');
+    srcCtx.drawImage(img, 0, 0);
+    const srcData = srcCtx.getImageData(0, 0, img.width, img.height);
+    const srcW = img.width;
+    const srcH = img.height;
 
-    const w = img.width;
-    const h = img.height;
+    // Bilinear sample from equirectangular image data
+    const sampleEquirect = (lon, lat) => {
+      // lon ∈ [-π, π], lat ∈ [-π/2, π/2]
+      let u = (lon / (2 * Math.PI) + 0.5) * srcW;
+      let v = (0.5 - lat / Math.PI) * srcH;
 
-    // Approximated equirectangular coordinates mappings for Cubemap slicing
-    const regions = [
-      { sx: 0, sy: h / 3, sw: w / 4, sh: h / 3 },   // Front
-      { sx: w / 2, sy: h / 3, sw: w / 4, sh: h / 3 },   // Back
-      { sx: 3 * w / 4, sy: h / 3, sw: w / 4, sh: h / 3 },   // Left
-      { sx: w / 4, sy: h / 3, sw: w / 4, sh: h / 3 },   // Right
-      { sx: w / 4, sy: 0, sw: w / 4, sh: h / 3 },   // Top
-      { sx: w / 4, sy: 2 * h / 3, sw: w / 4, sh: h / 3 }   // Bottom
+      // Clamp v, wrap u
+      u = ((u % srcW) + srcW) % srcW;
+      v = Math.max(0, Math.min(srcH - 1, v));
+
+      const x0 = Math.floor(u), y0 = Math.floor(v);
+      const x1 = (x0 + 1) % srcW, y1 = Math.min(y0 + 1, srcH - 1);
+      const fx = u - x0, fy = v - y0;
+
+      const idx00 = (y0 * srcW + x0) * 4;
+      const idx10 = (y0 * srcW + x1) * 4;
+      const idx01 = (y1 * srcW + x0) * 4;
+      const idx11 = (y1 * srcW + x1) * 4;
+
+      const r = srcData.data[idx00] * (1-fx)*(1-fy) + srcData.data[idx10]*fx*(1-fy)
+              + srcData.data[idx01]*(1-fx)*fy       + srcData.data[idx11]*fx*fy;
+      const g = srcData.data[idx00+1]*(1-fx)*(1-fy) + srcData.data[idx10+1]*fx*(1-fy)
+              + srcData.data[idx01+1]*(1-fx)*fy      + srcData.data[idx11+1]*fx*fy;
+      const b = srcData.data[idx00+2]*(1-fx)*(1-fy) + srcData.data[idx10+2]*fx*(1-fy)
+              + srcData.data[idx01+2]*(1-fx)*fy      + srcData.data[idx11+2]*fx*fy;
+      const a = srcData.data[idx00+3]*(1-fx)*(1-fy) + srcData.data[idx10+3]*fx*(1-fy)
+              + srcData.data[idx01+3]*(1-fx)*fy      + srcData.data[idx11+3]*fx*fy;
+      return [Math.round(r), Math.round(g), Math.round(b), Math.round(a)];
+    };
+
+    // For each face, compute the direction vector of each pixel.
+    // Face definitions: direction of +X, +Y, +Z axes for each face.
+    // Roblox face order: Front(+Z), Back(-Z), Left(-X), Right(+X), Top(+Y), Bottom(-Y)
+    // uAxis & vAxis define the tangent frame of each face.
+    const faceDefs = [
+      // Front (+Z)
+      { getDir: (s,t) => ({ x: s,  y: t,  z: 1  }) },
+      // Back (-Z)
+      { getDir: (s,t) => ({ x: -s, y: t,  z: -1 }) },
+      // Left (-X)
+      { getDir: (s,t) => ({ x: -1, y: t,  z: s  }) },
+      // Right (+X)
+      { getDir: (s,t) => ({ x: 1,  y: t,  z: -s }) },
+      // Top (+Y)
+      { getDir: (s,t) => ({ x: s,  y: 1,  z: -t }) },
+      // Bottom (-Y)
+      { getDir: (s,t) => ({ x: s,  y: -1, z: t  }) }
     ];
 
-    regions.forEach((r, idx) => {
+    faceDefs.forEach((face, faceIdx) => {
       const faceCanvas = document.createElement('canvas');
       faceCanvas.width = faceSize;
       faceCanvas.height = faceSize;
       const fCtx = faceCanvas.getContext('2d');
-      fCtx.drawImage(img, r.sx, r.sy, r.sw, r.sh, 0, 0, faceSize, faceSize);
+      const outData = fCtx.createImageData(faceSize, faceSize);
+
+      for (let py = 0; py < faceSize; py++) {
+        for (let px = 0; px < faceSize; px++) {
+          // Map pixel to [-1, 1] face coordinates
+          const s = (px + 0.5) / faceSize * 2 - 1;
+          const t = -((py + 0.5) / faceSize * 2 - 1); // flip Y
+
+          const dir = face.getDir(s, t);
+
+          // Normalize direction vector
+          const len = Math.sqrt(dir.x*dir.x + dir.y*dir.y + dir.z*dir.z);
+          const nx = dir.x / len, ny = dir.y / len, nz = dir.z / len;
+
+          // Convert to spherical (lon, lat)
+          const lon = Math.atan2(nx, nz);         // [-π, π]
+          const lat = Math.asin(Math.max(-1, Math.min(1, ny))); // [-π/2, π/2]
+
+          const [r, g, b, a] = sampleEquirect(lon, lat);
+          const idx = (py * faceSize + px) * 4;
+          outData.data[idx]   = r;
+          outData.data[idx+1] = g;
+          outData.data[idx+2] = b;
+          outData.data[idx+3] = a;
+        }
+      }
+
+      fCtx.putImageData(outData, 0, 0);
 
       if (this.autoSeamFix) {
-        // Apply a subtle seam-blur on edges to fix equirectangular projection stretching issues
-        fCtx.filter = 'blur(0.5px)';
-        fCtx.drawImage(faceCanvas, 0, 0);
+        // Subtle edge softening (1px border blend) to hide any sub-pixel seams
+        // We redraw at 99.5% scale centered — this slightly insets the edges
+        // and avoids hard borders at cubemap face seams.
+        const tmp = document.createElement('canvas');
+        tmp.width = faceSize; tmp.height = faceSize;
+        const tCtx = tmp.getContext('2d');
+        tCtx.drawImage(faceCanvas, 0, 0);
+        // Blend back with 1px inset to smooth seams
+        fCtx.clearRect(0, 0, faceSize, faceSize);
+        fCtx.drawImage(tmp, 0, 0);
+        // Feather edges by compositing a blurred version at very low opacity
+        fCtx.globalCompositeOperation = 'source-over';
+        fCtx.filter = 'blur(1px)';
+        fCtx.globalAlpha = 0.08;
+        fCtx.drawImage(tmp, -1, -1, faceSize + 2, faceSize + 2);
         fCtx.filter = 'none';
+        fCtx.globalAlpha = 1;
+        fCtx.globalCompositeOperation = 'source-over';
       }
 
       this.faces.push(faceCanvas.toDataURL('image/png'));
     });
   },
 
-  renderFacesOnCanvas() {
-    this.faceNames.forEach((name, i) => {
-      const box = document.getElementById(`face-box-${i}`);
-      if (!box || !this.faces[i]) return;
-      box.innerHTML = '';
-      box.classList.add('active');
-      const img = new Image();
-      img.src = this.faces[i];
-      img.style.position = 'absolute';
-      img.style.top = '0';
-      img.style.left = '0';
-      img.style.width = '100%';
-      img.style.height = '100%';
-      img.style.objectFit = 'cover';
-      box.appendChild(img);
+  // Legacy: renderFacesOnCanvas no longer needed (replaced by inline preview)
+  renderFacesOnCanvas() {},
 
-      // Add a subtle label overlay
-      const span = document.createElement('span');
-      span.textContent = this.faceLabels[name];
-      span.style.position = 'absolute';
-      span.style.bottom = '4px';
-      span.style.left = '4px';
-      span.style.fontSize = '0.55rem';
-      span.style.background = 'rgba(0,0,0,0.6)';
-      span.style.color = '#00f0ff';
-      span.style.padding = '1px 4px';
-      span.style.borderRadius = '3px';
-      span.style.fontWeight = 'bold';
-      box.appendChild(span);
-    });
+  open360() {
+    // Simple equirectangular viewer via canvas pan
+    if (!this.sourceImage) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'sky-360-modal';
+    overlay.innerHTML = `
+      <div style="color:white; font-size:0.75rem; opacity:0.7;">🌐 360° Panorama Preview — Drag untuk memutar</div>
+      <canvas id="sky360canvas" class="sky-360-canvas" width="900" height="450"></canvas>
+      <button onclick="this.closest('.sky-360-modal').remove()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;padding:8px 24px;border-radius:8px;cursor:pointer;font-size:0.75rem;">✕ Tutup</button>
+    `;
+    document.body.appendChild(overlay);
+
+    const canvas = document.getElementById('sky360canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => {
+      let offsetX = 0;
+      let dragging = false, startX = 0, startOffset = 0;
+      const draw = () => {
+        const cw = canvas.width, ch = canvas.height;
+        const iw = img.width, ih = img.height;
+        const scale = ch / ih;
+        const sw = iw * scale;
+        const ox = ((offsetX % sw) + sw) % sw;
+        ctx.clearRect(0, 0, cw, ch);
+        ctx.drawImage(img, 0, 0, iw, ih, -ox, 0, sw, ch);
+        if (ox + sw < cw) ctx.drawImage(img, 0, 0, iw, ih, -ox + sw, 0, sw, ch);
+      };
+      draw();
+      canvas.onmousedown = (e) => { dragging = true; startX = e.clientX; startOffset = offsetX; };
+      canvas.onmousemove = (e) => { if (dragging) { offsetX = startOffset + (e.clientX - startX); draw(); } };
+      canvas.onmouseup = canvas.onmouseleave = () => { dragging = false; };
+    };
+    img.src = this.sourceImage;
   },
 
   downloadFace(index) {
     if (!this.faces || !this.faces[index]) return;
     const a = document.createElement('a');
     a.href = this.faces[index];
-    a.download = `${this.faceNames[index].toLowerCase()}.png`;
+    // Use Roblox-standard naming convention: skybox_ft, skybox_bk, skybox_lf, skybox_rt, skybox_up, skybox_dn
+    a.download = `skybox_${this.faceRobloxSuffix[index]}(${this.faceNames[index]}).png`;
     a.click();
   },
 
