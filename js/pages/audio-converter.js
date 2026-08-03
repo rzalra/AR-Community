@@ -336,10 +336,15 @@ const AudioConverterPage = {
         a.click();
         document.body.removeChild(a);
       } else {
-        // ULTIMATE FALLBACK: Show backup download button
-        this.backupUrl = `https://api.vevioz.com/api/single/${this.ytFormat}?url=${encodeURIComponent(this.ytUrl)}`;
+        // ULTIMATE FALLBACK: Show backup download button using stable Y2Mate service
+        const ytId = this.getYoutubeId(this.ytUrl);
+        const backupUrl = ytId 
+          ? `https://www.y2mate.com/youtube/${ytId}` 
+          : `https://www.y2mate.com/search?q=${encodeURIComponent(this.ytUrl)}`;
+
+        this.backupUrl = backupUrl;
         this.showBackupButton = true;
-        this.ytLog += `\n\n🔄 BACKUP ACTIVE: Semua server Cobalt sedang offline/sibuk.\n\nBrowser Anda memblokir pop-up otomatis. Silakan klik tombol di bawah untuk memulai unduhan via Backup Server Vevioz!`;
+        this.ytLog += `\n\n🔄 BACKUP ACTIVE: Semua server Cobalt sedang offline/sibuk.\n\nSilakan klik tombol di bawah ini untuk mengunduh audio secara instan via Backup Server Y2Mate!`;
         this.render();
       }
     } catch (err) {
@@ -349,6 +354,12 @@ const AudioConverterPage = {
       this.isYtConverting = false;
       this.render();
     }
+  },
+
+  getYoutubeId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
   },
 
   // ═══════════════════════════════════════
