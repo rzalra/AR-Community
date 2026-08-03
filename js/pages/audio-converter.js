@@ -144,48 +144,126 @@ const AudioConverterPage = {
     this.render();
 
     try {
-      // Use Cobalt Public API
-      const cobaltUrl = 'https://api.cobalt.tools/api/json';
-      this.ytLog += `\nMengirim request ke API server Cobalt...\nURL: ${this.ytUrl}`;
+      // 1. Fetch dynamic list of active instances from registry
+      let dynamicInstances = [];
+      try {
+        this.ytLog += `\nMendapatkan daftar server aktif dari registry...`;
+        this.render();
+        
+        const registryRes = await fetch('https://corsproxy.io/?url=' + encodeURIComponent('https://instances.cobalt.best/api/instances.json'));
+        if (registryRes.ok) {
+          const registryData = await registryRes.json();
+          if (Array.isArray(registryData)) {
+            dynamicInstances = registryData
+              .filter(item => item && item.url)
+              .map(item => item.url.replace(/\/+$/, ''));
+          }
+        }
+      } catch (regErr) {
+        console.warn("Failed to fetch dynamic instances:", regErr);
+      }
+
+      // 2. Define known active fallback instances
+      const fallbackInstances = [
+        'https://cobalt.api.rylor.com',
+        'https://api.vyt.lol',
+        'https://cobalt.k6.cz',
+        'https://cobalt.sh',
+        'https://co.wuk.sh',
+        'https://cobalt.preventure.one'
+      ];
+
+      // Combine and deduplicate
+      const allInstances = Array.from(new Set([...dynamicInstances, ...fallbackInstances]));
+      this.ytLog += `\nDitemukan ${allInstances.length} server kandidat. Mencoba konversi...`;
       this.render();
 
-      const response = await fetch(cobaltUrl, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          url: this.ytUrl,
-          isAudioOnly: true,
-          audioFormat: this.ytFormat,
-          audioBitrate: "320"
-        })
-      });
+      let downloadUrl = null;
+      let usedServer = null;
 
-      if (!response.ok) {
-        throw new Error(`API HTTP ${response.status} Error`);
+      // 3. Try each instance one by one
+      for (const baseUrl of allInstances) {
+        const cleanBaseUrl = baseUrl.replace(/\/+$/, '');
+        
+        // Try v10 API first (POST /)
+        try {
+          this.ytLog += `\nMencoba server: ${cleanBaseUrl} (v10)...`;
+          this.render();
+
+          const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(cleanBaseUrl);
+          const response = await fetch(proxyUrl, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              url: this.ytUrl,
+              downloadMode: 'audio',
+              audioFormat: this.ytFormat,
+              audioBitrate: "320"
+            })
+          });
+
+          if (response.ok) {
+            const resData = await response.json();
+            if (resData && resData.url) {
+              downloadUrl = resData.url;
+              usedServer = cleanBaseUrl;
+              break;
+            }
+          }
+        } catch (v10Err) {
+          console.warn(`v10 failed for ${cleanBaseUrl}:`, v10Err);
+        }
+
+        // Try v7 API next (POST /api/json)
+        try {
+          this.ytLog += `\nMencoba server: ${cleanBaseUrl}/api/json (v7)...`;
+          this.render();
+
+          const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(`${cleanBaseUrl}/api/json`);
+          const response = await fetch(proxyUrl, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              url: this.ytUrl,
+              isAudioOnly: true,
+              audioFormat: this.ytFormat,
+              audioBitrate: "320"
+            })
+          });
+
+          if (response.ok) {
+            const resData = await response.json();
+            if (resData && resData.url) {
+              downloadUrl = resData.url;
+              usedServer = cleanBaseUrl;
+              break;
+            }
+          }
+        } catch (v7Err) {
+          console.warn(`v7 failed for ${cleanBaseUrl}:`, v7Err);
+        }
       }
 
-      const resData = await response.json();
-      if (resData.status === 'error') {
-        throw new Error(resData.text || 'Gagal mengekstrak audio dari link tersebut');
-      }
-
-      if (resData.url) {
-        this.ytLog += `\n\n🎉 SUKSES! Audio berhasil diekstrak.\n[DOWNLOAD] URL: ${resData.url.substring(0, 60)}...\n\nMengunduh file secara otomatis ke browser Anda...`;
+      if (downloadUrl) {
+        this.ytLog += `\n\n🎉 SUKSES! Audio berhasil diekstrak menggunakan server ${usedServer}.\n[DOWNLOAD] URL: ${downloadUrl.substring(0, 60)}...\n\nMengunduh file secara otomatis ke browser Anda...`;
         this.render();
 
         // Create download tag to force download
         const a = document.createElement('a');
-        a.href = resData.url;
+        a.href = downloadUrl;
         a.target = '_blank';
         a.download = `youtube_audio.${this.ytFormat}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
       } else {
-        throw new Error('API server tidak mengembalikan URL unduhan.');
+        throw new Error('Semua server API Cobalt sedang sibuk atau offline. Silakan coba lagi nanti.');
       }
     } catch (err) {
       console.error(err);

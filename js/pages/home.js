@@ -212,7 +212,7 @@ const HomePage = {
         </div>
       `).join('');
     }
-    
+
     if (tab === 'store') {
       const items = APP_DATA.storeItems.slice(0, 6);
       return items.map(item => `
@@ -412,8 +412,8 @@ const HomePage = {
           return;
         }
 
-        const matchedTools = APP_DATA.tools.filter(t => 
-          t.name.toLowerCase().includes(query) || 
+        const matchedTools = APP_DATA.tools.filter(t =>
+          t.name.toLowerCase().includes(query) ||
           t.description.toLowerCase().includes(query)
         ).slice(0, 5);
 
@@ -444,7 +444,7 @@ const HomePage = {
     const tabBtns = document.querySelectorAll('.catalog-tab-btn');
     const contentGrid = document.getElementById('catalog-tab-content');
     const viewAllLink = document.getElementById('catalog-view-all-link');
-    
+
     if (tabBtns && contentGrid) {
       tabBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -452,7 +452,7 @@ const HomePage = {
           btn.classList.add('active');
           const tab = btn.getAttribute('data-tab');
           contentGrid.innerHTML = this.getCatalogTabHtml(tab);
-          
+
           if (viewAllLink) {
             if (tab === 'tools') {
               viewAllLink.textContent = 'LIHAT SEMUA TOOLS →';
@@ -475,7 +475,7 @@ const HomePage = {
     const openModalBtn = document.getElementById('btn-open-testimonial-modal');
     const closeModalBtn = document.getElementById('close-testimonial-modal');
     const modalOverlay = document.getElementById('testimonial-modal');
-    
+
     if (openModalBtn && modalOverlay) {
       openModalBtn.addEventListener('click', () => {
         modalOverlay.classList.add('active');
@@ -512,7 +512,7 @@ const HomePage = {
           }
         });
       };
-      
+
       starElms.forEach(star => {
         star.addEventListener('click', () => {
           const r = star.getAttribute('data-rating');
@@ -527,7 +527,7 @@ const HomePage = {
     if (testimonialForm) {
       testimonialForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const authorName = document.getElementById('testimonial-author-name').value.trim();
         const rating = document.getElementById('testimonial-rating-val').value;
         const commentText = document.getElementById('testimonial-comment-text').value.trim();
@@ -541,13 +541,13 @@ const HomePage = {
         try {
           await DB.addTestimonial(authorName, rating, commentText, userEmail);
           alert('Testimoni Anda berhasil dikirim! Terima kasih atas dukungannya.');
-          
+
           // Clear inputs
           document.getElementById('testimonial-comment-text').value = '';
-          
+
           // Hide modal
           if (modalOverlay) modalOverlay.classList.remove('active');
-          
+
           // Reload real-time testimonials list
           this.loadRealTimeTestimonials();
         } catch (err) {
@@ -616,7 +616,7 @@ const HomePage = {
     Object.keys(viewsMap).forEach(toolName => {
       const barEl = document.querySelector(`[data-bar-tool="${toolName}"]`);
       const labelEl = document.querySelector(`[data-views-label="${toolName}"]`);
-      
+
       const views = viewsMap[toolName];
       const pct = (views / maxVal) * 100;
 
@@ -681,7 +681,7 @@ const HomePage = {
       const starsHtml = '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating);
       const comment = item.comment || '(Tanpa komentar)';
       const dateText = this.timeAgo(item.created_at);
-      
+
       return `
         <div class="testimonial-card">
           <div class="testimonial-header">
@@ -710,13 +710,13 @@ const HomePage = {
     const elapsed = now - past;
 
     if (elapsed < msPerMinute) {
-      return 'Baru saja';   
+      return 'Baru saja';
     } else if (elapsed < msPerHour) {
-      return Math.round(elapsed / msPerMinute) + 'm lalu';   
+      return Math.round(elapsed / msPerMinute) + 'm lalu';
     } else if (elapsed < msPerDay) {
-      return Math.round(elapsed / msPerHour) + 'j lalu';   
+      return Math.round(elapsed / msPerHour) + 'j lalu';
     } else {
-      return Math.round(elapsed / msPerDay) + 'h lalu';   
+      return Math.round(elapsed / msPerDay) + 'h lalu';
     }
   }
 };
