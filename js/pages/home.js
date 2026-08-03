@@ -19,6 +19,7 @@ const HomePage = {
     `;
 
     this.bindEvents();
+    this.loadRealTimeViews();
   },
 
   renderHero() {
@@ -121,7 +122,7 @@ const HomePage = {
             <div class="popular-card-icon">🎵</div>
             <h3 class="popular-card-title">BYPASS</h3>
             <div class="popular-card-footer">
-              <span class="views-count">214.6k views</span>
+              <span class="views-count" data-views-tool="Bypass">214.6k views</span>
               <span class="arrow-icon">→</span>
             </div>
           </div>
@@ -131,7 +132,7 @@ const HomePage = {
             <div class="popular-card-icon">🌌</div>
             <h3 class="popular-card-title">SKYBOX CONVERTER</h3>
             <div class="popular-card-footer">
-              <span class="views-count">147.7k views</span>
+              <span class="views-count" data-views-tool="Skybox Converter">147.7k views</span>
               <span class="arrow-icon">→</span>
             </div>
           </div>
@@ -141,7 +142,7 @@ const HomePage = {
             <div class="popular-card-icon">🏃</div>
             <h3 class="popular-card-title">ANIM SPOOF</h3>
             <div class="popular-card-footer">
-              <span class="views-count">21.9k views</span>
+              <span class="views-count" data-views-tool="Anim Spoof">21.9k views</span>
               <span class="arrow-icon">→</span>
             </div>
           </div>
@@ -151,7 +152,7 @@ const HomePage = {
             <div class="popular-card-icon">📐</div>
             <h3 class="popular-card-title">GUI BUILDER</h3>
             <div class="popular-card-footer">
-              <span class="views-count">14.7k views</span>
+              <span class="views-count" data-views-tool="Gui Builder">14.7k views</span>
               <span class="arrow-icon">→</span>
             </div>
           </div>
@@ -288,9 +289,9 @@ const HomePage = {
       <div class="live-activity-row">
         <div class="live-activity-item-name">${item.name}</div>
         <div class="live-activity-bar-container">
-          <div class="live-activity-bar-fill" style="width: ${item.pct}%"></div>
+          <div class="live-activity-bar-fill" data-bar-tool="${item.name}" style="width: ${item.pct}%"></div>
         </div>
-        <div class="live-activity-item-views">${item.views}</div>
+        <div class="live-activity-item-views" data-views-label="${item.name}">${item.views}</div>
       </div>
     `).join('');
 
@@ -298,7 +299,7 @@ const HomePage = {
       <section class="live-activity-section">
         <div class="live-activity-header">
           <span class="live-indicator"><span class="pulse-dot-cyan"></span> LIVE ACTIVITY</span>
-          <span class="total-views">554.2k total views</span>
+          <span class="total-views" id="live-total-views">554.2k total views</span>
         </div>
         <div class="live-activity-chart">
           ${rows}
@@ -473,7 +474,75 @@ const HomePage = {
             }
           }
         });
-      });
     }
+  },
+
+  async loadRealTimeViews() {
+    // 1. Fetch views from Supabase DB
+    const dbViews = await DB.getToolViews();
+
+    // 2. Base baseline values from screenshot
+    const baseline = {
+      'Bypass': 214600,
+      'Skybox Converter': 147700,
+      'Anim Spoof': 21900,
+      'Gui Builder': 14700,
+      'Lua Editor': 9900,
+      'Material Generator': 9800,
+      'Skybox Assembler': 9400,
+      'Audio Optimizer': 9200
+    };
+
+    // Combine baseline with real-time db counts
+    const viewsMap = { ...baseline };
+    dbViews.forEach(row => {
+      if (row.tool_name && typeof row.views === 'number') {
+        viewsMap[row.tool_name] = row.views;
+      }
+    });
+
+    // 3. Calculate total views
+    let totalViews = 0;
+    Object.values(viewsMap).forEach(v => {
+      totalViews += v;
+    });
+
+    // Update total views element in header
+    const totalViewsEl = document.getElementById('live-total-views');
+    if (totalViewsEl) {
+      totalViewsEl.textContent = `${this.formatCount(totalViews)} total views`;
+    }
+
+    // 4. Update Paling Dicari cards
+    Object.keys(viewsMap).forEach(toolName => {
+      const labelEl = document.querySelector(`[data-views-tool="${toolName}"]`);
+      if (labelEl) {
+        labelEl.textContent = `${this.formatCount(viewsMap[toolName])} views`;
+      }
+    });
+
+    // 5. Update Live Activity chart
+    const maxVal = Math.max(...Object.values(viewsMap), 1);
+    Object.keys(viewsMap).forEach(toolName => {
+      const barEl = document.querySelector(`[data-bar-tool="${toolName}"]`);
+      const labelEl = document.querySelector(`[data-views-label="${toolName}"]`);
+      
+      const views = viewsMap[toolName];
+      const pct = (views / maxVal) * 100;
+
+      if (barEl) {
+        barEl.style.width = `${pct}%`;
+      }
+      if (labelEl) {
+        labelEl.textContent = this.formatCount(views);
+      }
+    });
+  },
+
+  formatCount(num) {
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1).replace('.0', '') + 'k';
+    }
+    return num.toString();
   }
 };

@@ -69,6 +69,57 @@ const DB = {
   },
 
   /**
+   * Increment view count for a specific tool in Supabase database
+   */
+  async incrementToolView(toolName) {
+    if (!db) return;
+    try {
+      // Dapatkan data view saat ini
+      const { data, error } = await db
+        .from('tool_views')
+        .select('views')
+        .eq('tool_name', toolName)
+        .single();
+
+      let currentViews = 0;
+      if (data) {
+        currentViews = data.views;
+      } else if (error && error.code !== 'PGRST116') {
+        // PGRST116 is "no rows returned"
+        console.error("Error fetching tool views:", error);
+      }
+
+      // Increment view
+      const nextViews = currentViews + 1;
+
+      // Upsert back to database
+      await db
+        .from('tool_views')
+        .upsert({ tool_name: toolName, views: nextViews }, { onConflict: 'tool_name' });
+        
+    } catch (e) {
+      console.warn("Supabase tool views increment failed (table might not exist yet):", e);
+    }
+  },
+
+  /**
+   * Fetch all tool view counts from Supabase database
+   */
+  async getToolViews() {
+    if (!db) return [];
+    try {
+      const { data, error } = await db
+        .from('tool_views')
+        .select('*');
+      if (error) throw error;
+      return data || [];
+    } catch (e) {
+      console.warn("Could not fetch tool views from Supabase:", e);
+      return [];
+    }
+  },
+
+  /**
    * Fetch user data from Supabase and save to localStorage
    */
   async fetchUserData(email) {

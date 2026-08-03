@@ -370,33 +370,51 @@ const App = {
       return;
     }
 
-    this.currentRoute = hash;
-    this.updateActiveNav();
-
-    // Scroll to top
-    window.scrollTo(0, 0);
-
-    // Update header profile display
-    if (isLoggedIn) {
-      const username = localStorage.getItem('userName') || 'User';
-      const avatarEl = document.getElementById('header-user-avatar');
-      const nameEl = document.getElementById('header-user-name');
-      if (avatarEl) avatarEl.innerText = username.charAt(0).toUpperCase();
-      if (nameEl) nameEl.innerText = username;
-    }
-
-    // Render the page
-    const pageObj = this.pageMapping[route.page];
-    if (pageObj && typeof pageObj.render === 'function') {
-      pageObj.render();
-    }
-
-    // Update document title
-    document.title = `${route.title} | AR Community`;
-
-    // Close mobile menu
-    this.closeMobileMenu();
-  },
+     this.currentRoute = hash;
+     this.updateActiveNav();
+     this.trackToolView(hash); // Track tool page views
+ 
+     // Scroll to top
+     window.scrollTo(0, 0);
+ 
+     // Update header profile display
+     if (isLoggedIn) {
+       const username = localStorage.getItem('userName') || 'User';
+       const avatarEl = document.getElementById('header-user-avatar');
+       const nameEl = document.getElementById('header-user-name');
+       if (avatarEl) avatarEl.innerText = username.charAt(0).toUpperCase();
+       if (nameEl) nameEl.innerText = username;
+     }
+ 
+     // Render the page
+     const pageObj = this.pageMapping[route.page];
+     if (pageObj && typeof pageObj.render === 'function') {
+       pageObj.render();
+     }
+ 
+     // Update document title
+     document.title = `${route.title} | AR Community`;
+ 
+     // Close mobile menu
+     this.closeMobileMenu();
+   },
+ 
+   trackToolView(hash) {
+     const routeMap = {
+       '#/tools/bypass-music': 'Bypass',
+       '#/tools/skybox-converter': 'Skybox Converter',
+       '#/tools/auto-spoof': 'Anim Spoof',
+       '#/tools/gui-builder': 'Gui Builder',
+       '#/tools/lua-editor': 'Lua Editor',
+       '#/tools/material-generator': 'Material Generator',
+       '#/tools/skybox-assembler': 'Skybox Assembler',
+       '#/tools/audio-optimizer': 'Audio Optimizer'
+     };
+     const toolName = routeMap[hash];
+     if (toolName) {
+       DB.incrementToolView(toolName);
+     }
+   },
 
   // ── Update active nav link ──
   updateActiveNav() {
