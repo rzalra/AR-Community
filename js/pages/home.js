@@ -28,7 +28,7 @@ const HomePage = {
         <div class="custom-hero-inner">
           <div class="hero-badge-cyan">📌 KOMUNITAS AKTIF</div>
           <h1 class="hero-main-title">
-            BEYOND <span class="hero-highlight">LIMITS</span>
+            AR <span class="hero-highlight">COMMUNITY</span>
           </h1>
           <p class="hero-desc-text">
             Komunitas Roblox yang solid dari builder, scripter, sampai pemain aktif yang bareng-bareng ngembangin server dan ngadain event.
