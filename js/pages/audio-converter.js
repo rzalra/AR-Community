@@ -150,8 +150,17 @@ const AudioConverterPage = {
         this.ytLog += `\nMendapatkan daftar server aktif dari registry...`;
         this.render();
         
-        const registryRes = await fetch('https://corsproxy.io/?url=' + encodeURIComponent('https://instances.cobalt.best/api/instances.json'));
-        if (registryRes.ok) {
+        // Try direct fetch first
+        let registryRes = null;
+        try {
+          registryRes = await fetch('https://instances.cobalt.best/api/instances.json');
+        } catch (dirErr) {
+          console.warn("Direct registry fetch failed, trying via proxy...", dirErr);
+          const proxyRegistryUrl = 'https://corsproxy.io/?url=' + encodeURIComponent('https://instances.cobalt.best/api/instances.json');
+          registryRes = await fetch(proxyRegistryUrl);
+        }
+
+        if (registryRes && registryRes.ok) {
           const registryData = await registryRes.json();
           if (Array.isArray(registryData)) {
             dynamicInstances = registryData
@@ -180,78 +189,131 @@ const AudioConverterPage = {
 
       let downloadUrl = null;
       let usedServer = null;
+      let usedMethod = '';
 
-      // 3. Try each instance one by one
+      // Helper function to test an endpoint with timeout
+      const tryFetch = async (url, bodyData) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 seconds timeout per try
+
+        try {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(bodyData),
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            const data = await res.json();
+            return data && data.url ? data.url : null;
+          }
+        } catch (e) {
+          clearTimeout(timeoutId);
+          throw e;
+        }
+        return null;
+      };
+
+      // 3. Try each instance one by one (direct first, then proxied)
       for (const baseUrl of allInstances) {
         const cleanBaseUrl = baseUrl.replace(/\/+$/, '');
         
-        // Try v10 API first (POST /)
+        // --- 3.1. TRY DIRECT CONNECTION ---
+        // Try v10 direct
         try {
-          this.ytLog += `\nMencoba server: ${cleanBaseUrl} (v10)...`;
+          this.ytLog += `\nMencoba server: ${cleanBaseUrl} (Direct v10)...`;
+          this.render();
+          
+          const url = await tryFetch(cleanBaseUrl, {
+            url: this.ytUrl,
+            downloadMode: 'audio',
+            audioFormat: this.ytFormat,
+            audioBitrate: "320"
+          });
+          if (url) {
+            downloadUrl = url;
+            usedServer = cleanBaseUrl;
+            usedMethod = 'Direct v10';
+            break;
+          }
+        } catch (e) {
+          console.warn(`Direct v10 failed for ${cleanBaseUrl}:`, e);
+        }
+
+        // Try v7 direct
+        try {
+          this.ytLog += `\nMencoba server: ${cleanBaseUrl}/api/json (Direct v7)...`;
+          this.render();
+
+          const url = await tryFetch(`${cleanBaseUrl}/api/json`, {
+            url: this.ytUrl,
+            isAudioOnly: true,
+            audioFormat: this.ytFormat,
+            audioBitrate: "320"
+          });
+          if (url) {
+            downloadUrl = url;
+            usedServer = cleanBaseUrl;
+            usedMethod = 'Direct v7';
+            break;
+          }
+        } catch (e) {
+          console.warn(`Direct v7 failed for ${cleanBaseUrl}:`, e);
+        }
+
+        // --- 3.2. TRY PROXIED CONNECTION (CORS BYPASS) ---
+        // Try v10 proxied
+        try {
+          this.ytLog += `\nMencoba server: ${cleanBaseUrl} (Proxy v10)...`;
           this.render();
 
           const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(cleanBaseUrl);
-          const response = await fetch(proxyUrl, {
-            method: 'POST',
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              url: this.ytUrl,
-              downloadMode: 'audio',
-              audioFormat: this.ytFormat,
-              audioBitrate: "320"
-            })
+          const url = await tryFetch(proxyUrl, {
+            url: this.ytUrl,
+            downloadMode: 'audio',
+            audioFormat: this.ytFormat,
+            audioBitrate: "320"
           });
-
-          if (response.ok) {
-            const resData = await response.json();
-            if (resData && resData.url) {
-              downloadUrl = resData.url;
-              usedServer = cleanBaseUrl;
-              break;
-            }
+          if (url) {
+            downloadUrl = url;
+            usedServer = cleanBaseUrl;
+            usedMethod = 'Proxy v10';
+            break;
           }
-        } catch (v10Err) {
-          console.warn(`v10 failed for ${cleanBaseUrl}:`, v10Err);
+        } catch (e) {
+          console.warn(`Proxy v10 failed for ${cleanBaseUrl}:`, e);
         }
 
-        // Try v7 API next (POST /api/json)
+        // Try v7 proxied
         try {
-          this.ytLog += `\nMencoba server: ${cleanBaseUrl}/api/json (v7)...`;
+          this.ytLog += `\nMencoba server: ${cleanBaseUrl}/api/json (Proxy v7)...`;
           this.render();
 
           const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(`${cleanBaseUrl}/api/json`);
-          const response = await fetch(proxyUrl, {
-            method: 'POST',
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              url: this.ytUrl,
-              isAudioOnly: true,
-              audioFormat: this.ytFormat,
-              audioBitrate: "320"
-            })
+          const url = await tryFetch(proxyUrl, {
+            url: this.ytUrl,
+            isAudioOnly: true,
+            audioFormat: this.ytFormat,
+            audioBitrate: "320"
           });
-
-          if (response.ok) {
-            const resData = await response.json();
-            if (resData && resData.url) {
-              downloadUrl = resData.url;
-              usedServer = cleanBaseUrl;
-              break;
-            }
+          if (url) {
+            downloadUrl = url;
+            usedServer = cleanBaseUrl;
+            usedMethod = 'Proxy v7';
+            break;
           }
-        } catch (v7Err) {
-          console.warn(`v7 failed for ${cleanBaseUrl}:`, v7Err);
+        } catch (e) {
+          console.warn(`Proxy v7 failed for ${cleanBaseUrl}:`, e);
         }
       }
 
+      // 4. Handle Result
       if (downloadUrl) {
-        this.ytLog += `\n\n🎉 SUKSES! Audio berhasil diekstrak menggunakan server ${usedServer}.\n[DOWNLOAD] URL: ${downloadUrl.substring(0, 60)}...\n\nMengunduh file secara otomatis ke browser Anda...`;
+        this.ytLog += `\n\n🎉 SUKSES! Audio berhasil diekstrak.\n[SERVER] ${usedServer} (${usedMethod})\n[DOWNLOAD] URL: ${downloadUrl.substring(0, 60)}...\n\nMengunduh file secara otomatis ke browser Anda...`;
         this.render();
 
         // Create download tag to force download
@@ -263,11 +325,16 @@ const AudioConverterPage = {
         a.click();
         document.body.removeChild(a);
       } else {
-        throw new Error('Semua server API Cobalt sedang sibuk atau offline. Silakan coba lagi nanti.');
+        // ULTIMATE FALLBACK: Redirect to Vevioz Single Button API in new tab
+        this.ytLog += `\n\n🔄 BACKUP ACTIVE: Semua server Cobalt sedang offline/sibuk. Mengalihkan Anda ke backup server Vevioz...`;
+        this.render();
+        
+        const veviozUrl = `https://api.vevioz.com/api/single/${this.ytFormat}?url=${encodeURIComponent(this.ytUrl)}`;
+        window.open(veviozUrl, '_blank');
       }
     } catch (err) {
       console.error(err);
-      this.ytLog += `\n\n❌ ERROR: ${err.message}\n\nTips: Pastikan URL YouTube valid (contoh: https://www.youtube.com/watch?v=dQw4w9WgXcQ). Beberapa link regional mungkin dibatasi oleh API server.`;
+      this.ytLog += `\n\n❌ ERROR: ${err.message}\n\nTips: Pastikan URL YouTube valid (contoh: https://www.youtube.com/watch?v=dQw4w9WgXcQ). Beberapa video berhak cipta tinggi mungkin dibatasi.`;
     } finally {
       this.isYtConverting = false;
       this.render();
