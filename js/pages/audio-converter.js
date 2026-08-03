@@ -8,6 +8,8 @@ const AudioConverterPage = {
   ytFormat: 'mp3',
   isYtConverting: false,
   ytLog: '',
+  showBackupButton: false,
+  backupUrl: '',
 
   // Local Converter State
   localFile: null,
@@ -119,7 +121,14 @@ const AudioConverterPage = {
         ${this.ytLog ? `
           <div style="margin-top:24px; background:rgba(0,0,0,0.3); border:1px solid var(--color-border); border-radius:8px; padding:14px; font-family:monospace; font-size:0.68rem; line-height:1.5;">
             <div style="color:var(--color-text-muted); font-weight:bold; margin-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:4px;">STATUS LOGGER:</div>
-            <div style="color:white; white-space:pre-wrap;">${this.ytLog}</div>
+            <div style="color:white; white-space:pre-wrap; margin-bottom:${this.showBackupButton ? '14px' : '0'};">${this.ytLog}</div>
+            ${this.showBackupButton ? `
+              <div style="margin-top:14px; text-align:center;">
+                <a href="${this.backupUrl}" target="_blank" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; font-size:0.75rem; font-weight:bold; border-radius:8px; text-decoration:none; background:linear-gradient(135deg, var(--color-accent-cyan), var(--color-accent-purple)); border:none; box-shadow:0 0 15px rgba(0, 240, 255, 0.3); color:white;">
+                  📥 KLIK DI SINI UNTUK UNDUH (BACKUP SERVER)
+                </a>
+              </div>
+            ` : ''}
           </div>
         ` : ''}
       </div>
@@ -140,6 +149,8 @@ const AudioConverterPage = {
     }
 
     this.isYtConverting = true;
+    this.showBackupButton = false;
+    this.backupUrl = '';
     this.ytLog = `[SYSTEM] Menginisialisasi request konversi...\n[PARAMS] Target Format: ${this.ytFormat.toUpperCase()}`;
     this.render();
 
@@ -325,12 +336,11 @@ const AudioConverterPage = {
         a.click();
         document.body.removeChild(a);
       } else {
-        // ULTIMATE FALLBACK: Redirect to Vevioz Single Button API in new tab
-        this.ytLog += `\n\n🔄 BACKUP ACTIVE: Semua server Cobalt sedang offline/sibuk. Mengalihkan Anda ke backup server Vevioz...`;
+        // ULTIMATE FALLBACK: Show backup download button
+        this.backupUrl = `https://api.vevioz.com/api/single/${this.ytFormat}?url=${encodeURIComponent(this.ytUrl)}`;
+        this.showBackupButton = true;
+        this.ytLog += `\n\n🔄 BACKUP ACTIVE: Semua server Cobalt sedang offline/sibuk.\n\nBrowser Anda memblokir pop-up otomatis. Silakan klik tombol di bawah untuk memulai unduhan via Backup Server Vevioz!`;
         this.render();
-        
-        const veviozUrl = `https://api.vevioz.com/api/single/${this.ytFormat}?url=${encodeURIComponent(this.ytUrl)}`;
-        window.open(veviozUrl, '_blank');
       }
     } catch (err) {
       console.error(err);
