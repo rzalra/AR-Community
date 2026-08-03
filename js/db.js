@@ -34,13 +34,30 @@ const DB = {
    */
   async verifyOtp(email, token) {
     if (!db) throw new Error('Supabase not initialized');
-    const { data, error } = await db.auth.verifyOtp({
+    
+    // Coba tipe 'email' (untuk user yang sudah terdaftar / login)
+    const { data: emailData, error: emailError } = await db.auth.verifyOtp({
       email: email.trim().toLowerCase(),
       token: token,
       type: 'email'
     });
-    if (error) throw error;
-    return data;
+
+    if (!emailError) return emailData;
+
+    console.warn("Verify with type 'email' failed, trying 'signup'...", emailError);
+
+    // Coba tipe 'signup' (untuk user baru yang belum dikonfirmasi)
+    const { data: signupData, error: signupError } = await db.auth.verifyOtp({
+      email: email.trim().toLowerCase(),
+      token: token,
+      type: 'signup'
+    });
+
+    if (signupError) {
+      // Jika keduanya gagal, lempar error
+      throw signupError;
+    }
+    return signupData;
   },
 
   /**

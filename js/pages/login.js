@@ -278,11 +278,7 @@ const LoginPage = {
               submitBtn.textContent = 'VERIFIKASI & MASUK';
               submitBtn.disabled = false;
             }
-            if (err.message && err.message.includes('expired')) {
-              this.errorMessage = 'Kode sudah kedaluwarsa. Silakan kembali dan kirim kode baru.';
-            } else {
-              this.errorMessage = 'Kode verifikasi salah. Harap masukkan kode yang dikirim ke email Anda.';
-            }
+            this.errorMessage = 'Kode verifikasi salah, tidak valid, atau sudah kedaluwarsa. Silakan coba lagi.';
             this.render();
           }
         });
