@@ -237,65 +237,92 @@ const App = {
   // ── Footer ──
   renderFooter() {
     return `
+      <!-- Bottom Scrolling Banner -->
+      <div class="scrolling-banner footer-marquee">
+        <div class="banner-track">
+          ${[
+            'AR COMMUNITY', 'BUILT TO DEVELOP', 'ROBLOX DEV TOOLS', 'TOGETHER WE BUILD',
+            'AR COMMUNITY', 'BUILT TO DEVELOP', 'ROBLOX DEV TOOLS', 'TOGETHER WE BUILD',
+            'AR COMMUNITY', 'BUILT TO DEVELOP', 'ROBLOX DEV TOOLS', 'TOGETHER WE BUILD'
+          ].map(text => `
+            <span class="banner-item">
+              <span class="dot"></span>
+              <span class="highlight">${text}</span>
+            </span>
+          `).join('')}
+        </div>
+      </div>
+
       <footer class="footer">
         <div class="footer-inner">
           <div class="footer-grid">
             <div class="footer-brand">
-              <div class="footer-brand-logo" style="display: flex; align-items: center; gap: 12px;">
+              <div class="footer-brand-logo" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                 <img src="assets/logo.png" alt="AR Logo" style="height: 32px; width: auto; object-fit: contain;">
-                <span>AR <span>COMMUNITY</span></span>
+                <span>AR <span style="background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">COMMUNITY</span></span>
               </div>
-              <p>Platform kolaborasi untuk pengembangan proyek game & digital. Bergabunglah dengan komunitas kami dan mulai membangun proyek impian Anda.</p>
-              <div class="footer-social">
-                <a href="https://discord.gg/BJJjeM4mFy" target="_blank" class="footer-social-link" title="Discord" style="overflow: hidden; padding: 0;">
-                  <img src="assets/discord.png" alt="Discord" style="width: 100%; height: 100%; object-fit: cover;">
+              <p style="font-size: 0.72rem; line-height: 1.5; color: var(--color-text-secondary); margin-bottom: 20px; text-align: left;">
+                Komunitas Roblox yang solid dari builder, scripter, sampai pemain aktif yang bareng-bareng ngembangin server dan ngadain event.
+              </p>
+              
+              <div class="footer-custom-socials">
+                <a href="https://discord.gg/BJJjeM4mFy" target="_blank" class="footer-pill-btn">
+                  🎮 Discord
                 </a>
-                <a href="https://www.tiktok.com/@arcommunity_?_r=1&_t=ZS-97LSFuBBfM2" target="_blank" class="footer-social-link" title="Tiktok" style="overflow: hidden; padding: 0;">
-                  <img src="assets/tiktok.png" alt="Tiktok" style="width: 100%; height: 100%; object-fit: cover;">
+                <a href="https://www.tiktok.com/@arcommunity_" target="_blank" class="footer-pill-btn">
+                  🎵 TikTok
                 </a>
-                <a href="https://bio.link/arcommunity" target="_blank" class="footer-social-link" title="Biolink" style="overflow: hidden; padding: 0;">
-                  <img src="assets/biolink.png" alt="Biolink" style="width: 100%; height: 100%; object-fit: cover;">
+                <a href="https://saweria.co" target="_blank" class="footer-pill-btn donate-pill">
+                  💸 Donate
                 </a>
+              </div>
+
+              <div class="footer-business-email" style="text-align: left;">
+                <div style="font-family: var(--font-heading); font-size: 0.55rem; color: var(--color-text-muted); letter-spacing: 0.1em; margin-bottom: 4px; font-weight: bold;">BUSINESS</div>
+                <div style="font-size: 0.72rem; color: var(--color-text-secondary); display: flex; align-items: center; gap: 6px;">
+                  ✉️ arcommunity@gmail.com
+                </div>
               </div>
             </div>
 
-            <div class="footer-column">
-              <h4>NAVIGASI</h4>
-              <ul>
-                <li><a href="#/home">Home</a></li>
-                <li><a href="#/tools">Tools</a></li>
-                <li><a href="#/store">Store</a></li>
-                <li><a href="#/maps">Maps</a></li>
-                <li><a href="#/more">More</a></li>
+            <div class="footer-column" style="text-align: left;">
+              <h4 style="font-family: var(--font-heading); font-size: 0.65rem; color: var(--color-accent-cyan); letter-spacing: 0.1em; font-weight: bold; margin-bottom: 16px; text-transform: uppercase;">COMMUNITY</h4>
+              <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                <li><a href="#/home" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Home</a></li>
+                <li><a href="#/more" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Race Board</a></li>
+                <li><a href="#/maps" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Maps</a></li>
+                <li><a href="https://discord.gg/BJJjeM4mFy" target="_blank" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Dev Forum</a></li>
+                <li><a href="#/more" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Open Jasa</a></li>
               </ul>
             </div>
 
-            <div class="footer-column">
-              <h4>RESOURCES</h4>
-              <ul>
-                <li><a href="#/tools">Dokumentasi</a></li>
-                <li><a href="#/store">Asset Store</a></li>
-                <li><a href="#">API Reference</a></li>
-                <li><a href="#">Changelog</a></li>
+            <div class="footer-column" style="text-align: left;">
+              <h4 style="font-family: var(--font-heading); font-size: 0.65rem; color: var(--color-accent-cyan); letter-spacing: 0.1em; font-weight: bold; margin-bottom: 16px; text-transform: uppercase;">PRODUCTS</h4>
+              <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                <li><a href="#/store" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">SummitKit</a></li>
+                <li><a href="#/store" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Paid Assets</a></li>
+                <li><a href="#/store" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Free Assets</a></li>
+                <li><a href="#/store" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Bonus Content</a></li>
               </ul>
             </div>
 
-            <div class="footer-column">
-              <h4>KOMUNITAS</h4>
-              <ul>
-                <li><a href="https://discord.gg/BJJjeM4mFy" target="_blank">Discord Server</a></li>
-                <li><a href="#">Forum</a></li>
-                <li><a href="#">Blog</a></li>
-                <li><a href="#/more">Hubungi Kami</a></li>
+            <div class="footer-column" style="text-align: left;">
+              <h4 style="font-family: var(--font-heading); font-size: 0.65rem; color: var(--color-accent-cyan); letter-spacing: 0.1em; font-weight: bold; margin-bottom: 16px; text-transform: uppercase;">LEGAL</h4>
+              <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                <li><a href="#/more" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Privacy Policy</a></li>
+                <li><a href="#/more" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Terms of Service</a></li>
+                <li><a href="#/tools" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Documentation</a></li>
               </ul>
             </div>
           </div>
 
-          <div class="footer-bottom">
-            <p>© 2026 AR Community. All rights reserved.</p>
-            <div class="footer-bottom-links">
-              <a href="#/more">Kebijakan Privasi</a>
-              <a href="#/more">Syarat & Ketentuan</a>
+          <div class="footer-bottom-custom">
+            <div class="footer-bottom-motto">BUILT TO DEVELOP</div>
+            <button class="footer-btn-activate-notif" onclick="alert('Notifikasi diaktifkan!')">
+              <span>🔔</span> Aktifkan Notifikasi
+            </button>
+            <div class="footer-bottom-copy">
+              © 2026 AR Community. Independent community site.
             </div>
           </div>
         </div>
