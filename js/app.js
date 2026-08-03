@@ -286,23 +286,23 @@ const App = {
             </div>
 
             <div class="footer-column" style="text-align: left;">
-              <h4 style="font-family: var(--font-heading); font-size: 0.65rem; color: var(--color-accent-cyan); letter-spacing: 0.1em; font-weight: bold; margin-bottom: 16px; text-transform: uppercase;">COMMUNITY</h4>
+              <h4 style="font-family: var(--font-heading); font-size: 0.65rem; color: var(--color-accent-cyan); letter-spacing: 0.1em; font-weight: bold; margin-bottom: 16px; text-transform: uppercase;">NAVIGASI</h4>
               <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
                 <li><a href="#/home" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Home</a></li>
-                <li><a href="#/more" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Race Board</a></li>
+                <li><a href="#/tools" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Tools</a></li>
+                <li><a href="#/store" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Store</a></li>
                 <li><a href="#/maps" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Maps</a></li>
-                <li><a href="https://discord.gg/BJJjeM4mFy" target="_blank" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Dev Forum</a></li>
-                <li><a href="#/more" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Open Jasa</a></li>
+                <li><a href="#/more" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">More</a></li>
               </ul>
             </div>
 
             <div class="footer-column" style="text-align: left;">
-              <h4 style="font-family: var(--font-heading); font-size: 0.65rem; color: var(--color-accent-cyan); letter-spacing: 0.1em; font-weight: bold; margin-bottom: 16px; text-transform: uppercase;">PRODUCTS</h4>
+              <h4 style="font-family: var(--font-heading); font-size: 0.65rem; color: var(--color-accent-cyan); letter-spacing: 0.1em; font-weight: bold; margin-bottom: 16px; text-transform: uppercase;">POPULAR TOOLS</h4>
               <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
-                <li><a href="#/store" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">SummitKit</a></li>
-                <li><a href="#/store" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Paid Assets</a></li>
-                <li><a href="#/store" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Free Assets</a></li>
-                <li><a href="#/store" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Bonus Content</a></li>
+                <li><a href="#/tools/lua-editor" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Lua Editor Pro</a></li>
+                <li><a href="#/tools/bypass-music" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Bypass Music</a></li>
+                <li><a href="#/tools/skybox-converter" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Skybox Converter</a></li>
+                <li><a href="#/tools/gui-builder" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">GUI Builder</a></li>
               </ul>
             </div>
 
@@ -311,7 +311,7 @@ const App = {
               <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
                 <li><a href="#/more" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Privacy Policy</a></li>
                 <li><a href="#/more" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Terms of Service</a></li>
-                <li><a href="#/tools" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Documentation</a></li>
+                <li><a href="#/more" style="font-size: 0.72rem; color: var(--color-text-secondary); text-decoration: none; transition: color 0.2s;">Hubungi Kami</a></li>
               </ul>
             </div>
           </div>
