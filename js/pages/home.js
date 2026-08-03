@@ -467,6 +467,7 @@ const HomePage = {
               viewAllLink.textContent = '';
             }
           }
+        });
       });
     }
 
