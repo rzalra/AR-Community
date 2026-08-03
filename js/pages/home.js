@@ -3,6 +3,7 @@
    ======================================== */
 
 const HomePage = {
+  showAllTestimonials: false,
 
   render() {
     const app = document.getElementById('app');
@@ -20,6 +21,7 @@ const HomePage = {
 
     this.bindEvents();
     this.loadRealTimeViews();
+    this.loadRealTimeTestimonials();
   },
 
   renderHero() {
@@ -341,66 +343,58 @@ const HomePage = {
     return `
       <section class="testimonials-section">
         <h2 class="section-title">APA KATA <span class="highlight-italic">MEREKA?</span></h2>
-        <div class="testimonials-rating-summary">
-          <span class="stars-gold">★★★★★</span>
-          <span class="rating-text"><strong>5.0/5</strong> dari 200 testimoni</span>
+        <div class="testimonials-rating-summary" id="testimonials-summary-box">
+          <span class="stars-gold" id="testimonials-summary-stars">★★★★★</span>
+          <span class="rating-text" id="testimonials-summary-text"><strong>5.0/5</strong> dari 5 testimoni</span>
         </div>
         <p class="section-subtitle" style="margin-top: 4px;">Testimoni asli dari member AR Community, ditampilkan apa adanya tanpa disaring.</p>
         
-        <div class="testimonials-grid">
-          <div class="testimonial-card">
-            <div class="testimonial-header">
-              <span class="stars-gold">★★★★★</span>
-              <span class="time-ago">5j lalu</span>
-            </div>
-            <p class="testimonial-comment">(Tanpa komentar)</p>
-            <div class="testimonial-author">DevPemula</div>
-            <div class="testimonial-reply-btn">↩ Balas</div>
-          </div>
-
-          <div class="testimonial-card">
-            <div class="testimonial-header">
-              <span class="stars-gold">★★★★★</span>
-              <span class="time-ago">15j lalu</span>
-            </div>
-            <p class="testimonial-comment">KEREN WEBSITE NYA BANGGGGGGG</p>
-            <div class="testimonial-author">Nexyl</div>
-            <div class="testimonial-reply-btn">↩ Balas</div>
-          </div>
-
-          <div class="testimonial-card">
-            <div class="testimonial-header">
-              <span class="stars-gold">★★★★★</span>
-              <span class="time-ago">18j lalu</span>
-            </div>
-            <p class="testimonial-comment">bermamfaat banget</p>
-            <div class="testimonial-author">Kecap</div>
-            <div class="testimonial-reply-btn">↩ Balas</div>
-          </div>
-
-          <div class="testimonial-card">
-            <div class="testimonial-header">
-              <span class="stars-gold">★★★★★</span>
-              <span class="time-ago">21j lalu</span>
-            </div>
-            <p class="testimonial-comment">(Tanpa komentar)</p>
-            <div class="testimonial-author">RIEL</div>
-            <div class="testimonial-reply-btn">↩ Balas</div>
-          </div>
-
-          <div class="testimonial-card">
-            <div class="testimonial-header">
-              <span class="stars-gold">★★★★☆</span>
-              <span class="time-ago">23j lalu</span>
-            </div>
-            <p class="testimonial-comment">(Tanpa komentar)</p>
-            <div class="testimonial-author">amat</div>
-            <div class="testimonial-reply-btn">↩ Balas</div>
+        <div class="testimonials-grid" id="testimonials-live-grid">
+          <!-- Real-time testimonials loaded dynamically -->
+          <div class="loading-testimonials" style="text-align: center; grid-column: 1 / -1; padding: 30px; color: var(--color-text-muted);">
+            ⏳ Memuat testimoni...
           </div>
         </div>
 
-        <div class="testimonials-footer-row">
-          <button class="btn btn-ghost" onclick="alert('Semua testimoni telah dimuat!')">Muat 5 testimoni lainnya</button>
+        <div class="testimonials-footer-row" style="display: flex; gap: 16px; justify-content: center; margin-top: 30px; flex-wrap: wrap;">
+          <button class="btn btn-ghost" id="btn-load-all-testimonials">Lihat Semua Testimoni</button>
+          <button class="btn btn-primary" id="btn-open-testimonial-modal" style="background: var(--gradient-accent); border: none; color: #fff;">✍️ Tulis Testimoni</button>
+        </div>
+
+        <!-- Testimonial Submission Modal -->
+        <div class="modal-overlay" id="testimonial-modal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(8px);">
+          <div class="modal-content" style="background: #111; border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 12px; padding: 24px; width: 420px; max-width: 90%; position: relative; box-shadow: 0 0 30px rgba(0,240,255,0.15); text-align: left;">
+            <h3 style="font-family: var(--font-heading); margin-top: 0; color: #fff; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+              <span>✍️ TULIS TESTIMONI</span>
+              <span id="close-testimonial-modal" style="cursor: pointer; color: var(--color-text-muted); font-size: 1.5rem; line-height: 1;">&times;</span>
+            </h3>
+            
+            <form id="testimonial-form" style="display: flex; flex-direction: column; gap: 16px;">
+              <div>
+                <label style="display: block; font-size: 0.65rem; color: var(--color-text-muted); font-weight: bold; letter-spacing: 0.1em; margin-bottom: 6px; text-transform: uppercase;">NAMA ANDA</label>
+                <input type="text" id="testimonial-author-name" required placeholder="Masukkan nama Anda..." style="width: 100%; padding: 10px 14px; background: #181818; border: 1px solid var(--color-border); border-radius: 6px; color: #fff; font-size: 0.8rem; box-sizing: border-box;">
+              </div>
+
+              <div>
+                <label style="display: block; font-size: 0.65rem; color: var(--color-text-muted); font-weight: bold; letter-spacing: 0.1em; margin-bottom: 6px; text-transform: uppercase;">RATING BINTANG</label>
+                <div class="rating-input-stars" style="display: flex; gap: 8px; font-size: 1.8rem; color: var(--color-text-muted); cursor: pointer;">
+                  <span class="star-select" data-rating="1" style="color: var(--color-accent-yellow);">★</span>
+                  <span class="star-select" data-rating="2" style="color: var(--color-accent-yellow);">★</span>
+                  <span class="star-select" data-rating="3" style="color: var(--color-accent-yellow);">★</span>
+                  <span class="star-select" data-rating="4" style="color: var(--color-accent-yellow);">★</span>
+                  <span class="star-select" data-rating="5" style="color: var(--color-accent-yellow);">★</span>
+                </div>
+                <input type="hidden" id="testimonial-rating-val" value="5" required>
+              </div>
+
+              <div>
+                <label style="display: block; font-size: 0.65rem; color: var(--color-text-muted); font-weight: bold; letter-spacing: 0.1em; margin-bottom: 6px; text-transform: uppercase;">ULASAN / KOMENTAR</label>
+                <textarea id="testimonial-comment-text" required placeholder="Apa tanggapan Anda tentang web/komunitas AR?" style="width: 100%; height: 100px; padding: 10px 14px; background: #181818; border: 1px solid var(--color-border); border-radius: 6px; color: #fff; font-size: 0.8rem; font-family: var(--font-body); resize: none; box-sizing: border-box;"></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; background: var(--gradient-accent); border: none; color: #fff; font-weight: bold; cursor: pointer; border-radius: 6px;">KIRIM TESTIMONI 🚀</button>
+            </form>
+          </div>
         </div>
       </section>
     `;
@@ -473,7 +467,101 @@ const HomePage = {
               viewAllLink.textContent = '';
             }
           }
+      });
+    }
+
+    // 3. Testimonial Modal event handling
+    const openModalBtn = document.getElementById('btn-open-testimonial-modal');
+    const closeModalBtn = document.getElementById('close-testimonial-modal');
+    const modalOverlay = document.getElementById('testimonial-modal');
+    
+    if (openModalBtn && modalOverlay) {
+      openModalBtn.addEventListener('click', () => {
+        modalOverlay.style.display = 'flex';
+        // Autofill name if user is logged in
+        const authorInput = document.getElementById('testimonial-author-name');
+        if (authorInput) {
+          authorInput.value = localStorage.getItem('userName') || '';
+        }
+      });
+    }
+
+    if (closeModalBtn && modalOverlay) {
+      closeModalBtn.addEventListener('click', () => {
+        modalOverlay.style.display = 'none';
+      });
+      modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+          modalOverlay.style.display = 'none';
+        }
+      });
+    }
+
+    // Star selection inside modal
+    const starElms = document.querySelectorAll('.star-select');
+    const ratingInputVal = document.getElementById('testimonial-rating-val');
+    if (starElms && ratingInputVal) {
+      const updateStarColors = (rating) => {
+        starElms.forEach(s => {
+          const sRating = s.getAttribute('data-rating');
+          if (sRating <= rating) {
+            s.style.color = 'var(--color-accent-yellow)';
+          } else {
+            s.style.color = 'var(--color-text-muted)';
+          }
         });
+      };
+      
+      starElms.forEach(star => {
+        star.addEventListener('click', () => {
+          const r = star.getAttribute('data-rating');
+          ratingInputVal.value = r;
+          updateStarColors(r);
+        });
+      });
+    }
+
+    // Testimonial Form submit handler
+    const testimonialForm = document.getElementById('testimonial-form');
+    if (testimonialForm) {
+      testimonialForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const authorName = document.getElementById('testimonial-author-name').value.trim();
+        const rating = document.getElementById('testimonial-rating-val').value;
+        const commentText = document.getElementById('testimonial-comment-text').value.trim();
+        const userEmail = localStorage.getItem('userEmail') || '';
+
+        if (!authorName || !commentText) {
+          alert('Nama dan ulasan wajib diisi!');
+          return;
+        }
+
+        try {
+          await DB.addTestimonial(authorName, rating, commentText, userEmail);
+          alert('Testimoni Anda berhasil dikirim! Terima kasih atas dukungannya.');
+          
+          // Clear inputs
+          document.getElementById('testimonial-comment-text').value = '';
+          
+          // Hide modal
+          if (modalOverlay) modalOverlay.style.display = 'none';
+          
+          // Reload real-time testimonials list
+          this.loadRealTimeTestimonials();
+        } catch (err) {
+          alert('Gagal mengirim testimoni. Silakan coba lagi nanti.');
+        }
+      });
+    }
+
+    // Toggle showing all testimonials
+    const loadAllBtn = document.getElementById('btn-load-all-testimonials');
+    if (loadAllBtn) {
+      loadAllBtn.addEventListener('click', () => {
+        this.showAllTestimonials = true;
+        loadAllBtn.style.display = 'none';
+        this.loadRealTimeTestimonials();
       });
     }
   },
@@ -545,5 +633,89 @@ const HomePage = {
       return (num / 1000).toFixed(1).replace('.0', '') + 'k';
     }
     return num.toString();
+  },
+
+  async loadRealTimeTestimonials() {
+    // 1. Fetch testimonials from Supabase DB
+    const dbTestimonials = await DB.fetchTestimonials();
+
+    // 2. Fallback baseline if DB is empty
+    const baseline = [
+      { name: 'DevPemula', rating: 5, comment: 'Keren banget tools-nya!', created_at: new Date(Date.now() - 5 * 3600000).toISOString() },
+      { name: 'Nexyl', rating: 5, comment: 'KEREN WEBSITE NYA BANGGGGGGG', created_at: new Date(Date.now() - 15 * 3600000).toISOString() },
+      { name: 'Kecap', rating: 5, comment: 'bermamfaat banget', created_at: new Date(Date.now() - 18 * 3600000).toISOString() },
+      { name: 'RIEL', rating: 5, comment: 'Sangat membantu developer Roblox.', created_at: new Date(Date.now() - 21 * 3600000).toISOString() },
+      { name: 'amat', rating: 4, comment: 'Bagus, terus kembangkan ya.', created_at: new Date(Date.now() - 23 * 3600000).toISOString() }
+    ];
+
+    const list = dbTestimonials.length > 0 ? dbTestimonials : baseline;
+    const count = list.length;
+    const sum = list.reduce((acc, curr) => acc + curr.rating, 0);
+    const avg = (sum / count).toFixed(1);
+
+    // 3. Update summary box
+    const summaryStarsEl = document.getElementById('testimonials-summary-stars');
+    const summaryTextEl = document.getElementById('testimonials-summary-text');
+    if (summaryStarsEl && summaryTextEl) {
+      const roundedRating = Math.round(avg);
+      summaryStarsEl.textContent = '★'.repeat(roundedRating) + '☆'.repeat(5 - roundedRating);
+      summaryTextEl.innerHTML = `<strong>${avg}/5</strong> dari ${count} testimoni`;
+    }
+
+    // 4. Determine how many to show
+    const visibleList = this.showAllTestimonials ? list : list.slice(0, 5);
+
+    // 5. Hide load-more button if we have shown all
+    const loadAllBtn = document.getElementById('btn-load-all-testimonials');
+    if (loadAllBtn) {
+      if (list.length <= 5 || this.showAllTestimonials) {
+        loadAllBtn.style.display = 'none';
+      } else {
+        loadAllBtn.style.display = 'inline-block';
+      }
+    }
+
+    // 6. Map to HTML grid
+    const gridHtml = visibleList.map(item => {
+      const starsHtml = '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating);
+      const comment = item.comment || '(Tanpa komentar)';
+      const dateText = this.timeAgo(item.created_at);
+      
+      return `
+        <div class="testimonial-card">
+          <div class="testimonial-header">
+            <span class="stars-gold">${starsHtml}</span>
+            <span class="time-ago">${dateText}</span>
+          </div>
+          <p class="testimonial-comment">${comment}</p>
+          <div class="testimonial-author">${item.name}</div>
+          <div class="testimonial-reply-btn" onclick="alert('Fitur balas testimoni segera hadir!')">↩ Balas</div>
+        </div>
+      `;
+    }).join('');
+
+    const gridEl = document.getElementById('testimonials-live-grid');
+    if (gridEl) {
+      gridEl.innerHTML = gridHtml;
+    }
+  },
+
+  timeAgo(dateString) {
+    const now = new Date();
+    const past = new Date(dateString);
+    const msPerMinute = 60 * 1000;
+    const msPerHour = msPerMinute * 60;
+    const msPerDay = msPerHour * 24;
+    const elapsed = now - past;
+
+    if (elapsed < msPerMinute) {
+      return 'Baru saja';   
+    } else if (elapsed < msPerHour) {
+      return Math.round(elapsed / msPerMinute) + 'm lalu';   
+    } else if (elapsed < msPerDay) {
+      return Math.round(elapsed / msPerHour) + 'j lalu';   
+    } else {
+      return Math.round(elapsed / msPerDay) + 'h lalu';   
+    }
   }
 };

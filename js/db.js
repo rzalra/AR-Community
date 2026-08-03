@@ -204,5 +204,48 @@ const DB = {
     } catch (err) {
       console.error("Exception in saveUserData:", err);
     }
+  },
+
+  /**
+   * Fetch all testimonials from Supabase database
+   */
+  async fetchTestimonials() {
+    if (!db) return [];
+    try {
+      const { data, error } = await db
+        .from('testimonials')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    } catch (e) {
+      console.warn("Could not fetch testimonials from Supabase:", e);
+      return [];
+    }
+  },
+
+  /**
+   * Add a new testimonial to Supabase database
+   */
+  async addTestimonial(name, rating, comment, email) {
+    if (!db) return null;
+    try {
+      const payload = {
+        name: name,
+        rating: parseInt(rating),
+        comment: comment,
+        email: email
+      };
+      const { data, error } = await db
+        .from('testimonials')
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (e) {
+      console.error("Error adding testimonial in Supabase:", e);
+      throw e;
+    }
   }
 };
