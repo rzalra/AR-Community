@@ -336,15 +336,10 @@ const AudioConverterPage = {
         a.click();
         document.body.removeChild(a);
       } else {
-        // ULTIMATE FALLBACK: Show backup download button using stable Y2Mate service
-        const ytId = this.getYoutubeId(this.ytUrl);
-        const backupUrl = ytId 
-          ? `https://www.y2mate.com/youtube/${ytId}` 
-          : `https://www.y2mate.com/search?q=${encodeURIComponent(this.ytUrl)}`;
-
-        this.backupUrl = backupUrl;
+        // ULTIMATE FALLBACK: Show backup download button using stable 9xBuddy service (not blocked by Kominfo)
+        this.backupUrl = `https://9xbuddy.com/analyze?url=${encodeURIComponent(this.ytUrl)}`;
         this.showBackupButton = true;
-        this.ytLog += `\n\n🔄 BACKUP ACTIVE: Semua server Cobalt sedang offline/sibuk.\n\nSilakan klik tombol di bawah ini untuk mengunduh audio secara instan via Backup Server Y2Mate!`;
+        this.ytLog += `\n\n🔄 BACKUP ACTIVE: Semua server Cobalt sedang offline/sibuk.\n\nSilakan klik tombol di bawah ini untuk mengunduh audio secara instan via Backup Server 9xBuddy!`;
         this.render();
       }
     } catch (err) {
